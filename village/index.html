@@ -1,0 +1,1284 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>동글마을</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#f6eddc">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="동글마을">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" data-pretendard>
+<style>
+  /* Layout: the clay village fills the screen; app chrome floats on top in a Toss/Apple manner:
+     white capsules for status, bottom sheets with a grabber, big flat buttons. */
+  :root {
+    --bg: #f6eddc;          /* behind the canvas: clay cream */
+    --surface: #ffffff;     /* sheets, capsules */
+    --grouped: #f5f2ed;     /* grouped rows inside a sheet (warm iOS grey) */
+    --ink: #1f1b17;         /* primary text */
+    --sub: #8b857d;         /* secondary text */
+    --hair: rgba(31, 27, 23, 0.08);
+    --accent: #c8714f;      /* terracotta pot: primary action */
+    --accent-weak: rgba(200, 113, 79, 0.12);
+    --coin: #e2bd55;
+    --up: #f04452;          /* price up: red, as in Korean finance apps */
+    --down: #3182f6;        /* price down: blue */
+    --income: #3182f6;      /* money in, as in Toss history */
+    --font: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+    color-scheme: light;
+  }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; overflow: hidden;
+    background: var(--bg); color: var(--ink);
+    font-family: var(--font);
+    font-size: 15px; letter-spacing: -0.01em;
+    word-break: keep-all; overflow-wrap: break-word;
+    -webkit-font-smoothing: antialiased;
+    touch-action: none;
+    -webkit-user-select: none; user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #world { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+
+  .hud {
+    position: fixed; top: 0; left: 0; right: 0;
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    pointer-events: none;
+  }
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 34px; padding-inline: 12px; border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    -webkit-backdrop-filter: saturate(180%) blur(12px); backdrop-filter: saturate(180%) blur(12px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 14px rgba(0, 0, 0, 0.06);
+    font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .tools { display: flex; gap: 6px; pointer-events: auto; flex: none; }
+  .round {
+    width: 40px; height: 40px; border-radius: 50%; border: 0; cursor: pointer;
+    background: rgba(255, 255, 255, 0.92); color: var(--ink);
+    -webkit-backdrop-filter: saturate(180%) blur(12px); backdrop-filter: saturate(180%) blur(12px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 14px rgba(0, 0, 0, 0.06);
+    font: 700 13px var(--font); letter-spacing: 0;
+  }
+  .round[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+  button:focus-visible { outline: 3px solid var(--down); outline-offset: 2px; }
+
+  .toast {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    width: max-content; max-width: min(420px, calc(100% - 32px)); box-sizing: border-box;
+    padding: 13px 18px; border-radius: 14px;
+    background: rgba(31, 27, 23, 0.88); color: #ffffff;
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    font-size: 15px; font-weight: 500; line-height: 1.45; text-align: center;
+    pointer-events: none; transition: opacity 0.25s;
+  }
+  .toast small { display: block; opacity: 0.7; font-size: 13px; font-weight: 400; }
+
+  .sheet {
+    position: fixed; left: 50%; bottom: 0; transform: translateX(-50%);
+    width: min(440px, 100%); max-height: 84%;
+    overflow-y: auto; box-sizing: border-box;
+    padding: 26px max(20px, env(safe-area-inset-left, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-right, 0px));
+    background: var(--surface); border-radius: 24px 24px 0 0;
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.12);
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .sheet:not(.center)::before {
+    content: ""; position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    width: 36px; height: 5px; border-radius: 3px; background: rgba(31, 27, 23, 0.15);
+  }
+  .sheet.center { top: 50%; bottom: auto; transform: translate(-50%, -50%); border-radius: 28px; width: min(380px, calc(100% - 32px)); padding: 32px 24px 24px; text-align: center; align-items: center; }
+  @media (prefers-reduced-motion: no-preference) {
+    .sheet { animation: rise 0.32s cubic-bezier(0.2, 0.9, 0.3, 1); }
+    .sheet.center { animation: none; }
+    @keyframes rise { from { transform: translate(-50%, 40px); opacity: 0.5; } }
+  }
+  .sheet h1, .sheet h2 { margin: 0; text-wrap: balance; color: var(--ink); }
+  .sheet h1 { font-size: 34px; font-weight: 800; letter-spacing: -0.035em; }
+  .sheet h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.03em; }
+  .sheet p { margin: 0; line-height: 1.6; }
+  .muted { color: var(--sub); font-size: 14px; }
+  .row-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .en { font-size: 12px; font-weight: 500; color: var(--sub); letter-spacing: 0; }
+
+  .btn {
+    border: 0; border-radius: 16px; height: 56px; padding-inline: 24px; cursor: pointer;
+    background: var(--accent); color: #ffffff;
+    font: 700 17px var(--font); letter-spacing: -0.02em;
+    transition: transform 0.1s, filter 0.1s;
+  }
+  .center .btn { width: 100%; }
+  .btn:active { transform: scale(0.97); filter: brightness(0.95); }
+  .btn.soft { background: var(--grouped); color: var(--ink); }
+  .btn.small { height: 36px; padding-inline: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; background: var(--accent-weak); color: var(--accent); }
+  .btn.small.soft { background: var(--surface); color: var(--ink); }
+  .btn:disabled { background: var(--grouped); color: #c4beb6; cursor: default; transform: none; filter: none; }
+
+  .swatches { display: flex; gap: 12px; justify-content: center; }
+  .swatch { width: 40px; height: 40px; border-radius: 50%; border: 0; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06); }
+  .swatch[aria-checked="true"] { box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--ink); }
+
+  .market { display: flex; flex-direction: column; gap: 8px; }
+  .item {
+    display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 12px;
+    padding: 14px 14px 14px 16px; border-radius: 16px; background: var(--grouped);
+  }
+  .item .name { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .item .name b { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; }
+  .item .name .muted { font-size: 13px; }
+  .price { text-align: right; font-variant-numeric: tabular-nums; display: flex; flex-direction: column; gap: 2px; }
+  .price b { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; }
+  .delta { font-size: 12px; font-weight: 600; color: var(--sub); }
+  .delta.up { color: var(--up); } .delta.down { color: var(--down); }
+  .acts { display: flex; gap: 6px; }
+  .ledger { display: flex; flex-direction: column; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .ledger div { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--hair); padding-block: 10px; }
+  .ledger div:last-child { border-bottom: 0; }
+  .ledger span:last-child { font-weight: 700; }
+  .label { font-size: 13px; font-weight: 600; color: var(--sub); padding-top: 4px; }
+</style>
+</head>
+<body>
+<canvas id="world" aria-label="동글마을 화면. 땅을 누르면 걸어가고, 밭과 연못과 가게를 누르면 상호작용해요."></canvas>
+
+<div class="hud">
+  <div class="pills">
+    <span class="pill" id="clock">1일째 · 아침</span>
+    <span class="pill"><span class="dot" style="background:var(--coin)"></span><span id="coins">0</span></span>
+    <span class="pill"><span class="dot" style="background:#a98257"></span><span id="seeds">0</span></span>
+    <span class="pill"><span class="dot" style="background:#e8873a"></span><span id="crops">0</span></span>
+    <span class="pill"><span class="dot" style="background:#7fb3c4"></span><span id="fish">0</span></span>
+  </div>
+  <div class="tools">
+    <button class="round" id="enBtn" type="button" aria-pressed="false" aria-label="영어 같이 보기">EN</button>
+    <button class="round" id="soundBtn" type="button" aria-label="소리 끄기">♪</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" style="opacity:0"></div>
+
+<div class="sheet center" id="startSheet">
+  <h1>동글마을</h1>
+  <p>천천히 걸어도 괜찮은 작은 마을이에요.<br>작물을 키워 팔고, 물고기를 낚고, 이웃과 인사해요.</p>
+  <span class="label">내 옷 색깔</span>
+  <div class="swatches" id="swatches" role="radiogroup" aria-label="옷 색깔"></div>
+  <button class="btn" id="startBtn" type="button">마을로 가기</button>
+  <p class="muted">땅을 누르면 걸어가요. 밭·연못·가게·집을 눌러보세요.</p>
+</div>
+
+<div class="sheet" id="shopSheet" hidden>
+  <div class="row-head">
+    <h2>도담이네 가게</h2>
+    <span class="muted" id="shopDay">오늘의 시세</span>
+  </div>
+  <div class="market" id="market"></div>
+  <div class="row-head"><span class="label">용돈기입장 <span class="en" data-en>Pocket money log</span></span><span class="muted" id="coinsNow"></span></div>
+  <div class="ledger" id="ledger"></div>
+  <button class="btn soft" id="shopClose" type="button">가게 나가기</button>
+</div>
+
+<div class="sheet" id="seedSheet" hidden>
+  <div class="row-head"><h2>무엇을 심을까요?</h2><span class="en" data-en>What will you plant?</span></div>
+  <div class="market" id="seedList"></div>
+  <button class="btn soft" id="seedClose" type="button">그만두기</button>
+</div>
+
+<div class="sheet" id="houseSheet" hidden>
+  <h2>우리 집</h2>
+  <p>작고 포근한 집이에요. 집 꾸미기는 다음 버전에서 열려요.</p>
+  <div class="item">
+    <div class="name"><b>저금통 <span class="en" data-en>Piggy bank</span></b><span class="muted" id="bankInfo"></span></div>
+    <div class="price"><b id="bankAmount">0코인</b><span class="delta up">하루 이자 5%</span></div>
+    <div class="acts"><button class="btn small" id="depositBtn" type="button">10 넣기</button><button class="btn small soft" id="withdrawBtn" type="button">꺼내기</button></div>
+  </div>
+  <p class="muted">자고 일어나면 다음 날 아침이 되고, 저금통에 이자가 붙고, 가게 시세가 새로 정해져요.</p>
+  <button class="btn" id="sleepBtn" type="button">잠자기</button>
+  <button class="btn soft" id="houseClose" type="button">밖으로 나가기</button>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const FONT = '"Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+  const canvas = $('world');
+  const ctx = canvas.getContext('2d');
+
+  // ---------- small helpers ----------
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  };
+  function mulberry32(a) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+
+  // ---------- palette (from the clay figures) ----------
+  const SHIRTS = [
+    { id: 'brown', c: '#8d5f45', ko: '코코아' },
+    { id: 'green', c: '#7f9b6b', ko: '세이지' },
+    { id: 'yellow', c: '#e2bd55', ko: '버터' },
+    { id: 'red', c: '#c95b45', ko: '토마토' },
+    { id: 'gray', c: '#a39d93', ko: '자갈' },
+  ];
+  const CLAY = { hi: '#fdf4e3', mid: '#f1e1c4', lo: '#d8bf98' };
+  const HAIR = '#2b2420';
+  const FLOWER_COLORS = ['#f2a7b8', '#f4d35e', '#e05a47', '#fbf7ef', '#b9a3e3'];
+
+  // ---------- world ----------
+  const W = 1400, H = 1000;
+  const house = { x: 230, y: 170, w: 160, h: 112, door: { x: 310, y: 300 } };
+  const shop = { x: 985, y: 250, w: 130, h: 62, spot: { x: 1050, y: 340 } };
+  const pond = { cx: 1060, cy: 740, rx: 155, ry: 92 };
+  const mat = { x: 690, y: 470, w: 170, h: 110 };
+  const trees = [[620, 300], [140, 620], [470, 840], [1250, 190], [860, 175], [1290, 520], [720, 880], [150, 210], [1220, 900], [400, 600]].map(([x, y], i) => ({ x, y, s: 0.85 + ((i * 37) % 10) / 25 }));
+  const lamps = [{ x: 640, y: 450 }, { x: 940, y: 395 }, { x: 900, y: 690 }];
+  const plots = [];
+  for (let r = 0; r < 2; r++) for (let c = 0; c < 3; c++) plots.push({ x: 212 + c * 64, y: 345 + r * 56, w: 54, h: 40, stage: 0, watered: false, grow: 0, color: 0 });
+  const PATH = [[310, 300], [470, 318], [620, 400], [770, 440], [905, 380], [1050, 340]];
+  const PATH2 = [[790, 520], [880, 600], [960, 640]];
+
+  function blocked(x, y) {
+    if (x < 40 || x > W - 40 || y < 70 || y > H - 30) return true;
+    if (x > house.x - 8 && x < house.x + house.w + 8 && y > house.y - 10 && y < house.y + house.h + 8) return true;
+    if (x > shop.x - 6 && x < shop.x + shop.w + 6 && y > shop.y - 10 && y < shop.y + shop.h + 10) return true;
+    const dx = (x - pond.cx) / (pond.rx + 12), dy = (y - pond.cy) / (pond.ry + 10);
+    if (dx * dx + dy * dy < 1) return true;
+    for (const t of trees) if (Math.hypot(x - t.x, (y - t.y) * 1.6) < 15) return true;
+    return false;
+  }
+
+  // ---------- state ----------
+  const DAY_LEN = 240;     // seconds per in-game day
+  // seed = fixed seed price, base = average selling price, grow = seconds per stage once watered
+  const CROPS = {
+    carrot:     { ko: '당근', en: 'Carrot', seed: 2, base: 6, grow: 7, color: '#e8873a' },
+    flower:     { ko: '꽃', en: 'Flower', seed: 3, base: 9, grow: 10, color: '#e58aa0' },
+    tomato:     { ko: '토마토', en: 'Tomato', seed: 5, base: 15, grow: 14, color: '#d9503f' },
+    strawberry: { ko: '딸기', en: 'Strawberry', seed: 8, base: 24, grow: 18, color: '#e04a5f' },
+  };
+  const FISH = {
+    minnow:  { ko: '송사리', en: 'Minnow', base: 4, color: '#9cc7d3' },
+    crucian: { ko: '붕어', en: 'Crucian carp', base: 10, color: '#7fb3c4' },
+    carp:    { ko: '잉어', en: 'Carp', base: 18, color: '#e2a35a' },
+  };
+  const ITEMS = { ...CROPS, ...FISH };
+  const BANK_RATE = 0.05;
+  // Korean object particle: 당근을 / 토마토를
+  const eul = (w) => { const c = w.charCodeAt(w.length - 1) - 0xac00; return w + (c >= 0 && c < 11172 && c % 28 ? '을' : '를'); };
+  const sum = (o, keys) => keys.reduce((a, k) => a + (o[k] || 0), 0);
+
+  const G = {
+    started: false, t: 0, day: 1, time: 0.05,
+    coins: 20, bank: 0,
+    seeds: { carrot: 3, flower: 2, tomato: 0, strawberry: 0 },
+    inv: { carrot: 0, flower: 0, tomato: 0, strawberry: 0, minnow: 0, crucian: 0, carp: 0 },
+    prices: {}, prev: {}, ledger: [],
+    shirt: 'yellow', en: false, muted: false,
+    tips: { planted: false, fished: false },
+  };
+  function rollPrices() {
+    G.prev = { ...G.prices };
+    for (const k in ITEMS) G.prices[k] = Math.max(1, Math.round(ITEMS[k].base * rand(0.7, 1.4)));
+  }
+  rollPrices(); G.prev = { ...G.prices };
+
+  function save() {
+    return { v: 2, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, en: G.en, muted: G.muted, tips: G.tips, plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
+  }
+  function load(s) {
+    if (!s || s.v !== 2) return false;
+    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, en: !!s.en, muted: !!s.muted, tips: s.tips || G.tips });
+    (s.plots || []).forEach((p, i) => { if (plots[i]) Object.assign(plots[i], p); });
+    return true;
+  }
+  let saveTimer = 0;
+  function persist() { store.set('donggle-village', save()); }
+
+  // ---------- characters ----------
+  function mong(name, shirt, x, y, extra) {
+    return Object.assign({ name, shirt, x, y, dir: 1, face: 0, walkP: 0, moving: false, seed: Math.random() * 10, blink: rand(2, 5), bubble: null, emote: null, hold: null, holdT: 0 }, extra);
+  }
+  const player = mong('나', '#e2bd55', 330, 330, { player: true, goal: null, stuckT: 0, fishing: null });
+  const npcs = [
+    mong('동이', '#8d5f45', 740, 500, { speed: 48 }),
+    mong('글이', '#7f9b6b', 800, 540, { speed: 44 }),
+    mong('포포', '#e2bd55', 560, 520, { speed: 52 }),
+    mong('말랑', '#c95b45', 900, 470, { speed: 50 }),
+    mong('도담', '#a39d93', 1050, 262, { shopkeeper: true }),
+  ];
+  npcs.forEach((n) => { n.wait = rand(0.5, 4); n.target = null; n.greetCd = 0; n.chatCd = rand(4, 12); });
+
+  const LINES_DAY = [
+    ['오늘은 천천히 걸어도 돼.', "It's okay to walk slowly today."],
+    ['꽃 냄새 좋다~', 'The flowers smell nice.'],
+    ['같이 차 마실래?', 'Do you want some tea?'],
+    ['바람이 살랑살랑.', 'The breeze is gentle.'],
+    ['연못에 잉어가 산대!', 'A carp lives in the pond!'],
+    ['구름이 빵 같아.', 'That cloud looks like bread.'],
+    ['잘하고 있어.', "You're doing great."],
+    ['나는 그냥 여기 앉아 있을래.', "I'll just sit here."],
+    ['오늘 시세 봤어?', 'Did you check prices today?'],
+    ['당근은 금방 자라!', 'Carrots grow fast!'],
+    ['딸기는 오래 걸리지만 비싸게 팔린대.', 'Strawberries take long but sell high.'],
+    ['나는 저금통에 조금씩 모아.', 'I save a little in my piggy bank.'],
+  ];
+  const LINES_NIGHT = [
+    ['별이 예쁘다.', 'The stars are pretty.'],
+    ['슬슬 졸려…', "I'm getting sleepy..."],
+    ['오늘도 수고했어.', 'You did well today.'],
+  ];
+  const LINES_SHOP = [
+    ['어서 와요!', 'Welcome!'],
+    ['꽃은 날마다 값이 달라요.', 'Flower prices change every day.'],
+    ['싸게 사서 비싸게 팔기!', 'Buy low, sell high!'],
+    ['씨앗값보다 비싸게 팔면 이익이에요.', 'Sell for more than the seed cost to make a profit.'],
+    ['시세가 낮은 날엔 기다려도 돼요.', 'On low-price days, you can wait.'],
+  ];
+  function say(c, line, secs = 3.6) { c.bubble = { ko: line[0], en: line[1], t: secs }; }
+
+  // ---------- effects ----------
+  const parts = [];
+  function burst(x, y, n, color, opts = {}) {
+    for (let i = 0; i < n; i++) parts.push({ x, y, vx: rand(-1, 1) * (opts.spread || 60), vy: rand(-1.4, -0.3) * (opts.up || 80), g: opts.g ?? 260, life: opts.life || 0.7, max: opts.life || 0.7, r: rand(1.5, 3.2), c: color });
+  }
+  const flies = Array.from({ length: 6 }, (_, i) => ({ x: rand(200, 1200), y: rand(150, 900), p: Math.random() * 9, c: ['#f6c7d3', '#fbe9a6', '#cfe3f3'][i % 3] }));
+
+  // ---------- audio ----------
+  let ac = null;
+  function tone(f, d = 0.18, type = 'triangle', v = 0.05, slide = 0, delay = 0) {
+    if (G.muted) return;
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      if (ac.state === 'suspended') ac.resume();
+      const t = ac.currentTime + delay;
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = type; o.frequency.setValueAtTime(f, t);
+      if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(50, f + slide), t + d);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+      o.connect(g).connect(ac.destination); o.start(t); o.stop(t + d + 0.05);
+    } catch (e) {}
+  }
+  const sfx = {
+    step: () => tone(rand(300, 340), 0.06, 'sine', 0.015),
+    plant: () => { tone(392, 0.15); tone(523, 0.2, 'triangle', 0.05, 0, 0.08); },
+    water: () => { for (let i = 0; i < 4; i++) tone(900 - i * 120, 0.12, 'sine', 0.03, -200, i * 0.05); },
+    harvest: () => { tone(523, 0.15); tone(659, 0.15, 'triangle', 0.05, 0, 0.08); tone(784, 0.25, 'triangle', 0.05, 0, 0.16); },
+    coin: () => { tone(988, 0.08, 'square', 0.025); tone(1319, 0.18, 'square', 0.025, 0, 0.07); },
+    cast: () => tone(500, 0.25, 'sine', 0.04, -300),
+    bite: () => { tone(740, 0.08, 'square', 0.04); tone(740, 0.08, 'square', 0.04, 0, 0.12); },
+    catch: () => { tone(587, 0.12); tone(784, 0.12, 'triangle', 0.05, 0, 0.09); tone(1175, 0.3, 'triangle', 0.05, 0, 0.18); },
+    soft: () => tone(440, 0.2, 'sine', 0.04, -120),
+    talk: () => { tone(rand(520, 640), 0.07, 'sine', 0.035); tone(rand(600, 720), 0.07, 'sine', 0.03, 0, 0.08); },
+  };
+
+  // ---------- UI ----------
+  const ui = { clock: $('clock'), coins: $('coins'), seeds: $('seeds'), crops: $('crops'), fish: $('fish'), toast: $('toast') };
+  const CROP_KEYS = Object.keys(CROPS), FISH_KEYS = Object.keys(FISH);
+  let toastT = 0;
+  function toast(ko, en) {
+    ui.toast.innerHTML = '';
+    ui.toast.append(document.createTextNode(ko));
+    if (G.en && en) { const s = document.createElement('small'); s.textContent = en; ui.toast.append(s); }
+    ui.toast.style.opacity = 1; toastT = 3.2;
+  }
+  function timeName(p) { return p < 0.22 ? ['아침', 'Morning'] : p < 0.55 ? ['낮', 'Afternoon'] : p < 0.7 ? ['저녁', 'Evening'] : p < 0.94 ? ['밤', 'Night'] : ['새벽', 'Dawn']; }
+  function syncHud() {
+    const tn = timeName(G.time);
+    ui.clock.textContent = G.en ? `Day ${G.day} · ${tn[1]}` : `${G.day}일째 · ${tn[0]}`;
+    ui.coins.textContent = G.coins + (G.en ? ' coins' : '');
+    ui.seeds.textContent = (G.en ? 'Seeds ' : '씨앗 ') + sum(G.seeds, CROP_KEYS);
+    ui.crops.textContent = (G.en ? 'Crops ' : '작물 ') + sum(G.inv, CROP_KEYS);
+    ui.fish.textContent = (G.en ? 'Fish ' : '물고기 ') + sum(G.inv, FISH_KEYS);
+  }
+  function syncToggles() {
+    $('enBtn').setAttribute('aria-pressed', String(G.en));
+    $('soundBtn').textContent = G.muted ? '×' : '♪';
+    $('soundBtn').setAttribute('aria-label', G.muted ? '소리 켜기' : '소리 끄기');
+    document.querySelectorAll('[data-en]').forEach((el) => { el.hidden = !G.en; });
+  }
+
+  // start sheet swatches
+  const sw = $('swatches');
+  SHIRTS.forEach((s) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'swatch'; b.style.background = s.c;
+    b.setAttribute('role', 'radio'); b.setAttribute('aria-label', s.ko); b.id = 'shirt-' + s.id;
+    b.addEventListener('click', () => { G.shirt = s.id; player.shirt = s.c; syncSwatches(); });
+    sw.append(b);
+  });
+  function syncSwatches() { SHIRTS.forEach((s) => $('shirt-' + s.id).setAttribute('aria-checked', String(G.shirt === s.id))); }
+
+  let modal = null;
+  function openSheet(id) { closeSheet(); modal = id; $(id).hidden = false; }
+  function closeSheet() { if (modal) $(modal).hidden = true; modal = null; }
+
+  function addLedger(text, amount) {
+    G.ledger.unshift({ day: G.day, text, amount });
+    G.ledger = G.ledger.slice(0, 6);
+  }
+  function renderShop() {
+    $('shopDay').textContent = G.en ? `Day ${G.day} prices` : `${G.day}일째 시세`;
+    const m = $('market'); m.innerHTML = '';
+    const row = (nameKo, nameEn, have, price, prev, actions) => {
+      const el = document.createElement('div'); el.className = 'item';
+      const n = document.createElement('div'); n.className = 'name';
+      n.innerHTML = `<b></b><span class="muted"></span>`;
+      n.querySelector('b').textContent = nameKo + (G.en ? ` · ${nameEn}` : '');
+      n.querySelector('span').textContent = have;
+      const p = document.createElement('div'); p.className = 'price';
+      p.innerHTML = `<b>${price}코인</b>`;
+      if (prev !== null) {
+        const d = price - prev;
+        const ds = document.createElement('span');
+        ds.className = 'delta ' + (d > 0 ? 'up' : d < 0 ? 'down' : '');
+        ds.textContent = d === 0 ? '어제와 같음' : `어제보다 ${d > 0 ? '▲' : '▼'}${Math.abs(d)}`;
+        p.append(ds);
+      }
+      const a = document.createElement('div'); a.className = 'acts';
+      actions.forEach(([label, fn, ok]) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn small'; b.textContent = label; b.disabled = !ok; b.addEventListener('click', fn); a.append(b); });
+      el.append(n, p, a); m.append(el);
+    };
+    const section = (ko, en) => { const h = document.createElement('span'); h.className = 'label'; h.textContent = ko + (G.en ? ` · ${en}` : ''); m.append(h); };
+    section('팔기', 'Sell');
+    for (const k in ITEMS) {
+      const it = ITEMS[k], have = G.inv[k];
+      if (!have && FISH[k]) continue; // fish appear once you have caught one
+      row(it.ko, it.en, `가지고 있음 ${have}개`, G.prices[k], G.prev[k] ?? null, [
+        ['1개 팔기', () => sell(k, 1), have > 0],
+        ['모두', () => sell(k, have), have > 1],
+      ]);
+    }
+    section('씨앗 사기', 'Buy seeds');
+    for (const k of CROP_KEYS) {
+      const c = CROPS[k], profit = G.prices[k] - c.seed;
+      row(`${c.ko} 씨앗`, `${c.en} seed`, `가진 씨앗 ${G.seeds[k]}개 · 오늘 팔면 이익 ${profit >= 0 ? '+' : ''}${profit}`, c.seed, null, [
+        ['1개 사기', () => buySeeds(k, 1), G.coins >= c.seed],
+        ['3개', () => buySeeds(k, 3), G.coins >= c.seed * 3],
+      ]);
+    }
+    $('coinsNow').textContent = `지금 ${G.coins}코인`;
+    const l = $('ledger'); l.innerHTML = '';
+    if (!G.ledger.length) { const d = document.createElement('div'); d.innerHTML = '<span class="muted">아직 기록이 없어요. 물건을 팔거나 사면 여기에 적혀요.</span>'; l.append(d); }
+    G.ledger.forEach((e) => {
+      const d = document.createElement('div');
+      const a = document.createElement('span'); a.textContent = `${e.day}일 · ${e.text}`;
+      const b = document.createElement('span'); b.textContent = (e.amount > 0 ? '+' : '') + e.amount; b.style.color = e.amount > 0 ? 'var(--income)' : 'var(--ink)';
+      d.append(a, b); l.append(d);
+    });
+  }
+  function sell(k, n) {
+    if (n <= 0 || G.inv[k] < n) return;
+    const amount = G.prices[k] * n;
+    G.inv[k] -= n; G.coins += amount;
+    addLedger(`${ITEMS[k].ko} ${n}개 판매`, amount);
+    sfx.coin(); renderShop(); persist();
+  }
+  function buySeeds(k, n) {
+    const cost = CROPS[k].seed * n;
+    if (G.coins < cost) return;
+    G.coins -= cost; G.seeds[k] += n;
+    addLedger(`${CROPS[k].ko} 씨앗 ${n}개 구입`, -cost);
+    sfx.coin(); renderShop(); persist();
+  }
+
+  // seed picker, opened from an empty plot
+  let pendingPlot = null;
+  function renderSeeds() {
+    const list = $('seedList'); list.innerHTML = '';
+    for (const k of CROP_KEYS) {
+      const c = CROPS[k], have = G.seeds[k];
+      const el = document.createElement('div'); el.className = 'item';
+      const n = document.createElement('div'); n.className = 'name';
+      const b = document.createElement('b'); b.textContent = c.ko + (G.en ? ` · ${c.en}` : '');
+      const s = document.createElement('span'); s.className = 'muted';
+      s.textContent = `씨앗 ${have}개 · 다 자라는 데 약 ${c.grow * 3}초`;
+      n.append(b, s);
+      const p = document.createElement('div'); p.className = 'price';
+      const profit = G.prices[k] - c.seed;
+      p.innerHTML = `<b></b><span class="delta"></span>`;
+      p.querySelector('b').textContent = `${c.seed} → ${G.prices[k]}`;
+      p.querySelector('span').textContent = `이익 ${profit >= 0 ? '+' : ''}${profit}`;
+      p.querySelector('span').classList.add(profit > 0 ? 'up' : 'down');
+      const a = document.createElement('div'); a.className = 'acts';
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'btn small'; btn.textContent = '심기'; btn.disabled = have <= 0;
+      btn.addEventListener('click', () => plant(k));
+      a.append(btn); el.append(n, p, a); list.append(el);
+    }
+    const note = document.createElement('p'); note.className = 'muted';
+    note.textContent = '숫자는 씨앗값 → 오늘 판매값이에요. 씨앗이 없으면 도담이네 가게에서 살 수 있어요.';
+    list.append(note);
+  }
+  function plant(k) {
+    const p = pendingPlot; closeSheet(); pendingPlot = null;
+    if (!p || p.stage !== 0 || G.seeds[k] <= 0) return;
+    G.seeds[k]--; p.crop = k; p.stage = 1; p.watered = false; p.grow = 0; p.color = Math.floor(Math.random() * FLOWER_COLORS.length);
+    burst(p.x + p.w / 2, p.y + p.h / 2, 10, '#8a6a48'); sfx.plant();
+    if (!G.tips.planted) { G.tips.planted = true; toast('씨앗을 심었어요. 한 번 더 눌러 물을 주세요.', 'Planted! Tap again to water it.'); }
+    else toast(`${eul(CROPS[k].ko)} 심었어요.`, `You planted a ${CROPS[k].en.toLowerCase()}.`);
+    persist();
+  }
+
+  // piggy bank in the house
+  function renderHouse() {
+    $('bankAmount').textContent = `${G.bank}코인`;
+    const next = Math.floor(G.bank * BANK_RATE);
+    $('bankInfo').textContent = G.bank >= 20 ? `내일 아침 이자 +${next}코인` : '20코인 이상 모으면 이자가 붙어요';
+    $('depositBtn').disabled = G.coins <= 0;
+    $('depositBtn').textContent = G.coins >= 10 ? '10 넣기' : `${G.coins} 넣기`;
+    $('withdrawBtn').disabled = G.bank <= 0;
+  }
+  $('depositBtn').addEventListener('click', () => {
+    const n = Math.min(10, G.coins); if (n <= 0) return;
+    G.coins -= n; G.bank += n; addLedger(`저금통에 ${n}코인 저축`, -n);
+    sfx.coin(); renderHouse(); persist();
+  });
+  $('withdrawBtn').addEventListener('click', () => {
+    const n = G.bank; if (n <= 0) return;
+    G.bank = 0; G.coins += n; addLedger(`저금통에서 ${n}코인 꺼냄`, n);
+    sfx.coin(); renderHouse(); persist();
+  });
+  $('seedClose').addEventListener('click', () => { pendingPlot = null; closeSheet(); });
+
+  $('startBtn').addEventListener('click', () => {
+    G.started = true; closeSheet(); tone(523, 0.2);
+    persist();
+    if (!G.tips.planted) setTimeout(() => toast('집 앞 밭을 눌러 씨앗을 심어보세요.', 'Tap the garden to plant a seed.'), 600);
+  });
+  $('shopClose').addEventListener('click', () => { closeSheet(); say(npcs[4], ['또 와요!', 'Come again!']); });
+  $('houseClose').addEventListener('click', closeSheet);
+  $('sleepBtn').addEventListener('click', () => {
+    closeSheet(); sleepFade = 1.6;
+    setTimeout(() => { newDay(); G.time = 0.03; player.x = house.door.x; player.y = house.door.y + 10; }, 700);
+  });
+  $('enBtn').addEventListener('click', () => { G.en = !G.en; syncToggles(); syncHud(); if (modal === 'shopSheet') renderShop(); if (modal === 'seedSheet') renderSeeds(); persist(); });
+  $('soundBtn').addEventListener('click', () => { G.muted = !G.muted; syncToggles(); persist(); });
+
+  function newDay() {
+    G.day++; rollPrices();
+    const interest = Math.floor(G.bank * BANK_RATE);
+    if (interest > 0) {
+      G.bank += interest; addLedger(`저금통 이자`, interest);
+      toast(`${G.day}일째 아침이에요. 저금통에 이자 ${interest}코인이 붙었어요!`, `Day ${G.day}. You earned ${interest} coins of interest!`);
+    } else {
+      toast(`${G.day}일째 아침이에요. 오늘의 시세가 새로 정해졌어요.`, `Day ${G.day}. New prices today!`);
+    }
+    persist();
+  }
+
+  // ---------- interactions ----------
+  function plotSpot(p) { return { x: p.x + p.w / 2, y: p.y + p.h + 16 }; }
+  function useplot(p) {
+    player.dir = 1; player.face = 0;
+    if (p.stage === 0) {
+      if (sum(G.seeds, CROP_KEYS) <= 0) { toast('씨앗이 없어요. 도담이네 가게에서 살 수 있어요.', 'No seeds. Buy some at the shop.'); sfx.soft(); return; }
+      pendingPlot = p; openSheet('seedSheet'); renderSeeds(); return;
+    } else if (p.stage < 4 && !p.watered) {
+      p.watered = true; player.hold = 'can'; player.holdT = 1.2;
+      for (let i = 0; i < 14; i++) setTimeout(() => burst(p.x + p.w / 2 + rand(-12, 12), p.y + 4, 1, '#9fd3e6', { g: 400, up: 20, spread: 20, life: 0.5 }), i * 50);
+      sfx.water();
+    } else if (p.stage < 4) {
+      toast('쑥쑥 자라는 중이에요. 다른 일을 하고 와도 돼요.', "It's growing. Take your time.");
+    } else {
+      const k = p.crop || 'flower', col = k === 'flower' ? FLOWER_COLORS[p.color] : CROPS[k].color;
+      p.stage = 0; p.watered = false; G.inv[k]++;
+      player.hold = 'crop'; player.holdCrop = k; player.holdColor = col; player.holdT = 1.6;
+      burst(p.x + p.w / 2, p.y + 6, 14, col, { up: 140 }); sfx.harvest();
+      toast(`${eul(CROPS[k].ko)} 수확했어요! 오늘 시세는 ${G.prices[k]}코인이에요.`, `You harvested a ${CROPS[k].en.toLowerCase()}!`);
+    }
+    persist();
+  }
+  function pondEdge(x, y) {
+    const a = Math.atan2((y - pond.cy) / pond.ry, (x - pond.cx) / pond.rx);
+    return {
+      stand: { x: pond.cx + Math.cos(a) * (pond.rx + 24), y: pond.cy + Math.sin(a) * (pond.ry + 22) },
+      bob: { x: pond.cx + Math.cos(a) * (pond.rx - 55), y: pond.cy + Math.sin(a) * (pond.ry - 36) },
+    };
+  }
+  function startFishing(bob) {
+    player.fishing = { phase: 'wait', t: rand(1.8, 5), bob, dip: 0 };
+    player.dir = Math.sign(bob.x - player.x) || 1;
+    sfx.cast();
+    if (!G.tips.fished) { G.tips.fished = true; toast('찌가 쏙 들어가고 ! 가 뜨면 화면을 탭하세요.', 'When you see !, tap the screen.'); }
+  }
+  function reel() {
+    const f = player.fishing; if (!f) return;
+    if (f.phase === 'bite') {
+      const r = Math.random(); const k = r < 0.5 ? 'minnow' : r < 0.85 ? 'crucian' : 'carp';
+      G.inv[k]++; player.fishing = null;
+      player.hold = 'fish'; player.holdColor = ITEMS[k].color; player.holdT = 1.6;
+      burst(f.bob.x, f.bob.y, 16, '#cfeaf2', { up: 120 }); sfx.catch();
+      toast(`${eul(ITEMS[k].ko)} 낚았어요!`,`You caught a ${ITEMS[k].en.toLowerCase()}!`);
+      persist();
+    } else {
+      player.fishing = null; sfx.soft();
+      toast('낚싯대를 거뒀어요.', 'You reeled in.');
+    }
+  }
+  function talkTo(n) {
+    n.dir = Math.sign(player.x - n.x) || 1;
+    if (n.shopkeeper) { say(n, pick(LINES_SHOP)); }
+    else { say(n, pick(isNight() ? LINES_NIGHT : LINES_DAY)); n.wait = Math.max(n.wait, 3); n.target = null; }
+    n.emote = { t: 1.4 }; sfx.talk();
+  }
+
+  // ---------- input ----------
+  let cam = { x: player.x, y: player.y }, zoom = 1, dpr = 1, vw = 0, vh = 0;
+  function toWorld(cx, cy) { return { x: cam.x - vw / 2 + cx / zoom, y: cam.y - vh / 2 + cy / zoom }; }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    if (!G.started || modal) return;
+    if (ac && ac.state === 'suspended') ac.resume();
+    const r = canvas.getBoundingClientRect();
+    const w = toWorld(e.clientX - r.left, e.clientY - r.top);
+    if (player.fishing) { reel(); return; }
+
+    for (const n of npcs) if (Math.hypot(w.x - n.x, w.y - (n.y - 42)) < 30) {
+      if (n.shopkeeper) { goTo(shop.spot, () => { openSheet('shopSheet'); renderShop(); talkTo(n); }); return; }
+      talkTo(n); return;
+    }
+    for (const p of plots) if (w.x > p.x - 4 && w.x < p.x + p.w + 4 && w.y > p.y - 18 && w.y < p.y + p.h + 4) { goTo(plotSpot(p), () => useplot(p)); return; }
+    if (w.x > shop.x - 10 && w.x < shop.x + shop.w + 10 && w.y > shop.y - 50 && w.y < shop.y + shop.h + 10) { goTo(shop.spot, () => { openSheet('shopSheet'); renderShop(); talkTo(npcs[4]); }); return; }
+    if (w.x > house.x - 15 && w.x < house.x + house.w + 15 && w.y > house.y - 70 && w.y < house.y + house.h + 10) { goTo(house.door, () => { openSheet('houseSheet'); renderHouse(); }); return; }
+    const dx = (w.x - pond.cx) / pond.rx, dy = (w.y - pond.cy) / pond.ry;
+    if (dx * dx + dy * dy < 1.05) { const e2 = pondEdge(player.x, player.y); goTo(e2.stand, () => startFishing(e2.bob)); return; }
+    goTo(w, null, true);
+  });
+
+  function goTo(pt, then, plain) {
+    player.fishing = null;
+    player.goal = { x: pt.x, y: pt.y, then, plain };
+    player.stuckT = 0;
+    if (plain) burst(pt.x, pt.y, 5, 'rgba(255,255,255,0.9)', { g: 0, up: 30, spread: 30, life: 0.4 });
+  }
+
+  const keys = new Set();
+  window.addEventListener('keydown', (e) => {
+    if (!G.started) { if (e.code === 'Enter') $('startBtn').click(); return; }
+    if (e.code === 'Escape') { closeSheet(); return; }
+    if (modal) return;
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) { keys.add(e.code); player.goal = null; if (player.fishing) player.fishing = null; e.preventDefault(); }
+    if (e.code === 'Space' || e.code === 'KeyE') { e.preventDefault(); if (player.fishing) reel(); else interactNearest(); }
+  });
+  window.addEventListener('keyup', (e) => keys.delete(e.code));
+  function interactNearest() {
+    const opts = [];
+    plots.forEach((p) => opts.push([plotSpot(p), () => useplot(p)]));
+    opts.push([shop.spot, () => { openSheet('shopSheet'); renderShop(); talkTo(npcs[4]); }]);
+    opts.push([house.door, () => { openSheet('houseSheet'); renderHouse(); }]);
+    npcs.forEach((n) => opts.push([n, () => talkTo(n)]));
+    const e2 = pondEdge(player.x, player.y); opts.push([e2.stand, () => startFishing(e2.bob)]);
+    let best = null, bd = 60;
+    for (const [pt, fn] of opts) { const d = Math.hypot(pt.x - player.x, pt.y - player.y); if (d < bd) { bd = d; best = fn; } }
+    if (best) best();
+  }
+
+  // ---------- update ----------
+  const isNight = () => G.time > 0.7 && G.time < 0.94;
+  function moveChar(c, tx, ty, speed, dt) {
+    const dx = tx - c.x, dy = ty - c.y, d = Math.hypot(dx, dy);
+    if (d < 2) { c.moving = false; return true; }
+    const step = Math.min(d, speed * dt);
+    const nx = c.x + (dx / d) * step, ny = c.y + (dy / d) * step;
+    const ox = c.x, oy = c.y;
+    if (!blocked(nx, ny)) { c.x = nx; c.y = ny; }
+    else if (!blocked(nx, c.y)) c.x = nx;
+    else if (!blocked(c.x, ny)) c.y = ny;
+    const moved = Math.hypot(c.x - ox, c.y - oy);
+    c.moving = moved > 0.05;
+    if (Math.abs(dx) > 1) c.dir = dx > 0 ? 1 : -1;
+    if (c.moving) {
+      const before = c.walkP;
+      c.walkP += moved * 0.16;
+      if (c.player && Math.floor(before / Math.PI) !== Math.floor(c.walkP / Math.PI)) sfx.step();
+    }
+    c.lastMoved = moved;
+    return false;
+  }
+
+  let sleepFade = 0;
+  function update(dt) {
+    G.t += dt;
+    if (G.started) {
+      const before = G.time;
+      G.time += dt / DAY_LEN;
+      if (G.time >= 1) { G.time -= 1; newDay(); }
+      if (before < 0.7 && G.time >= 0.7) toast('밤이 되었어요. 집에서 자면 다음 날이 돼요.', 'Night falls. Sleep at home to start a new day.');
+    }
+
+    // player
+    const p = player;
+    let kx = 0, ky = 0;
+    if (keys.has('ArrowLeft') || keys.has('KeyA')) kx--;
+    if (keys.has('ArrowRight') || keys.has('KeyD')) kx++;
+    if (keys.has('ArrowUp') || keys.has('KeyW')) ky--;
+    if (keys.has('ArrowDown') || keys.has('KeyS')) ky++;
+    if (kx || ky) {
+      const l = Math.hypot(kx, ky);
+      moveChar(p, p.x + (kx / l) * 30, p.y + (ky / l) * 30, 130, dt);
+    } else if (p.goal) {
+      const arrived = moveChar(p, p.goal.x, p.goal.y, 130, dt);
+      const dist = Math.hypot(p.goal.x - p.x, p.goal.y - p.y);
+      if (!arrived && (p.lastMoved || 0) < 0.3) p.stuckT += dt; else p.stuckT = 0;
+      if (arrived || p.stuckT > 0.25) {
+        const g = p.goal; p.goal = null; p.moving = false;
+        if (g.then) { if (arrived || dist < 70) g.then(); else toast('거기까지 갈 수 없어요.', "Can't get there."); }
+      }
+    } else p.moving = false;
+    if (p.holdT > 0) { p.holdT -= dt; if (p.holdT <= 0) p.hold = null; }
+
+    if (p.fishing) {
+      const f = p.fishing; f.t -= dt;
+      if (f.phase === 'wait' && f.t <= 0) { f.phase = 'bite'; f.t = 0.95; sfx.bite(); }
+      else if (f.phase === 'bite' && f.t <= 0) { p.fishing = null; sfx.soft(); toast('물고기가 도망갔어요. 괜찮아요, 다시 해봐요.', 'It got away. Try again!'); }
+    }
+
+    // plants grow only while watered; they never wilt
+    for (const pl of plots) {
+      if (pl.stage >= 1 && pl.stage < 4 && pl.watered) {
+        pl.grow += dt;
+        if (pl.grow >= CROPS[pl.crop || 'flower'].grow) { pl.grow = 0; pl.stage++; pl.watered = false; burst(pl.x + pl.w / 2, pl.y + 10, 6, '#bfe3a0', { up: 60 }); }
+      }
+    }
+
+    // villagers
+    for (const n of npcs) {
+      if (n.bubble) { n.bubble.t -= dt; if (n.bubble.t <= 0) n.bubble = null; }
+      if (n.emote) { n.emote.t -= dt; if (n.emote.t <= 0) n.emote = null; }
+      n.greetCd -= dt; n.chatCd -= dt;
+      if (n.chatCd <= 0) { n.chatCd = rand(9, 20); if (!n.bubble && Math.random() < 0.55) say(n, n.shopkeeper ? pick(LINES_SHOP) : pick(isNight() ? LINES_NIGHT : LINES_DAY)); }
+      if (G.started && n.greetCd <= 0 && Math.hypot(n.x - p.x, n.y - p.y) < 70) { n.greetCd = 40; say(n, ['안녕!', 'Hi!'], 2); n.dir = Math.sign(p.x - n.x) || 1; }
+      if (n.shopkeeper) { n.moving = false; continue; }
+      if (n.target) {
+        const arrived = moveChar(n, n.target.x, n.target.y, n.speed, dt);
+        if (arrived || (n.lastMoved || 0) < 0.02) { n.target = null; n.moving = false; n.wait = rand(2, 7); }
+      } else {
+        n.moving = false; n.wait -= dt;
+        if (n.wait <= 0) {
+          for (let i = 0; i < 12; i++) {
+            const nearMat = Math.random() < 0.5;
+            const t = nearMat ? { x: mat.x + rand(10, mat.w - 10), y: mat.y + rand(20, mat.h + 10) } : { x: rand(120, 1280), y: rand(160, 920) };
+            if (!blocked(t.x, t.y) && Math.hypot(t.x - n.x, t.y - n.y) < 500) { n.target = t; break; }
+          }
+          if (!n.target) n.wait = 1;
+        }
+      }
+    }
+    if (p.bubble) { p.bubble.t -= dt; if (p.bubble.t <= 0) p.bubble = null; }
+
+    for (const c of [p, ...npcs]) {
+      c.face = lerp(c.face, c.moving ? c.dir : 0, Math.min(1, dt * 6));
+      c.blink -= dt; if (c.blink < -0.12) c.blink = rand(2.5, 6);
+    }
+
+    for (const q of parts) { q.x += q.vx * dt; q.y += q.vy * dt; q.vy += q.g * dt; q.life -= dt; }
+    for (let i = parts.length - 1; i >= 0; i--) if (parts[i].life <= 0) parts.splice(i, 1);
+    for (const f of flies) { f.p += dt; f.x += Math.cos(f.p * 0.7) * 22 * dt + Math.sin(f.p * 2.3) * 12 * dt; f.y += Math.sin(f.p * 0.9) * 14 * dt; }
+
+    if (toastT > 0) { toastT -= dt; if (toastT <= 0) ui.toast.style.opacity = 0; }
+    if (sleepFade > 0) sleepFade -= dt;
+    saveTimer += dt; if (saveTimer > 5 && G.started) { saveTimer = 0; persist(); }
+  }
+
+  // ---------- drawing ----------
+  let ground = null;
+  function buildGround() {
+    const GS = 2;
+    const c = document.createElement('canvas'); c.width = W * GS; c.height = H * GS;
+    const g = c.getContext('2d'); g.scale(GS, GS);
+    const r = mulberry32(11);
+    g.fillStyle = '#c3d9a0'; g.fillRect(0, 0, W, H);
+    for (let i = 0; i < 160; i++) {
+      g.fillStyle = r() < 0.5 ? 'rgba(255,250,215,0.16)' : 'rgba(110,150,80,0.10)';
+      g.beginPath(); g.ellipse(r() * W, r() * H, 40 + r() * 110, 25 + r() * 60, r() * 3, 0, 7); g.fill();
+    }
+    const road = (pts, w1, w2) => {
+      g.lineCap = 'round'; g.lineJoin = 'round';
+      for (const [w, col] of [[w1, '#dcc59a'], [w2, '#efdfba']]) {
+        g.strokeStyle = col; g.lineWidth = w; g.beginPath();
+        g.moveTo(pts[0][0], pts[0][1]);
+        for (let i = 1; i < pts.length - 1; i++) g.quadraticCurveTo(pts[i][0], pts[i][1], (pts[i][0] + pts[i + 1][0]) / 2, (pts[i][1] + pts[i + 1][1]) / 2);
+        g.lineTo(pts[pts.length - 1][0], pts[pts.length - 1][1]); g.stroke();
+      }
+    };
+    road(PATH, 46, 38); road([[770, 440], ...PATH2], 40, 32);
+    for (let i = 0; i < 70; i++) { const s = PATH[Math.floor(r() * PATH.length)]; g.fillStyle = 'rgba(160,130,90,0.35)'; g.beginPath(); g.arc(s[0] + (r() - 0.5) * 120, s[1] + (r() - 0.5) * 30, 1.5 + r() * 2, 0, 7); g.fill(); }
+    // garden bed with a low fence
+    g.fillStyle = 'rgba(150,110,70,0.22)'; rr(g, 196, 330, 212, 128, 18); g.fill();
+    g.fillStyle = '#d7b98d';
+    for (let x = 196; x <= 408; x += 26) { rr(g, x - 3, 320, 6, 16, 3); g.fill(); rr(g, x - 3, 452, 6, 16, 3); g.fill(); }
+    g.fillRect(196, 325, 212, 3); g.fillRect(196, 457, 212, 3);
+    // tufts & daisies
+    for (let i = 0; i < 420; i++) {
+      const x = r() * W, y = r() * H; if (blocked(x, y)) continue;
+      g.strokeStyle = 'rgba(95,135,70,0.45)'; g.lineWidth = 1.4; g.beginPath();
+      g.moveTo(x - 3, y); g.lineTo(x - 4, y - 5); g.moveTo(x, y); g.lineTo(x, y - 7); g.moveTo(x + 3, y); g.lineTo(x + 4, y - 5); g.stroke();
+    }
+    for (let i = 0; i < 300; i++) {
+      const x = r() * W, y = r() * H; if (blocked(x, y) || (x > 190 && x < 415 && y > 315 && y < 470)) continue;
+      const col = r() < 0.75 ? '#fffdf6' : r() < 0.5 ? '#f6c7d3' : '#fbe9a6';
+      g.fillStyle = col;
+      for (let k = 0; k < 5; k++) { const a = (k / 5) * Math.PI * 2; g.beginPath(); g.arc(x + Math.cos(a) * 2.6, y + Math.sin(a) * 2.6, 2, 0, 7); g.fill(); }
+      g.fillStyle = '#efb93f'; g.beginPath(); g.arc(x, y, 1.6, 0, 7); g.fill();
+    }
+    // soft hedge border
+    const hr = mulberry32(5);
+    for (let x = 0; x <= W; x += 34) for (const y of [36, H - 4]) { g.fillStyle = hr() < 0.5 ? '#9dbd7c' : '#91b372'; g.beginPath(); g.arc(x, y, 30 + hr() * 10, 0, 7); g.fill(); }
+    for (let y = 0; y <= H; y += 34) for (const x of [6, W - 6]) { g.fillStyle = hr() < 0.5 ? '#9dbd7c' : '#91b372'; g.beginPath(); g.arc(x, y, 30 + hr() * 10, 0, 7); g.fill(); }
+    // picnic mat (gingham)
+    g.save(); g.translate(mat.x, mat.y);
+    g.fillStyle = '#f6e9d2'; rr(g, 0, 0, mat.w, mat.h, 8); g.fill();
+    g.fillStyle = 'rgba(206,160,120,0.35)';
+    for (let x = 0; x < mat.w; x += 20) g.fillRect(x, 0, 10, mat.h);
+    for (let y = 0; y < mat.h; y += 20) g.fillRect(0, y, mat.w, 10);
+    g.restore();
+    return c;
+  }
+  function rr(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+
+  function clayGrad(x, y, r, hi, mid, lo) {
+    const gr = ctx.createRadialGradient(x - r * 0.35, y - r * 0.45, r * 0.1, x, y, r * 1.05);
+    gr.addColorStop(0, hi); gr.addColorStop(0.55, mid); gr.addColorStop(1, lo);
+    return gr;
+  }
+  function ball(x, y, r) { ctx.fillStyle = clayGrad(x, y, r, CLAY.hi, CLAY.mid, CLAY.lo); ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); }
+  function shade(hex, amt) {
+    const n = parseInt(hex.slice(1), 16);
+    const f = (v) => clamp(Math.round(v + 255 * amt), 0, 255);
+    return `rgb(${f(n >> 16)},${f((n >> 8) & 255)},${f(n & 255)})`;
+  }
+
+  function drawMong(c) {
+    const walking = c.moving, p = c.walkP;
+    const bob = walking ? Math.abs(Math.sin(p)) * 2.4 : Math.sin(G.t * 2 + c.seed) * 0.8;
+    ctx.save(); ctx.translate(c.x, c.y);
+    ctx.fillStyle = 'rgba(100,80,50,0.20)'; ctx.beginPath(); ctx.ellipse(0, 0, 18, 5.5, 0, 0, 7); ctx.fill();
+    // feet
+    const fl = walking ? Math.max(0, Math.sin(p)) * 3.5 : 0, fr = walking ? Math.max(0, -Math.sin(p)) * 3.5 : 0;
+    ball(-7, -4.5 - fl, 5.4); ball(7, -4.5 - fr, 5.4);
+    // body (shirt)
+    const by = -18 - bob * 0.5;
+    ctx.fillStyle = clayGrad(0, by, 13, shade(c.shirt, 0.12), c.shirt, shade(c.shirt, -0.12));
+    ctx.beginPath(); ctx.ellipse(0, by, 12.5, 11.5, 0, 0, 7); ctx.fill();
+    // hands
+    const hs = walking ? Math.sin(p) * 2.6 : 0;
+    const holding = c.hold || (c.player && c.fishing);
+    ball(-13.5, by - 1 + hs, 4.8);
+    if (!holding) ball(13.5, by - 1 - hs, 4.8);
+    // held things
+    if (c.hold === 'can') {
+      ctx.save(); ctx.translate(16, by - 4); ctx.rotate(0.35);
+      ctx.fillStyle = clayGrad(0, 0, 9, '#9fb78c', '#7f9b6b', '#62804f');
+      rr(ctx, -8, -7, 15, 13, 3); ctx.fill();
+      ctx.strokeStyle = '#6f8b5c'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(6, 2); ctx.lineTo(15, -4); ctx.stroke();
+      ctx.restore(); ball(13.5, by, 4.8);
+    } else if (c.hold === 'crop') {
+      drawProduce(c.holdCrop, 17, by - 12, 1, c.holdColor); ball(13.5, by - 1, 4.8);
+    } else if (c.hold === 'fish') {
+      ctx.fillStyle = clayGrad(18, by - 8, 10, shade(c.holdColor, 0.15), c.holdColor, shade(c.holdColor, -0.1));
+      ctx.beginPath(); ctx.ellipse(18, by - 10, 10, 5.5, -0.5, 0, 7); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(10, by - 4); ctx.lineTo(5, by + 2); ctx.lineTo(4, by - 6); ctx.fill();
+      ctx.fillStyle = HAIR; ctx.beginPath(); ctx.arc(23, by - 13, 1.2, 0, 7); ctx.fill();
+      ball(13.5, by - 1, 4.8);
+    } else if (c.player && c.fishing) {
+      ball(13.5 * c.dir, by - 4, 4.8);
+    }
+    // head
+    const hy = -46 - bob, R = 23;
+    ctx.fillStyle = clayGrad(0, hy, R, CLAY.hi, CLAY.mid, CLAY.lo);
+    ctx.beginPath(); ctx.arc(0, hy, R, 0, 7); ctx.fill();
+    const fx = c.face * 3.5;
+    // blush
+    ctx.fillStyle = 'rgba(235,150,130,0.18)';
+    ctx.beginPath(); ctx.ellipse(-11 + fx, hy + 5, 4.5, 2.6, 0, 0, 7); ctx.ellipse(11 + fx, hy + 5, 4.5, 2.6, 0, 0, 7); ctx.fill();
+    // hair: a few soft strands falling from the crown
+    ctx.strokeStyle = HAIR; ctx.lineCap = 'round'; ctx.lineWidth = 2.4;
+    const strands = [[-15, -6], [-9, -3], [-3, 0], [3, 1], [9, -1], [15, -5]];
+    for (const [sx, lift] of strands) {
+      const x0 = sx * 0.55 + fx * 0.3, y0 = hy - R + 1.5 + Math.abs(sx) * 0.08;
+      const x1 = sx * 1.05 + fx * 0.6, y1 = hy - R * 0.42 + lift * 0.4 + Math.abs(sx) * 0.35;
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.quadraticCurveTo(sx * 0.95 + fx * 0.4, y0 + 3, x1, y1); ctx.stroke();
+    }
+    // eyes ^^ and a small smile
+    ctx.lineWidth = 1.7;
+    const ey = hy + 1;
+    if (c.blink < 0) {
+      ctx.beginPath(); ctx.moveTo(-8.5 + fx, ey); ctx.lineTo(-3.5 + fx, ey); ctx.moveTo(3.5 + fx, ey); ctx.lineTo(8.5 + fx, ey); ctx.stroke();
+    } else {
+      ctx.beginPath(); ctx.arc(-6 + fx, ey + 1.2, 2.6, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke();
+      ctx.beginPath(); ctx.arc(6 + fx, ey + 1.2, 2.6, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke();
+    }
+    ctx.beginPath(); ctx.arc(fx, hy + 5.5, 2.8, Math.PI * 0.18, Math.PI * 0.82); ctx.stroke();
+    // the player wears a tiny sprout so you can spot yourself
+    if (c.player) {
+      ctx.strokeStyle = '#6f9a58'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, hy - R); ctx.lineTo(0, hy - R - 8); ctx.stroke();
+      ctx.fillStyle = '#8fbf6a';
+      ctx.beginPath(); ctx.ellipse(-5, hy - R - 9, 5, 2.6, 0.5, 0, 7); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(5, hy - R - 9, 5, 2.6, -0.5, 0, 7); ctx.fill();
+    }
+    if (c.emote) {
+      const a = Math.min(1, c.emote.t * 2), ry = hy - R - 16 - (1.4 - c.emote.t) * 10;
+      ctx.globalAlpha = a; ctx.fillStyle = '#e58aa0';
+      ctx.beginPath(); ctx.moveTo(18, ry + 6); ctx.bezierCurveTo(8, ry - 2, 12, ry - 9, 18, ry - 3); ctx.bezierCurveTo(24, ry - 9, 28, ry - 2, 18, ry + 6); ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+    ctx.restore();
+  }
+
+  function drawBloom(x, y, col, s) {
+    ctx.fillStyle = col;
+    for (let k = 0; k < 6; k++) { const a = (k / 6) * Math.PI * 2; ctx.beginPath(); ctx.ellipse(x + Math.cos(a) * 4.4 * s, y + Math.sin(a) * 4.4 * s, 3.4 * s, 2.6 * s, a, 0, 7); ctx.fill(); }
+    ctx.fillStyle = '#efb93f'; ctx.beginPath(); ctx.arc(x, y, 2.6 * s, 0, 7); ctx.fill();
+  }
+
+  // harvested produce, centred on (x, y)
+  function drawProduce(k, x, y, s, col) {
+    ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+    if (k === 'flower') {
+      ctx.strokeStyle = '#6f9a58'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-2, 12); ctx.lineTo(0, -6); ctx.stroke();
+      drawBloom(0, -8, col || '#f2a7b8', 1);
+    } else if (k === 'carrot') {
+      ctx.fillStyle = clayGrad(0, 0, 9, '#f4a35e', CROPS.carrot.color, '#c96a26');
+      ctx.beginPath(); ctx.moveTo(-6, -5); ctx.quadraticCurveTo(0, -9, 6, -5); ctx.quadraticCurveTo(3, 6, 0, 13); ctx.quadraticCurveTo(-3, 6, -6, -5); ctx.fill();
+      ctx.fillStyle = '#8fbf6a';
+      for (const a of [-0.5, 0, 0.5]) { ctx.beginPath(); ctx.ellipse(Math.sin(a) * 6, -11, 2.4, 5, a, 0, 7); ctx.fill(); }
+    } else if (k === 'tomato') {
+      ctx.fillStyle = clayGrad(0, 0, 8, '#ec7a68', CROPS.tomato.color, '#b03a2c');
+      ctx.beginPath(); ctx.ellipse(0, 0, 8, 7, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = '#6f9a58';
+      for (let i = 0; i < 5; i++) { const a = (i / 5) * Math.PI * 2; ctx.beginPath(); ctx.ellipse(Math.cos(a) * 3, -6 + Math.sin(a) * 1.4, 3, 1.3, a, 0, 7); ctx.fill(); }
+    } else if (k === 'strawberry') {
+      ctx.fillStyle = clayGrad(0, 0, 8, '#f07686', CROPS.strawberry.color, '#b52f44');
+      ctx.beginPath(); ctx.moveTo(-7, -4); ctx.quadraticCurveTo(-8, 4, 0, 10); ctx.quadraticCurveTo(8, 4, 7, -4); ctx.quadraticCurveTo(0, -8, -7, -4); ctx.fill();
+      ctx.fillStyle = '#fbe9a6';
+      for (const [sx, sy] of [[-3, -1], [2, -2], [-1, 3], [3, 3], [0, 7]]) { ctx.beginPath(); ctx.arc(sx, sy, 0.9, 0, 7); ctx.fill(); }
+      ctx.fillStyle = '#6f9a58';
+      for (const a of [-0.8, 0, 0.8]) { ctx.beginPath(); ctx.ellipse(Math.sin(a) * 4, -6, 1.6, 3.4, a, 0, 7); ctx.fill(); }
+    }
+    ctx.restore();
+  }
+
+  function drawPlot(pl) {
+    const cx = pl.x + pl.w / 2;
+    ctx.fillStyle = pl.watered ? '#7b5b40' : '#a07a53';
+    rr(ctx, pl.x, pl.y, pl.w, pl.h, 10); ctx.fill();
+    ctx.strokeStyle = 'rgba(60,40,25,0.18)'; ctx.lineWidth = 2;
+    for (let i = 1; i < 3; i++) { ctx.beginPath(); ctx.moveTo(pl.x + 8, pl.y + i * pl.h / 3); ctx.lineTo(pl.x + pl.w - 8, pl.y + i * pl.h / 3); ctx.stroke(); }
+    const by = pl.y + pl.h * 0.62, sway = Math.sin(G.t * 1.6 + pl.x) * 1.5;
+    if (pl.stage === 1) { ctx.fillStyle = '#6b4c33'; ctx.beginPath(); ctx.ellipse(cx, by, 9, 4, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#e9d6ae'; ctx.beginPath(); ctx.arc(cx - 3, by - 1, 1.4, 0, 7); ctx.arc(cx + 3, by, 1.4, 0, 7); ctx.fill(); }
+    if (pl.stage >= 2) {
+      const k = pl.crop || 'flower';
+      if (k === 'carrot') {
+        // a leafy tuft; the orange shoulder peeks out of the soil when ready
+        const n = pl.stage === 2 ? 2 : 4, h = pl.stage === 2 ? 9 : 17;
+        if (pl.stage === 4) { ctx.fillStyle = clayGrad(cx, by, 8, '#f4a35e', CROPS.carrot.color, '#c96a26'); ctx.beginPath(); ctx.ellipse(cx, by + 1, 8, 5, 0, 0, 7); ctx.fill(); }
+        ctx.strokeStyle = '#6f9a58'; ctx.lineWidth = 2.6;
+        for (let i = 0; i < n; i++) {
+          const tx = cx + (i - (n - 1) / 2) * 5 + sway;
+          ctx.beginPath(); ctx.moveTo(cx, by - 2); ctx.quadraticCurveTo(cx, by - h * 0.6, tx, by - h); ctx.stroke();
+          ctx.fillStyle = '#8fbf6a'; ctx.beginPath(); ctx.ellipse(tx, by - h, 3.4, 2.4, 0, 0, 7); ctx.fill();
+        }
+      } else {
+        const h = pl.stage === 2 ? 10 : k === 'strawberry' ? 14 : 22;
+        ctx.strokeStyle = '#6f9a58'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(cx, by); ctx.quadraticCurveTo(cx + sway, by - h / 2, cx + sway, by - h); ctx.stroke();
+        ctx.fillStyle = '#8fbf6a';
+        ctx.beginPath(); ctx.ellipse(cx - 6, by - h * 0.45, 6, 3, 0.5, 0, 7); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(cx + 6, by - h * 0.55, 6, 3, -0.5, 0, 7); ctx.fill();
+        if (pl.stage === 3) {
+          if (k === 'flower') { ctx.fillStyle = shade(FLOWER_COLORS[pl.color], -0.1); ctx.beginPath(); ctx.ellipse(cx + sway, by - h - 3, 4, 5.5, 0, 0, 7); ctx.fill(); }
+          else if (k === 'tomato') { ctx.fillStyle = '#9cc46e'; ctx.beginPath(); ctx.arc(cx + sway + 4, by - h + 3, 4.5, 0, 7); ctx.fill(); }
+          else drawBloom(cx + sway, by - h - 2, '#fbf7ef', 0.7);
+        }
+        if (pl.stage === 4) {
+          if (k === 'flower') drawBloom(cx + sway, by - h - 4, FLOWER_COLORS[pl.color], 1.25);
+          else if (k === 'tomato') { drawProduce('tomato', cx + sway + 5, by - h + 3, 0.85); drawProduce('tomato', cx + sway - 6, by - h + 9, 0.7); }
+          else { drawProduce('strawberry', cx + sway - 5, by - h + 4, 0.75); drawProduce('strawberry', cx + sway + 6, by - h + 7, 0.7); }
+        }
+      }
+    }
+    if (pl.stage >= 1 && pl.stage < 4) {
+      if (!pl.watered) {
+        const yy = pl.y - 12 + Math.sin(G.t * 3 + pl.x) * 2;
+        ctx.fillStyle = '#fffaf1'; ctx.beginPath(); ctx.arc(pl.x + pl.w - 6, yy, 8, 0, 7); ctx.fill();
+        ctx.fillStyle = '#7fbfd6'; ctx.beginPath(); ctx.moveTo(pl.x + pl.w - 6, yy - 5); ctx.quadraticCurveTo(pl.x + pl.w - 1, yy + 2, pl.x + pl.w - 6, yy + 4); ctx.quadraticCurveTo(pl.x + pl.w - 11, yy + 2, pl.x + pl.w - 6, yy - 5); ctx.fill();
+      } else {
+        ctx.strokeStyle = 'rgba(255,250,241,0.9)'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(pl.x + pl.w - 6, pl.y - 10, 6, -Math.PI / 2, -Math.PI / 2 + (pl.grow / CROPS[pl.crop || 'flower'].grow) * Math.PI * 2); ctx.stroke();
+      }
+    }
+    if (pl.stage === 4) {
+      const yy = pl.y - 12 + Math.sin(G.t * 3 + pl.x) * 2;
+      ctx.fillStyle = '#fffaf1'; ctx.beginPath(); ctx.arc(pl.x + pl.w - 6, yy, 8, 0, 7); ctx.fill();
+      ctx.fillStyle = '#c8714f'; ctx.font = `700 12px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('!', pl.x + pl.w - 6, yy + 1);
+    }
+  }
+
+  function drawPond() {
+    const { cx, cy, rx, ry } = pond;
+    ctx.fillStyle = '#e7dcc4'; ctx.beginPath(); ctx.ellipse(cx, cy + 4, rx + 14, ry + 12, 0, 0, 7); ctx.fill();
+    const gr = ctx.createRadialGradient(cx - 40, cy - 30, 10, cx, cy, rx);
+    gr.addColorStop(0, '#bfe2dc'); gr.addColorStop(1, '#86c0bb');
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 2;
+    for (let i = 0; i < 3; i++) {
+      const k = ((G.t * 0.25 + i / 3) % 1);
+      ctx.globalAlpha = 1 - k; ctx.beginPath(); ctx.ellipse(cx + 30 - i * 40, cy + 10 - i * 12, 10 + k * 26, 4 + k * 10, 0, 0, 7); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    for (const [lx, ly, s] of [[cx - 80, cy + 20, 1], [cx + 70, cy - 30, 0.8], [cx + 20, cy + 50, 0.9]]) {
+      ctx.fillStyle = '#8fbf6a'; ctx.beginPath(); ctx.arc(lx, ly, 11 * s, 0.3, Math.PI * 2 - 0.1); ctx.lineTo(lx, ly); ctx.fill();
+    }
+    drawBloom(cx + 74, cy - 33, '#f6c7d3', 0.8);
+    const sr = mulberry32(3);
+    for (let i = 0; i < 26; i++) {
+      const a = (i / 26) * Math.PI * 2 + sr() * 0.1;
+      ctx.fillStyle = sr() < 0.5 ? '#d8cbb1' : '#cdbf9f';
+      ctx.beginPath(); ctx.ellipse(cx + Math.cos(a) * (rx + 8), cy + Math.sin(a) * (ry + 7), 8 + sr() * 4, 5 + sr() * 2, 0, 0, 7); ctx.fill();
+    }
+  }
+
+  function drawTree(t) {
+    ctx.save(); ctx.translate(t.x, t.y); ctx.scale(t.s, t.s);
+    ctx.fillStyle = 'rgba(100,80,50,0.18)'; ctx.beginPath(); ctx.ellipse(0, 0, 38, 11, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = clayGrad(0, -20, 12, '#b5875f', '#9a6c48', '#7c5236'); rr(ctx, -8, -44, 16, 46, 7); ctx.fill();
+    const sway = Math.sin(G.t * 0.8 + t.x) * 1.5;
+    for (const [x, y, r] of [[-22, -66, 26], [22, -68, 26], [0, -92, 30], [0, -62, 28]]) {
+      ctx.fillStyle = clayGrad(x + sway, y, r, '#b9d68f', '#93b86c', '#77a058');
+      ctx.beginPath(); ctx.arc(x + sway, y, r, 0, 7); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawHouse() {
+    const { x, y, w, h } = house;
+    ctx.fillStyle = 'rgba(100,80,50,0.18)'; ctx.beginPath(); ctx.ellipse(x + w / 2, y + h, w * 0.62, 14, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = clayGrad(x + w / 2, y + h / 2, w * 0.7, '#fdf4e3', '#f1e1c4', '#dcc39d');
+    rr(ctx, x, y, w, h, 14); ctx.fill();
+    // chimney + roof
+    ctx.fillStyle = '#b8664a'; rr(ctx, x + w - 46, y - 64, 20, 40, 5); ctx.fill();
+    ctx.fillStyle = clayGrad(x + w / 2, y - 30, w * 0.7, '#df8e6d', '#c8714f', '#a85a3d');
+    ctx.beginPath(); ctx.moveTo(x - 18, y + 14);
+    ctx.quadraticCurveTo(x + w / 2, y - 92, x + w + 18, y + 14);
+    ctx.quadraticCurveTo(x + w / 2, y + 2, x - 18, y + 14); ctx.fill();
+    // door
+    ctx.fillStyle = clayGrad(x + w / 2, y + h - 22, 24, '#b5875f', '#9a6c48', '#7c5236');
+    ctx.beginPath(); ctx.moveTo(x + w / 2 - 16, y + h); ctx.lineTo(x + w / 2 - 16, y + h - 32); ctx.arc(x + w / 2, y + h - 32, 16, Math.PI, 0); ctx.lineTo(x + w / 2 + 16, y + h); ctx.fill();
+    ctx.fillStyle = '#f0c35a'; ctx.beginPath(); ctx.arc(x + w / 2 + 9, y + h - 22, 2.4, 0, 7); ctx.fill();
+    // round windows, warm at night
+    const glow = nightAmount();
+    for (const wx of [x + 34, x + w - 34]) {
+      ctx.fillStyle = '#7f9b6b'; ctx.beginPath(); ctx.arc(wx, y + 48, 15, 0, 7); ctx.fill();
+      ctx.fillStyle = glow > 0.1 ? `rgba(255,214,140,${0.6 + glow * 0.4})` : '#cfe6ee';
+      ctx.beginPath(); ctx.arc(wx, y + 48, 11, 0, 7); ctx.fill();
+      ctx.strokeStyle = '#7f9b6b'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(wx - 11, y + 48); ctx.lineTo(wx + 11, y + 48); ctx.moveTo(wx, y + 37); ctx.lineTo(wx, y + 59); ctx.stroke();
+    }
+    // flower box
+    ctx.fillStyle = '#9a6c48'; rr(ctx, x + 14, y + h - 16, 36, 10, 4); ctx.fill();
+    drawBloom(x + 22, y + h - 19, '#f2a7b8', 0.7); drawBloom(x + 36, y + h - 20, '#f4d35e', 0.7);
+  }
+
+  function drawShop() {
+    const { x, y, w, h } = shop;
+    ctx.fillStyle = 'rgba(100,80,50,0.18)'; ctx.beginPath(); ctx.ellipse(x + w / 2, y + h, w * 0.6, 12, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#9a6c48'; rr(ctx, x + 4, y - 58, 8, h + 58, 4); ctx.fill(); rr(ctx, x + w - 12, y - 58, 8, h + 58, 4); ctx.fill();
+    ctx.fillStyle = clayGrad(x + w / 2, y + h / 2, w * 0.6, '#d9ab7c', '#c99a6b', '#a97b50'); rr(ctx, x, y + 6, w, h - 6, 10); ctx.fill();
+    // crates of flowers and fish on the counter
+    for (let i = 0; i < 4; i++) drawBloom(x + 20 + i * 14, y + 6, FLOWER_COLORS[i], 0.75);
+    ctx.fillStyle = '#9cc7d3'; ctx.beginPath(); ctx.ellipse(x + w - 30, y + 5, 10, 5, 0.2, 0, 7); ctx.fill();
+    // scalloped awning
+    const ay = y - 66;
+    for (let i = 0; i < 7; i++) {
+      ctx.fillStyle = i % 2 ? '#fbf3e4' : '#c95b45';
+      const sx = x - 8 + i * ((w + 16) / 7), sw2 = (w + 16) / 7;
+      ctx.beginPath(); ctx.moveTo(sx, ay); ctx.lineTo(sx + sw2, ay); ctx.lineTo(sx + sw2, ay + 22); ctx.arc(sx + sw2 / 2, ay + 22, sw2 / 2, 0, Math.PI); ctx.fill();
+    }
+    ctx.fillStyle = '#fffaf1'; rr(ctx, x + w / 2 - 30, ay - 26, 60, 22, 10); ctx.fill();
+    ctx.fillStyle = '#4a3a2e'; ctx.font = `700 14px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(G.en ? 'Shop' : '가게', x + w / 2, ay - 14);
+  }
+
+  function drawLamp(l) {
+    ctx.fillStyle = 'rgba(100,80,50,0.18)'; ctx.beginPath(); ctx.ellipse(l.x, l.y, 10, 4, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#6b5a4a'; rr(ctx, l.x - 2.5, l.y - 58, 5, 58, 2); ctx.fill();
+    ctx.fillStyle = nightAmount() > 0.1 ? '#ffe2a3' : '#f6eddc'; ctx.beginPath(); ctx.arc(l.x, l.y - 62, 8, 0, 7); ctx.fill();
+    ctx.fillStyle = '#6b5a4a'; rr(ctx, l.x - 9, l.y - 73, 18, 5, 2); ctx.fill();
+  }
+
+  function drawMatProps() {
+    // basket, teapot and cups on the picnic mat
+    const x = mat.x, y = mat.y;
+    ctx.fillStyle = clayGrad(x + 40, y + 40, 16, '#d9ab7c', '#c08a5a', '#9a6c48'); rr(ctx, x + 26, y + 30, 30, 20, 6); ctx.fill();
+    ctx.strokeStyle = '#9a6c48'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(x + 41, y + 32, 11, Math.PI, 0); ctx.stroke();
+    ctx.fillStyle = clayGrad(x + 120, y + 60, 12, '#fffdf6', '#f3ead8', '#d9cbb0'); ctx.beginPath(); ctx.arc(x + 120, y + 62, 10, 0, 7); ctx.fill();
+    ctx.fillStyle = '#7f9b6b'; ctx.beginPath(); ctx.arc(x + 117, y + 62, 2.5, 0, 7); ctx.arc(x + 123, y + 60, 2.5, 0, 7); ctx.fill();
+    for (const cx of [x + 140, x + 100]) { ctx.fillStyle = '#fbf6ec'; rr(ctx, cx - 5, y + 74, 10, 9, 3); ctx.fill(); }
+  }
+
+  function drawBubble(c) {
+    if (!c.bubble) return;
+    const b = c.bubble, a = Math.min(1, b.t * 3);
+    ctx.save(); ctx.globalAlpha = a;
+    ctx.font = `500 13px ${FONT}`;
+    const w1 = ctx.measureText(b.ko).width;
+    ctx.font = `500 10.5px ${FONT}`;
+    const w2 = G.en ? ctx.measureText(b.en).width : 0;
+    const w = Math.max(w1, w2) + 22, h = G.en ? 40 : 26;
+    const x = c.x - w / 2, y = c.y - 96 - h;
+    ctx.fillStyle = 'rgba(74,58,46,0.12)'; rr(ctx, x, y + 2, w, h, 12); ctx.fill();
+    ctx.fillStyle = '#fffaf1'; rr(ctx, x, y, w, h, 12); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(c.x - 5, y + h - 1); ctx.lineTo(c.x, y + h + 6); ctx.lineTo(c.x + 5, y + h - 1); ctx.fill();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#4a3a2e';
+    ctx.font = `500 13px ${FONT}`; ctx.fillText(b.ko, c.x, y + 13);
+    if (G.en) { ctx.fillStyle = '#8a7462'; ctx.font = `500 10.5px ${FONT}`; ctx.fillText(b.en, c.x, y + 29); }
+    ctx.restore();
+  }
+
+  function drawName(c) {
+    ctx.font = `700 11px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.fillStyle = 'rgba(74,58,46,0.55)'; ctx.fillText(c.name, c.x, c.y + 6);
+  }
+
+  function drawFishing() {
+    const f = player.fishing; if (!f) return;
+    const hx = player.x + 13 * player.dir, hy = player.y - 22;
+    const tx = player.x + 40 * player.dir, ty = player.y - 78;
+    ctx.strokeStyle = '#9a6c48'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(tx, ty); ctx.stroke();
+    const dip = f.phase === 'bite' ? 3 + Math.sin(G.t * 30) * 2 : Math.sin(G.t * 3) * 1.2;
+    const bx = f.bob.x, by = f.bob.y + dip;
+    ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(tx, ty); ctx.quadraticCurveTo((tx + bx) / 2, Math.max(ty, by) + 20, bx, by); ctx.stroke();
+    ctx.fillStyle = '#fffaf1'; ctx.beginPath(); ctx.arc(bx, by, 5, 0, 7); ctx.fill();
+    ctx.fillStyle = '#c95b45'; ctx.beginPath(); ctx.arc(bx, by, 5, Math.PI, 0); ctx.fill();
+    if (f.phase === 'bite') {
+      ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.ellipse(bx, by + 3, 12 + Math.sin(G.t * 20) * 3, 4, 0, 0, 7); ctx.stroke();
+      ctx.fillStyle = '#fffaf1'; ctx.beginPath(); ctx.arc(player.x, player.y - 112, 13, 0, 7); ctx.fill();
+      ctx.fillStyle = '#c8714f'; ctx.font = `700 20px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('!', player.x, player.y - 111);
+    }
+  }
+
+  function nightAmount() {
+    const p = G.time;
+    if (p < 0.62 || p > 0.98) return 0;
+    if (p < 0.72) return (p - 0.62) / 0.1;
+    if (p < 0.9) return 1;
+    return 1 - (p - 0.9) / 0.08;
+  }
+  const TINT = [[0, 255, 225, 190, 0.07], [0.2, 255, 245, 220, 0], [0.55, 255, 245, 220, 0], [0.64, 255, 150, 100, 0.16], [0.72, 46, 48, 104, 0.4], [0.9, 46, 48, 104, 0.4], [0.97, 255, 175, 165, 0.12], [1, 255, 225, 190, 0.07]];
+  function tint() {
+    const p = G.time;
+    for (let i = 0; i < TINT.length - 1; i++) {
+      const a = TINT[i], b = TINT[i + 1];
+      if (p >= a[0] && p <= b[0]) { const k = (p - a[0]) / (b[0] - a[0]); return [lerp(a[1], b[1], k), lerp(a[2], b[2], k), lerp(a[3], b[3], k), lerp(a[4], b[4], k)]; }
+    }
+    return [0, 0, 0, 0];
+  }
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const cw = canvas.clientWidth, ch = canvas.clientHeight;
+    canvas.width = Math.round(cw * dpr); canvas.height = Math.round(ch * dpr);
+    zoom = clamp(Math.min(cw, ch) / 430, 0.75, 1.9);
+    vw = cw / zoom; vh = ch / zoom;
+  }
+  window.addEventListener('resize', resize);
+
+  function draw() {
+    const tx = clamp(player.x, Math.min(vw / 2, W / 2), Math.max(W - vw / 2, W / 2));
+    const ty = clamp(player.y - 30, Math.min(vh / 2, H / 2), Math.max(H - vh / 2, H / 2));
+    cam.x = lerp(cam.x, tx, 0.12); cam.y = lerp(cam.y, ty, 0.12);
+    const s = zoom * dpr;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = '#9dbd7c'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(s, 0, 0, s, Math.round((-cam.x + vw / 2) * s), Math.round((-cam.y + vh / 2) * s));
+
+    ctx.drawImage(ground, 0, 0, W, H);
+    drawPond();
+    plots.forEach(drawPlot);
+    drawMatProps();
+    if (player.goal && player.goal.plain) { ctx.strokeStyle = 'rgba(255,250,241,0.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(player.goal.x, player.goal.y, 10, 4, 0, 0, 7); ctx.stroke(); }
+
+    const list = [];
+    trees.forEach((t) => list.push([t.y, () => drawTree(t)]));
+    lamps.forEach((l) => list.push([l.y, () => drawLamp(l)]));
+    list.push([house.y + house.h, drawHouse]);
+    list.push([shop.y + shop.h, drawShop]);
+    [player, ...npcs].forEach((c) => list.push([c.y, () => { drawMong(c); if (!c.player) drawName(c); }]));
+    list.sort((a, b) => a[0] - b[0]).forEach(([, fn]) => fn());
+
+    drawFishing();
+    for (const q of parts) { ctx.globalAlpha = clamp(q.life / q.max, 0, 1); ctx.fillStyle = q.c; ctx.beginPath(); ctx.arc(q.x, q.y, q.r, 0, 7); ctx.fill(); }
+    ctx.globalAlpha = 1;
+
+    const night = nightAmount();
+    // butterflies by day
+    if (night < 0.8) for (const f of flies) {
+      const flap = Math.abs(Math.sin(G.t * 12 + f.p)) * 4 + 1;
+      ctx.globalAlpha = 1 - night; ctx.fillStyle = f.c;
+      ctx.beginPath(); ctx.ellipse(f.x - 3, f.y, flap, 4, 0.3, 0, 7); ctx.ellipse(f.x + 3, f.y, flap, 4, -0.3, 0, 7); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // time-of-day tint over the world
+    const [r, g, b, a] = tint();
+    if (a > 0.005) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = `rgba(${r | 0},${g | 0},${b | 0},${a})`; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.setTransform(s, 0, 0, s, Math.round((-cam.x + vw / 2) * s), Math.round((-cam.y + vh / 2) * s)); }
+
+    if (night > 0.02) {
+      ctx.globalCompositeOperation = 'lighter';
+      const glow = (x, y, rad, al) => { const gr = ctx.createRadialGradient(x, y, 0, x, y, rad); gr.addColorStop(0, `rgba(255,200,120,${al})`); gr.addColorStop(1, 'rgba(255,200,120,0)'); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(x, y, rad, 0, 7); ctx.fill(); };
+      lamps.forEach((l) => glow(l.x, l.y - 62, 90, 0.35 * night));
+      glow(house.x + 34, house.y + 48, 40, 0.3 * night); glow(house.x + house.w - 34, house.y + 48, 40, 0.3 * night);
+      for (const f of flies) { const tw = 0.5 + 0.5 * Math.sin(G.t * 3 + f.p * 5); glow(f.x, f.y, 10, 0.5 * night * tw); }
+      ctx.globalCompositeOperation = 'source-over';
+    }
+
+    [player, ...npcs].forEach(drawBubble);
+
+    if (sleepFade > 0) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = `rgba(42,38,70,${clamp(1 - Math.abs(sleepFade - 0.8) / 0.8, 0, 1)})`; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+  }
+
+  let last = performance.now(), hudT = 0;
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    update(dt);
+    draw();
+    hudT -= dt; if (hudT <= 0) { hudT = 0.25; syncHud(); }
+    requestAnimationFrame(frame);
+  }
+
+  function boot(data) {
+    const restored = load((data && data.v === 1 && data) || store.get('donggle-village', null));
+    player.shirt = (SHIRTS.find((s) => s.id === G.shirt) || SHIRTS[2]).c;
+    if (restored) $('startBtn').textContent = '이어서 놀기';
+    syncSwatches(); syncToggles(); syncHud(); resize();
+    ground = buildGround();
+    cam.x = player.x; cam.y = player.y;
+    openSheet('startSheet');
+    if (document.fonts && document.fonts.load) { document.fonts.load(`700 14px ${FONT}`).catch(() => {}); document.fonts.load(`500 13px ${FONT}`).catch(() => {}); }
+    requestAnimationFrame(frame);
+  }
+  window.claude?.hot?.snapshot?.(() => save());
+  window.claude?.hot?.ready ? window.claude.hot.ready(boot) : boot(window.claude?.hot?.data ?? {});
+  window.addEventListener('pagehide', () => { if (G.started) persist(); });
+})();
+</script>
+</body>
+</html>
