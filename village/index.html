@@ -234,6 +234,8 @@
   .dex-card.unknown img { filter: brightness(0); opacity: 0.18; }
   .dex-card b { font-size: 14px; font-weight: 700; }
   .dex-card span { font-size: 12px; color: var(--sub); font-variant-numeric: tabular-nums; }
+  .btn-row { display: flex; gap: 8px; width: 100%; }
+  .btn-row .btn { flex: 1; padding-inline: 8px; }
   .pill.tap { pointer-events: auto; cursor: pointer; border: 0; color: var(--ink); font-family: var(--font); }
 
   /* house: bottom bar, decorating sheet, placing banner */
@@ -276,9 +278,8 @@
   <div class="pills">
     <span class="pill" id="clock">1일째 · 아침</span>
     <span class="pill" title="코인"><img class="pico" data-icon="coin" alt="코인"><span id="coins">0</span></span>
-    <span class="pill" title="씨앗"><img class="pico" data-icon="seed" alt="씨앗"><span id="seeds">0</span></span>
-    <span class="pill" title="작물"><img class="pico" data-icon="carrot" alt="작물"><span id="crops">0</span></span>
-    <button class="pill tap" id="fishPill" type="button" title="물고기 도감" aria-label="물고기 도감 열기"><img class="pico" data-icon="crucian" alt=""><span id="fish">0</span></button>
+    <button class="pill tap" id="bagPill" type="button" aria-label="가방 열기"><img class="pico" data-icon="bag" alt=""><span id="bagN">가방 0</span></button>
+    <button class="pill tap" id="dexPill" type="button" aria-label="도감 열기"><img class="pico" data-icon="book" alt=""><span id="dexN">도감 0</span></button>
   </div>
   <div class="tools">
     <button class="round" id="enBtn" type="button" aria-pressed="false" aria-label="영어 같이 보기">EN</button>
@@ -350,14 +351,27 @@
   <div class="catch-size" id="catchSize">23<small>cm</small></div>
   <p class="muted" id="catchNote"></p>
   <button class="btn" id="catchOk" type="button">가방에 넣기</button>
-  <button class="btn soft" id="catchDex" type="button">도감 보기</button>
+  <div class="btn-row"><button class="btn soft" id="catchRelease" type="button">놓아주기</button><button class="btn soft" id="catchDex" type="button">도감 보기</button></div>
 </div>
 
 <div class="sheet" id="dexSheet" hidden>
-  <div class="row-head"><h2>물고기 도감</h2><span class="muted" id="dexCount"></span></div>
+  <div class="row-head"><h2>도감</h2><span class="muted" id="dexCount"></span></div>
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" id="dtab-crop" aria-selected="false">채소·꽃</button>
+    <button type="button" role="tab" id="dtab-fruit" aria-selected="false">과일</button>
+    <button type="button" role="tab" id="dtab-fish" aria-selected="true">물고기</button>
+    <button type="button" role="tab" id="dtab-bug" aria-selected="false">곤충</button>
+  </div>
   <div class="dex" id="dexList"></div>
-  <p class="muted">연못을 누르거나 낚시터 다리에서 낚시할 수 있어요. 어떤 물고기는 밤에만 나와요.</p>
+  <p class="muted" id="dexTip"></p>
   <button class="btn soft" id="dexClose" type="button">닫기</button>
+</div>
+
+<div class="sheet" id="bagSheet" hidden>
+  <div class="row-head"><h2>가방</h2><span class="muted" id="bagTotal"></span></div>
+  <div class="market" id="bagList"></div>
+  <p class="muted">팔고 싶으면 도담이네 가게로 가요. 과일과 채소를 먹으면 30초 동안 신나게 빨리 걸어요.</p>
+  <button class="btn soft" id="bagClose" type="button">닫기</button>
 </div>
 
 <div class="room-bar" id="roomBar" hidden>
@@ -436,6 +450,9 @@
   const pond = { cx: 1060, cy: 740, rx: 155, ry: 92 };
   const mat = { x: 690, y: 470, w: 170, h: 110 };
   const trees = [[620, 300], [140, 620], [470, 840], [1250, 190], [860, 175], [1290, 520], [720, 880], [150, 210], [1220, 900], [400, 600]].map(([x, y], i) => ({ x, y, s: 0.85 + ((i * 37) % 10) / 25 }));
+  const FRUIT_TREES = ['apple', null, null, 'peach', null, 'orange', 'pear', null, null, 'cherry'];
+  const FRUIT_SPOTS = [[-26, -58], [20, -82], [12, -50]];
+  trees.forEach((t, i) => { t.fruit = FRUIT_TREES[i]; t.n = t.fruit ? 2 : 0; t.regrow = 0; t.shake = 0; });
   const lamps = [{ x: 640, y: 450 }, { x: 940, y: 395 }, { x: 900, y: 690 }];
   const plots = [];
   for (let r = 0; r < 2; r++) for (let c = 0; c < 3; c++) plots.push({ x: 212 + c * 64, y: 345 + r * 56, w: 54, h: 40, stage: 0, watered: false, grow: 0, color: 0 });
@@ -491,6 +508,29 @@
     koi:      { ko: '비단잉어', en: 'Koi', base: 45, color: '#f6efe4', spots: '#e05a47', size: [40, 80], weight: 3, zone: 0.13, speed: 1.6 },
   };
 
+  // fruit trees: one fruit grows back every REGROW seconds, up to 3 per tree
+  const FRUITS = {
+    apple:  { ko: '사과', en: 'Apple', base: 12, color: '#e0473b', taste: '아삭아삭 달콤해요' },
+    peach:  { ko: '복숭아', en: 'Peach', base: 16, color: '#f6a487', taste: '말랑말랑 향긋해요' },
+    orange: { ko: '귤', en: 'Tangerine', base: 10, color: '#f39a2e', taste: '새콤달콤 상큼해요' },
+    pear:   { ko: '배', en: 'Pear', base: 14, color: '#e3cc68', taste: '시원하고 촉촉해요' },
+    cherry: { ko: '체리', en: 'Cherry', base: 20, color: '#c0283a', taste: '톡 터지는 맛이에요' },
+  };
+  const REGROW = 45;
+  // bugs: where and when they appear, how they move, how easy they are to net
+  const BUGS = {
+    butterfly:   { ko: '나비', en: 'Butterfly', base: 6, size: [4, 8], unit: 'cm', time: 'day', where: 'flower', move: 'fly', weight: 30, catch: 0.85, color: '#f6c7d3' },
+    bee:         { ko: '꿀벌', en: 'Honeybee', base: 8, size: [12, 16], unit: 'mm', time: 'day', where: 'garden', move: 'fly', weight: 22, catch: 0.8, color: '#f2c14e' },
+    ladybug:     { ko: '무당벌레', en: 'Ladybug', base: 5, size: [5, 8], unit: 'mm', time: 'day', where: 'grass', move: 'crawl', weight: 24, catch: 0.95, color: '#d9483b' },
+    grasshopper: { ko: '메뚜기', en: 'Grasshopper', base: 7, size: [3, 6], unit: 'cm', time: 'day', where: 'grass', move: 'hop', weight: 20, catch: 0.75, color: '#8cbf5a' },
+    dragonfly:   { ko: '잠자리', en: 'Dragonfly', base: 12, size: [5, 9], unit: 'cm', time: 'day', where: 'pond', move: 'dart', weight: 12, catch: 0.65, color: '#5b9bd5' },
+    cicada:      { ko: '매미', en: 'Cicada', base: 14, size: [3, 6], unit: 'cm', time: 'day', where: 'tree', move: 'perch', weight: 10, catch: 0.7, color: '#8a6a48' },
+    firefly:     { ko: '반딧불이', en: 'Firefly', base: 15, size: [10, 18], unit: 'mm', time: 'night', where: 'pond', move: 'fly', weight: 30, catch: 0.8, color: '#d8e85a' },
+    beetle:      { ko: '장수풍뎅이', en: 'Rhino beetle', base: 35, size: [4, 8], unit: 'cm', time: 'night', where: 'tree', move: 'perch', weight: 6, catch: 0.55, color: '#4a3326' },
+  };
+  const TASTE = { carrot: '아삭하고 달큰해요', tomato: '새콤하고 즙이 많아요', strawberry: '달콤하고 향긋해요' };
+  const edible = (k) => !!FRUITS[k] || !!TASTE[k];
+
   // ---------- house ----------
   // w,h = floor tiles; rise = how tall it stands; walk = can be walked over (rugs, cushions)
   const FURN = {
@@ -522,7 +562,10 @@
     moss:    { ko: '이끼 카펫', price: 12, c: '#b9cf98', s: '#a8c186' },
   };
   const WALL_SLOTS = 5;
-  const ITEMS = { ...CROPS, ...FISH };
+  const ITEMS = { ...CROPS, ...FRUITS, ...FISH, ...BUGS };
+  const FRUIT_KEYS = Object.keys(FRUITS), BUG_KEYS = Object.keys(BUGS);
+  const DEX_ALL = [...Object.keys(CROPS), ...FRUIT_KEYS, ...Object.keys(FISH), ...BUG_KEYS];
+  const found = (k) => { const r = G.dex[k]; return !!r && (r.n > 0 || !!r.ate); };
   const villageBlocked = (x, y) => blocked(x, y);
   const BANK_RATE = 0.05;
   // Korean object particle: 당근을 / 토마토를
@@ -534,7 +577,7 @@
     started: false, t: 0, day: 1, time: 0.05,
     coins: 20, bank: 0,
     seeds: { carrot: 3, flower: 2, tomato: 0, strawberry: 0 },
-    inv: { carrot: 0, flower: 0, tomato: 0, strawberry: 0, minnow: 0, crucian: 0, carp: 0, catfish: 0, goldfish: 0, koi: 0 },
+    inv: Object.fromEntries(Object.keys(ITEMS).map((k) => [k, 0])),
     dex: {},
     home: {
       owned: {},
@@ -553,12 +596,13 @@
   rollPrices(); G.prev = { ...G.prices };
 
   function save() {
-    return { v: 2, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
+    return { v: 2, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
   }
   function load(s) {
     if (!s || s.v !== 2) return false;
     Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home });
     (s.plots || []).forEach((p, i) => { if (plots[i]) Object.assign(plots[i], p); });
+    (s.trees || []).forEach(([n, r], i) => { if (trees[i] && trees[i].fruit) { trees[i].n = n; trees[i].regrow = r; } });
     return true;
   }
   let saveTimer = 0;
@@ -611,7 +655,6 @@
   function burst(x, y, n, color, opts = {}) {
     for (let i = 0; i < n; i++) parts.push({ x, y, vx: rand(-1, 1) * (opts.spread || 60), vy: rand(-1.4, -0.3) * (opts.up || 80), g: opts.g ?? 260, life: opts.life || 0.7, max: opts.life || 0.7, r: rand(1.5, 3.2), c: color });
   }
-  const flies = Array.from({ length: 6 }, (_, i) => ({ x: rand(200, 1200), y: rand(150, 900), p: Math.random() * 9, c: ['#f6c7d3', '#fbe9a6', '#cfe3f3'][i % 3] }));
 
   // ---------- audio ----------
   let ac = null;
@@ -638,6 +681,8 @@
     catch: () => { tone(587, 0.12); tone(784, 0.12, 'triangle', 0.05, 0, 0.09); tone(1175, 0.3, 'triangle', 0.05, 0, 0.18); },
     soft: () => tone(440, 0.2, 'sine', 0.04, -120),
     talk: () => { tone(rand(520, 640), 0.07, 'sine', 0.035); tone(rand(600, 720), 0.07, 'sine', 0.03, 0, 0.08); },
+    shake: () => { for (let i = 0; i < 6; i++) tone(rand(180, 320), 0.07, 'triangle', 0.022, -60, i * 0.05); },
+    net: () => tone(820, 0.16, 'sine', 0.04, -560),
   };
 
   function ensureAudio() {
@@ -714,7 +759,7 @@
   }
 
   // ---------- UI ----------
-  const ui = { clock: $('clock'), coins: $('coins'), seeds: $('seeds'), crops: $('crops'), fish: $('fish'), toast: $('toast') };
+  const ui = { clock: $('clock'), coins: $('coins'), bagN: $('bagN'), dexN: $('dexN'), toast: $('toast') };
   const CROP_KEYS = Object.keys(CROPS), FISH_KEYS = Object.keys(FISH);
   let toastT = 0;
   function toast(ko, en) {
@@ -728,9 +773,8 @@
     const tn = timeName(G.time);
     ui.clock.textContent = G.en ? `Day ${G.day} · ${tn[1]}` : `${G.day}일째 · ${tn[0]}`;
     ui.coins.textContent = G.coins;
-    ui.seeds.textContent = sum(G.seeds, CROP_KEYS);
-    ui.crops.textContent = sum(G.inv, CROP_KEYS);
-    ui.fish.textContent = sum(G.inv, FISH_KEYS);
+    ui.bagN.textContent = `${G.en ? 'Bag' : '가방'} ${sum(G.inv, Object.keys(ITEMS))}`;
+    ui.dexN.textContent = `${G.en ? 'Book' : '도감'} ${DEX_ALL.filter(found).length}/${DEX_ALL.length}`;
   }
   function syncToggles() {
     $('enBtn').setAttribute('aria-pressed', String(G.en));
@@ -789,7 +833,7 @@
     section('팔기', 'Sell');
     for (const k in ITEMS) {
       const it = ITEMS[k], have = G.inv[k];
-      if (!have && FISH[k]) continue; // fish appear once you have caught one
+      if (!have && !CROPS[k]) continue; // fruit, fish and bugs appear once you have some
       row(it.ko, it.en, `가지고 있음 ${have}개`, G.prices[k], G.prev[k] ?? null, [
         ['1개 팔기', () => sell(k, 1), have > 0],
         ['모두', () => sell(k, have), have > 1],
@@ -949,9 +993,10 @@
     } else {
       const k = p.crop || 'flower', col = k === 'flower' ? FLOWER_COLORS[p.color] : CROPS[k].color;
       p.stage = 0; p.watered = false; G.inv[k]++;
+      const fresh = recordDex(k);
       player.hold = 'crop'; player.holdCrop = k; player.holdColor = col; player.holdT = 1.6;
       burst(p.x + p.w / 2, p.y + 6, 14, col, { up: 140 }); sfx.harvest();
-      toast(`${eul(CROPS[k].ko)} 수확했어요! 오늘 시세는 ${G.prices[k]}코인이에요.`, `You harvested a ${CROPS[k].en.toLowerCase()}!`);
+      toast(`${eul(CROPS[k].ko)} 수확했어요! ` + (fresh.isNew ? '도감에 새로 올렸어요.' : `오늘 시세는 ${G.prices[k]}코인이에요.`), `You harvested a ${CROPS[k].en.toLowerCase()}!`);
     }
     persist();
   }
@@ -1005,45 +1050,255 @@
   function landFish(f) {
     const k = f.fish, fish = FISH[k];
     const size = Math.round(fish.size[0] + (fish.size[1] - fish.size[0]) * Math.pow(Math.random(), 1.6));
-    const rec = G.dex[k] || { n: 0, best: 0 };
-    const isNew = rec.n === 0, isBest = !isNew && size > rec.best;
-    rec.n++; rec.best = Math.max(rec.best, size); G.dex[k] = rec;
+    const fresh = recordDex(k, size);
     G.inv[k]++;
     $('reel').hidden = true; player.fishing = null;
     player.hold = 'fish'; player.holdColor = fish.color; player.holdT = 2.2;
     burst(f.bob.x, f.bob.y, 18, '#cfeaf2', { up: 130 }); sfx.catch();
-    $('catchNew').hidden = !isNew;
-    $('catchNew').textContent = '새로 발견!';
-    if (isBest) { $('catchNew').hidden = false; $('catchNew').textContent = '최고 기록!'; }
+    showCatch(k, size, 'cm', fresh);
+  }
+  $('reel').addEventListener('pointerdown', (e) => { e.preventDefault(); reel(); });
+
+  // ---------- collecting: one book for everything you grow, pick and catch ----------
+  function recordDex(k, size) {
+    const rec = G.dex[k] || { n: 0, best: 0 };
+    const isNew = !found(k), isBest = !!size && !isNew && size > (rec.best || 0);
+    rec.n++;
+    if (size) rec.best = Math.max(rec.best || 0, size);
+    G.dex[k] = rec;
+    return { isNew, isBest };
+  }
+  let lastCatch = null;
+  function showCatch(k, size, unit, fresh) {
+    const it = ITEMS[k];
+    lastCatch = k;
+    $('catchNew').hidden = !(fresh.isNew || fresh.isBest);
+    $('catchNew').textContent = fresh.isNew ? '새로 발견!' : '최고 기록!';
     $('catchPic').src = iconURL(k, 320);
-    $('catchName').textContent = fish.ko + (G.en ? ` · ${fish.en}` : '');
-    $('catchSize').innerHTML = `${size}<small>cm</small>`;
-    $('catchNote').textContent = `오늘 가게에서 ${G.prices[k]}코인에 팔 수 있어요.` + (fish.night ? ' 밤에만 나오는 물고기예요.' : '');
+    $('catchName').textContent = it.ko + (G.en ? ` · ${it.en}` : '');
+    $('catchSize').innerHTML = `${size}<small>${unit}</small>`;
+    const night = (FISH[k] && FISH[k].night) || (BUGS[k] && BUGS[k].time === 'night');
+    $('catchNote').textContent = `오늘 가게에서 ${G.prices[k]}코인에 팔 수 있어요.` + (night ? ' 밤에만 만날 수 있어요.' : '');
     ui.toast.style.opacity = 0; toastT = 0;
     openSheet('catchSheet');
     persist();
   }
+  $('catchOk').addEventListener('click', closeSheet);
+  $('catchRelease').addEventListener('click', () => {
+    const k = lastCatch; closeSheet();
+    if (!k || G.inv[k] <= 0) return;
+    G.inv[k]--; player.hold = null; player.emote = { t: 1.4 };
+    burst(player.x, player.y - 50, 12, '#f6c7d3', { up: 90 }); sfx.talk();
+    toast(`${eul(ITEMS[k].ko)} 놓아줬어요. 잘 가! 도감에는 남아 있어요.`, 'You let it go. Bye bye!');
+    persist();
+  });
+
+  // the book: four tabs
+  let dexTab = 'fish';
+  const DEX_TABS = { crop: Object.keys(CROPS), fruit: FRUIT_KEYS, fish: Object.keys(FISH), bug: BUG_KEYS };
+  const WHERE = { flower: '꽃 근처', garden: '밭 근처', grass: '풀밭', pond: '연못가', tree: '나무' };
+  function dexHint(k) {
+    if (CROPS[k]) return '밭에 심어 보세요';
+    if (FRUITS[k]) return '과일나무를 흔들어 보세요';
+    if (FISH[k]) return FISH[k].night ? '밤에 나와요' : FISH[k].weight <= 7 ? '아주 드물어요' : '연못에 살아요';
+    const b = BUGS[k];
+    return `${b.time === 'night' ? '밤' : '낮'} · ${WHERE[b.where]}`;
+  }
+  function dexLine(k, r) {
+    if (CROPS[k]) return r.ate && TASTE[k] ? TASTE[k] : `${r.n}개 수확`;
+    if (FRUITS[k]) return r.ate ? FRUITS[k].taste : `${r.n}개 · 아직 안 먹어봤어요`;
+    return `${r.n}마리 · 최고 ${r.best}${FISH[k] ? 'cm' : BUGS[k].unit}`;
+  }
+  const DEX_TIPS = {
+    crop: '밭에서 수확하면 올라가요. 먹어보면 맛 메모가 생겨요.',
+    fruit: '과일나무를 누르면 흔들어서 열매를 따요. 딴 열매는 시간이 지나면 다시 열려요.',
+    fish: '연못이나 낚시터 다리에서 낚시해요. 어떤 물고기는 밤에만 나와요.',
+    bug: '곤충을 누르면 살금살금 다가가서 잠자리채로 잡아요. 밤에만 나오는 곤충도 있어요.',
+  };
   function renderDex() {
-    const list = $('dexList'); list.innerHTML = '';
-    let found = 0;
-    for (const k of FISH_KEYS_ALL) {
-      const fish = FISH[k], rec = G.dex[k];
-      if (rec) found++;
-      const card = document.createElement('div');
-      card.className = 'dex-card' + (rec ? '' : ' unknown');
+    for (const t in DEX_TABS) $('dtab-' + t).setAttribute('aria-selected', String(dexTab === t));
+    const keys = DEX_TABS[dexTab], list = $('dexList'); list.innerHTML = '';
+    for (const k of keys) {
+      const r = G.dex[k], ok = found(k);
+      const card = document.createElement('div'); card.className = 'dex-card' + (ok ? '' : ' unknown');
       const im = document.createElement('img'); im.src = iconURL(k); im.alt = ''; im.width = 64; im.height = 64;
-      const b = document.createElement('b'); b.textContent = rec ? fish.ko : '???';
-      const s = document.createElement('span');
-      s.textContent = rec ? `${rec.n}마리 · 최고 ${rec.best}cm` : fish.night ? '밤에 나와요' : fish.weight <= 7 ? '아주 드물어요' : '아직 못 만났어요';
+      const b = document.createElement('b'); b.textContent = ok ? ITEMS[k].ko : '???';
+      const s = document.createElement('span'); s.textContent = ok ? dexLine(k, r) : dexHint(k);
       card.append(im, b, s); list.append(card);
     }
-    $('dexCount').textContent = `${found} / ${FISH_KEYS_ALL.length}`;
+    $('dexCount').textContent = `${keys.filter(found).length} / ${keys.length}`;
+    $('dexTip').textContent = DEX_TIPS[dexTab];
   }
-  $('catchOk').addEventListener('click', closeSheet);
-  $('catchDex').addEventListener('click', () => { openSheet('dexSheet'); renderDex(); });
+  function openDex(tab) { if (tab) dexTab = tab; openSheet('dexSheet'); renderDex(); }
+  for (const t in DEX_TABS) $('dtab-' + t).addEventListener('click', () => { dexTab = t; renderDex(); });
+  $('catchDex').addEventListener('click', () => openDex(FISH[lastCatch] ? 'fish' : BUGS[lastCatch] ? 'bug' : dexTab));
   $('dexClose').addEventListener('click', closeSheet);
-  $('fishPill').addEventListener('click', () => { if (!G.started) return; openSheet('dexSheet'); renderDex(); });
-  $('reel').addEventListener('pointerdown', (e) => { e.preventDefault(); reel(); });
+  $('dexPill').addEventListener('click', () => { if (G.started) openDex(); });
+
+  // the bag: everything you carry, and eating
+  let boost = 0;
+  function renderBag() {
+    const list = $('bagList'); list.innerHTML = '';
+    const groups = [['씨앗', CROP_KEYS, true], ['채소·꽃', CROP_KEYS], ['과일', FRUIT_KEYS], ['물고기', Object.keys(FISH)], ['곤충', BUG_KEYS]];
+    let any = false;
+    for (const [label, keys, seeds] of groups) {
+      const have = keys.filter((k) => (seeds ? G.seeds[k] : G.inv[k]) > 0);
+      if (!have.length) continue;
+      any = true;
+      const h = document.createElement('span'); h.className = 'label'; h.textContent = label; list.append(h);
+      for (const k of have) {
+        const n = seeds ? G.seeds[k] : G.inv[k];
+        const row = document.createElement('div'); row.className = 'item has-icon';
+        row.style.gridTemplateColumns = 'auto 1fr auto';
+        const im = document.createElement('img'); im.className = 'ico'; im.alt = ''; im.src = iconURL(k);
+        const nm = document.createElement('div'); nm.className = 'name';
+        const b = document.createElement('b'); b.textContent = seeds ? `${ITEMS[k].ko} 씨앗` : ITEMS[k].ko + (G.en ? ` · ${ITEMS[k].en}` : '');
+        const s = document.createElement('span'); s.className = 'muted'; s.textContent = `${n}개` + (seeds ? '' : ` · 오늘 ${G.prices[k]}코인`);
+        nm.append(b, s);
+        const acts = document.createElement('div'); acts.className = 'acts';
+        if (!seeds && edible(k)) { const e = document.createElement('button'); e.type = 'button'; e.className = 'btn small'; e.textContent = '먹기'; e.addEventListener('click', () => eat(k)); acts.append(e); }
+        row.append(im, nm, acts); list.append(row);
+      }
+    }
+    if (!any) { const p = document.createElement('p'); p.className = 'muted'; p.textContent = '가방이 비어 있어요. 밭을 가꾸고, 나무를 흔들고, 낚시하고, 곤충을 잡아보세요.'; list.append(p); }
+    $('bagTotal').textContent = `${sum(G.inv, Object.keys(ITEMS))}개`;
+  }
+  function eat(k) {
+    if (!edible(k) || G.inv[k] <= 0) return;
+    G.inv[k]--; boost = 30;
+    const rec = G.dex[k] || { n: 0, best: 0 }; rec.n = Math.max(rec.n, 1); rec.ate = true; G.dex[k] = rec;
+    player.emote = { t: 1.4 };
+    burst(player.x, player.y - 40, 12, ITEMS[k].color, { up: 90 }); sfx.harvest();
+    const taste = FRUITS[k] ? FRUITS[k].taste : TASTE[k];
+    toast(`냠냠! ${ITEMS[k].ko}, ${taste}. 30초 동안 신나게 걸어요.`, 'Yum! You feel bouncy for 30 seconds.');
+    persist(); renderBag();
+  }
+  $('bagPill').addEventListener('click', () => { if (!G.started) return; openSheet('bagSheet'); renderBag(); });
+  $('bagClose').addEventListener('click', closeSheet);
+
+  // ---------- fruit trees ----------
+  const drops = [];
+  const treeSpot = (t) => ({ x: t.x, y: t.y + 24 });
+  function shakeTree(t) {
+    t.shake = 0.7; sfx.shake();
+    player.dir = Math.sign(t.x - player.x) || 1;
+    if (!t.fruit) { burst(t.x, t.y - 70 * t.s, 8, '#93b86c', { up: 30, spread: 50 }); toast('잎이 바스락거려요. 열매가 열리지 않는 나무예요.', 'Rustle! This tree has no fruit.'); return; }
+    if (t.n <= 0) { toast(`아직 열매가 없어요. ${Math.ceil(REGROW - t.regrow)}초쯤 뒤에 열려요.`, 'No fruit yet. Come back soon.'); return; }
+    const n = t.n, k = t.fruit;
+    t.n = 0; t.regrow = 0;
+    for (let i = 0; i < n; i++) {
+      const [fx, fy] = FRUIT_SPOTS[i];
+      drops.push({ k, x: t.x + fx * t.s, y: t.y + fy * t.s, gy: t.y + 12 + i * 6, vy: 0, t: 0, delay: i * 0.12 });
+    }
+    setTimeout(() => {
+      G.inv[k] += n;
+      let fresh = { isNew: false };
+      for (let i = 0; i < n; i++) { const f = recordDex(k); if (f.isNew) fresh = f; }
+      player.hold = 'crop'; player.holdCrop = k; player.holdColor = FRUITS[k].color; player.holdT = 1.8;
+      sfx.harvest();
+      toast(`${FRUITS[k].ko} ${n}개를 땄어요!` + (fresh.isNew ? ' 도감에 새로 올렸어요.' : ' 가방에서 먹거나 가게에 팔 수 있어요.'), `You picked ${n} ${FRUITS[k].en.toLowerCase()}!`);
+      persist();
+    }, 950);
+  }
+
+  // ---------- bugs ----------
+  const bugs = [];
+  let bugT = 0.5;
+  const BUG_MAX = 7;
+  function bugHome(where) {
+    for (let i = 0; i < 24; i++) {
+      if (where === 'tree') { const t = pick(trees); return { x: t.x + rand(-3, 3), y: t.y + 3, tree: t }; }
+      let x, y;
+      if (where === 'pond') { const a = rand(0, Math.PI * 2); x = pond.cx + Math.cos(a) * (pond.rx + rand(20, 70)); y = pond.cy + Math.sin(a) * (pond.ry + rand(16, 50)); }
+      else if (where === 'garden') { x = rand(200, 430); y = rand(330, 480); }
+      else if (where === 'flower') { const near = Math.random() < 0.5; x = near ? rand(180, 450) : rand(100, 1300); y = near ? rand(320, 500) : rand(140, 940); }
+      else { x = rand(100, 1300); y = rand(140, 940); }
+      if (!blocked(x, y)) return { x, y };
+    }
+    return { x: 600, y: 520 };
+  }
+  function spawnBug() {
+    const night = isNight();
+    const pool = BUG_KEYS.filter((k) => (BUGS[k].time === 'night') === night);
+    let r = Math.random() * pool.reduce((a, k) => a + BUGS[k].weight, 0), k = pool[0];
+    for (const q of pool) { r -= BUGS[q].weight; if (r <= 0) { k = q; break; } }
+    const d = BUGS[k], home = bugHome(d.where);
+    const alt = d.move === 'fly' || d.move === 'dart' ? 22 : home.tree ? 24 * home.tree.s : 0;
+    bugs.push({ k, x: home.x, y: home.y, hx: home.x, hy: home.y, tx: home.x, ty: home.y, alt, ph: Math.random() * 9, t: 0, life: rand(50, 100), flee: 0, fx: 0, fy: 0, hop: 0, a: 0 });
+  }
+  function updateBugs(dt) {
+    const night = isNight();
+    bugT -= dt;
+    if (bugT <= 0) { bugT = rand(1.5, 4); if (bugs.filter((b) => b.life > 0).length < BUG_MAX) spawnBug(); }
+    for (let i = bugs.length - 1; i >= 0; i--) {
+      const b = bugs[i], d = BUGS[b.k];
+      b.t += dt; b.life -= dt;
+      const leaving = b.life <= 0 || (d.time === 'night') !== night;
+      b.a = clamp(b.a + (leaving ? -dt * 0.8 : dt * 1.5), 0, 1);
+      if (leaving && b.a <= 0) { bugs.splice(i, 1); continue; }
+      if (b.flee > 0) {
+        b.flee -= dt; b.x += b.fx * dt; b.y += b.fy * dt; b.alt = Math.min(44, b.alt + 50 * dt);
+        if (b.flee <= 0) {
+          if (d.move === 'perch' || blocked(b.x, b.y)) b.life = 0; // gone for now
+          else { b.hx = b.tx = b.x; b.hy = b.ty = b.y; if (d.move === 'crawl' || d.move === 'hop') b.alt = 0; }
+        }
+        continue;
+      }
+      if (d.move === 'fly') {
+        b.x = b.hx + Math.sin(b.t * 0.7 + b.ph) * 34 + Math.sin(b.t * 1.9 + b.ph) * 10;
+        b.y = b.hy + Math.cos(b.t * 0.55 + b.ph) * 20;
+        b.alt = 22 + Math.sin(b.t * 3 + b.ph) * 6;
+      } else if (d.move === 'dart') {
+        if (Math.hypot(b.tx - b.x, b.ty - b.y) < 3) { b.hop -= dt; if (b.hop <= 0) { b.hop = rand(1.2, 3); b.tx = b.hx + rand(-70, 70); b.ty = b.hy + rand(-30, 30); } }
+        else { const m = Math.min(1, dt * 4); b.x += (b.tx - b.x) * m; b.y += (b.ty - b.y) * m; }
+        b.alt = 28 + Math.sin(b.t * 9) * 2;
+      } else if (d.move === 'crawl') {
+        const nx = b.x + Math.cos(b.ph) * 7 * dt, ny = b.y + Math.sin(b.ph) * 4 * dt;
+        if (!blocked(nx, ny)) { b.x = nx; b.y = ny; } else b.ph += Math.PI;
+        if (Math.random() < dt * 0.5) b.ph += rand(-1.2, 1.2);
+        if (Math.hypot(b.x - b.hx, b.y - b.hy) > 30) b.ph = Math.atan2(b.hy - b.y, b.hx - b.x);
+      } else if (d.move === 'hop') {
+        if (b.hop > 0) {
+          b.hop -= dt; b.x += b.fx * dt; b.y += b.fy * dt;
+          b.alt = Math.max(0, Math.sin((1 - b.hop / 0.45) * Math.PI) * 18);
+          if (b.hop <= 0) b.alt = 0;
+        } else if (Math.random() < dt * 0.4) {
+          let a = rand(0, Math.PI * 2);
+          if (Math.hypot(b.x - b.hx, b.y - b.hy) > 50) a = Math.atan2(b.hy - b.y, b.hx - b.x);
+          const fx = Math.cos(a) * 60, fy = Math.sin(a) * 30;
+          if (!blocked(b.x + fx * 0.45, b.y + fy * 0.45)) { b.hop = 0.45; b.fx = fx; b.fy = fy; }
+        }
+      }
+    }
+  }
+  function chaseBug(b) {
+    player.fishing = null;
+    player.goal = { x: b.x, y: b.y, bug: b, then: () => swingNet(b) };
+    player.stuckT = 0;
+  }
+  function swingNet(b) {
+    player.hold = 'net'; player.holdT = 0.55;
+    player.dir = Math.sign(b.x - player.x) || player.dir;
+    sfx.net();
+    setTimeout(() => {
+      if (!bugs.includes(b) || b.flee > 0) return;
+      const d = BUGS[b.k];
+      if (Math.random() < d.catch) {
+        bugs.splice(bugs.indexOf(b), 1);
+        const size = Math.round(d.size[0] + (d.size[1] - d.size[0]) * Math.pow(Math.random(), 1.4));
+        const fresh = recordDex(b.k, size);
+        G.inv[b.k]++;
+        burst(b.x, b.y - b.alt, 12, '#fff4e6', { up: 80 }); sfx.catch();
+        showCatch(b.k, size, d.unit, fresh);
+      } else {
+        const a = Math.atan2(b.y - player.y, b.x - player.x) || rand(0, 7);
+        b.flee = 1.2; b.fx = Math.cos(a) * 150; b.fy = Math.sin(a) * 90;
+        sfx.soft();
+        toast('앗, 놓쳤어요! 살금살금 다시 다가가 봐요.', 'Missed! Sneak up again.');
+      }
+    }, 260);
+  }
+
 
   // ---------- house: going in and out ----------
   function transition(fn) { sleepFade = 1.6; setTimeout(fn, 700); }
@@ -1239,11 +1494,13 @@
     const w = toWorld(e.clientX - r.left, e.clientY - r.top);
     if (player.fishing) { reel(); return; }
 
+    for (const b of bugs) if (b.flee <= 0 && b.a > 0.4 && Math.hypot(w.x - b.x, w.y - (b.y - b.alt)) < 26) { chaseBug(b); return; }
     for (const n of npcs) if (Math.hypot(w.x - n.x, w.y - (n.y - 42)) < 30) {
       if (n.shopkeeper) { goTo(shop.spot, () => { openSheet('shopSheet'); renderShop(); talkTo(n); }); return; }
       talkTo(n); return;
     }
     for (const p of plots) if (w.x > p.x - 4 && w.x < p.x + p.w + 4 && w.y > p.y - 18 && w.y < p.y + p.h + 4) { goTo(plotSpot(p), () => useplot(p)); return; }
+    for (const t of trees) if (Math.abs(w.x - t.x) < 36 * t.s && w.y > t.y - 122 * t.s && w.y < t.y + 8) { goTo(treeSpot(t), () => shakeTree(t)); return; }
     if (w.x > shop.x - 10 && w.x < shop.x + shop.w + 10 && w.y > shop.y - 50 && w.y < shop.y + shop.h + 10) { goTo(shop.spot, () => { openSheet('shopSheet'); renderShop(); talkTo(npcs[4]); }); return; }
     if (w.x > house.x - 15 && w.x < house.x + house.w + 15 && w.y > house.y - 70 && w.y < house.y + house.h + 10) { goTo(house.door, enterRoom); return; }
     if ((w.x > pier.x - 30 && w.x < pier.x + pier.w && w.y > pier.y - 60 && w.y < pier.y + pier.h + 8)) { goTo(pier.tip, () => startFishing(pier.bob)); return; }
@@ -1291,6 +1548,8 @@
       const lab = pl.stage === 0 ? ['씨앗 심기', 'Plant', 'seed'] : pl.stage < 4 && !pl.watered ? ['물 주기', 'Water', 'can'] : pl.stage === 4 ? ['수확하기', 'Harvest', pl.crop || 'flower'] : null;
       if (lab) opts.push([plotSpot(pl), lab, () => useplot(pl)]);
     }
+    for (const t of trees) if (t.fruit && t.n > 0) opts.push([treeSpot(t), [`${FRUITS[t.fruit].ko} 따기`, `Pick ${FRUITS[t.fruit].en.toLowerCase()}`, t.fruit], () => shakeTree(t)]);
+    for (const b of bugs) if (b.flee <= 0 && b.a > 0.6) opts.push([{ x: b.x, y: b.y + 6 }, [`${BUGS[b.k].ko} 잡기`, `Catch ${BUGS[b.k].en.toLowerCase()}`, b.k], () => swingNet(b)]);
     opts.push([shop.spot, ['가게 들어가기', 'Enter shop', 'coin'], openShop]);
     opts.push([house.door, ['집에 들어가기', 'Go inside', 'house'], enterRoom]);
     opts.push([pier.tip, ['낚시하기', 'Go fishing', 'crucian'], () => startFishing(pier.bob)]);
@@ -1353,9 +1612,23 @@
     if (keys.has('ArrowDown') || keys.has('KeyS')) ky++;
     if (kx || ky) {
       const l = Math.hypot(kx, ky);
-      moveChar(p, p.x + (kx / l) * 30, p.y + (ky / l) * 30, scene === 'room' ? 100 : 130, dt, scene === 'room' ? roomBlocked : villageBlocked);
+      moveChar(p, p.x + (kx / l) * 30, p.y + (ky / l) * 30, (scene === 'room' ? 100 : 130) * (boost > 0 ? 1.45 : 1), dt, scene === 'room' ? roomBlocked : villageBlocked);
+    } else if (p.goal && p.goal.bug) {
+      // sneak up on a bug: follow it at a tiptoe, swing the net once close
+      const b = p.goal.bug;
+      if (!bugs.includes(b) || b.flee > 0) { p.goal = null; p.moving = false; }
+      else {
+        p.goal.x = b.x; p.goal.y = b.y + 6;
+        moveChar(p, p.goal.x, p.goal.y, 88, dt, villageBlocked);
+        const dist = Math.hypot(b.x - p.x, b.y - p.y);
+        if ((p.lastMoved || 0) < 0.3) p.stuckT += dt; else p.stuckT = 0;
+        if (dist < 34 || p.stuckT > 0.4) {
+          const g = p.goal; p.goal = null; p.moving = false;
+          if (dist < 70) g.then(); else toast('거기까지 갈 수 없어요.', "Can't get there.");
+        }
+      }
     } else if (p.goal) {
-      const arrived = moveChar(p, p.goal.x, p.goal.y, scene === 'room' ? 100 : 130, dt, scene === 'room' ? roomBlocked : villageBlocked);
+      const arrived = moveChar(p, p.goal.x, p.goal.y, (scene === 'room' ? 100 : 130) * (boost > 0 ? 1.45 : 1), dt, scene === 'room' ? roomBlocked : villageBlocked);
       const dist = Math.hypot(p.goal.x - p.x, p.goal.y - p.y);
       if (!arrived && (p.lastMoved || 0) < 0.3) p.stuckT += dt; else p.stuckT = 0;
       if (arrived || p.stuckT > 0.25) {
@@ -1421,7 +1694,20 @@
 
     for (const q of parts) { q.x += q.vx * dt; q.y += q.vy * dt; q.vy += q.g * dt; q.life -= dt; }
     for (let i = parts.length - 1; i >= 0; i--) if (parts[i].life <= 0) parts.splice(i, 1);
-    for (const f of flies) { f.p += dt; f.x += Math.cos(f.p * 0.7) * 22 * dt + Math.sin(f.p * 2.3) * 12 * dt; f.y += Math.sin(f.p * 0.9) * 14 * dt; }
+    updateBugs(dt);
+    for (const t of trees) {
+      if (t.shake > 0) t.shake = Math.max(0, t.shake - dt);
+      if (t.fruit && t.n < 3) { t.regrow += dt; if (t.regrow >= REGROW) { t.regrow = 0; t.n++; } }
+    }
+    for (let i = drops.length - 1; i >= 0; i--) {
+      const d = drops[i]; d.t += dt;
+      if (d.t < d.delay) continue;
+      d.vy += 900 * dt; d.y += d.vy * dt;
+      if (d.y >= d.gy) { d.y = d.gy; d.vy = -d.vy * 0.35; }
+      if (d.t > 0.95) { burst(d.x, d.y - 6, 6, FRUITS[d.k].color, { up: 60 }); drops.splice(i, 1); }
+    }
+    if (boost > 0) { boost -= dt; if (scene === 'village' && player.moving && Math.random() < dt * 14) burst(player.x + rand(-8, 8), player.y - 2, 1, '#fff4c8', { g: -20, up: 20, spread: 20, life: 0.6 }); }
+    if (p.emote) { p.emote.t -= dt; if (p.emote.t <= 0) p.emote = null; }
 
     if (toastT > 0) { toastT -= dt; if (toastT <= 0) ui.toast.style.opacity = 0; }
     if (sleepFade > 0) sleepFade -= dt;
@@ -1513,6 +1799,14 @@
       ctx.restore(); ball(13.5, by, 4.8);
     } else if (c.hold === 'crop') {
       drawProduce(c.holdCrop, 17, by - 12, 1, c.holdColor); ball(13.5, by - 1, 4.8);
+    } else if (c.hold === 'net') {
+      const swing = 1 - clamp(c.holdT / 0.55, 0, 1);
+      ctx.save(); ctx.translate(14, by - 2); ctx.rotate(-1.3 + swing * 1.9);
+      ctx.strokeStyle = '#9a6c48'; ctx.lineWidth = 2.6; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -32); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.strokeStyle = '#fffaf1'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(0, -42, 9, 11, 0, 0, 7); ctx.fill(); ctx.stroke();
+      ctx.restore(); ball(13.5, by - 1, 4.8);
     } else if (c.hold === 'fish') {
       ctx.fillStyle = clayGrad(18, by - 8, 10, shade(c.holdColor, 0.15), c.holdColor, shade(c.holdColor, -0.1));
       ctx.beginPath(); ctx.ellipse(18, by - 10, 10, 5.5, -0.5, 0, 7); ctx.fill();
@@ -1666,6 +1960,26 @@
       for (const [sx, sy] of [[-3, -1], [2, -2], [-1, 3], [3, 3], [0, 7]]) { ctx.beginPath(); ctx.arc(sx, sy, 0.9, 0, 7); ctx.fill(); }
       ctx.fillStyle = '#6f9a58';
       for (const a of [-0.8, 0, 0.8]) { ctx.beginPath(); ctx.ellipse(Math.sin(a) * 4, -6, 1.6, 3.4, a, 0, 7); ctx.fill(); }
+    } else if (FRUITS[k]) {
+      const c = FRUITS[k].color;
+      const leaf = (lx, ly, a) => { ctx.fillStyle = '#7fb069'; ctx.beginPath(); ctx.ellipse(lx, ly, 3.6, 1.8, a, 0, 7); ctx.fill(); };
+      const stem = (sx, sy, ex, ey) => { ctx.strokeStyle = '#7a5a40'; ctx.lineWidth = 1.4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.quadraticCurveTo((sx + ex) / 2 + 1.5, (sy + ey) / 2, ex, ey); ctx.stroke(); };
+      if (k === 'cherry') {
+        stem(-3, 1, 1, -9); stem(4, 2, 1, -9); leaf(4, -8, -0.5);
+        for (const [cx, cy] of [[-3.5, 3], [4, 4]]) { ctx.fillStyle = clayGrad(cx, cy, 4.5, '#e2566a', c, '#8f1c2b'); ctx.beginPath(); ctx.arc(cx, cy, 4.4, 0, 7); ctx.fill(); }
+      } else if (k === 'pear') {
+        ctx.fillStyle = clayGrad(0, 1, 9, '#f2e29a', c, '#b9a246');
+        ctx.beginPath(); ctx.moveTo(0, -6); ctx.bezierCurveTo(4, -6, 3, -1, 7, 3); ctx.bezierCurveTo(9, 9, -9, 9, -7, 3); ctx.bezierCurveTo(-3, -1, -4, -6, 0, -6); ctx.fill();
+        stem(0, -6, 1, -9); leaf(3.5, -8, -0.4);
+      } else {
+        const r = k === 'orange' ? 6.6 : 7;
+        ctx.fillStyle = clayGrad(0, 1, r + 1, shade(c, 0.18), c, shade(c, -0.18));
+        ctx.beginPath(); ctx.ellipse(0, 1, r, r * (k === 'orange' ? 0.88 : 0.95), 0, 0, 7); ctx.fill();
+        if (k === 'peach') { ctx.strokeStyle = 'rgba(200,90,70,0.35)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, -5.5); ctx.quadraticCurveTo(-2.5, 1, 0, 7.5); ctx.stroke(); }
+        if (k === 'orange') { ctx.fillStyle = 'rgba(160,80,10,0.25)'; for (const [dx, dy] of [[-2, -1], [2, 2], [-1, 4], [3, -2]]) { ctx.beginPath(); ctx.arc(dx, dy, 0.6, 0, 7); ctx.fill(); } }
+        ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.beginPath(); ctx.ellipse(-2.4, -1.6, 2, 1.2, -0.5, 0, 7); ctx.fill();
+        stem(0, -5.5, 1, -8.5); leaf(3.6, -7.5, -0.4);
+      }
     }
     ctx.restore();
   }
@@ -1710,7 +2024,10 @@
     try {
       ctx.scale(px / 128, px / 128);
       ctx.translate(64, 66); ctx.scale(4, 4);
-      if (CROPS[kind]) drawProduce(kind, 0, 0, 1, kind === 'flower' ? '#f2a7b8' : undefined);
+      if (CROPS[kind] || FRUITS[kind]) drawProduce(kind, 0, 0, 1, kind === 'flower' ? '#f2a7b8' : undefined);
+      else if (BUGS[kind]) drawBugShape(kind, 0, -1, 1.7, 0.4);
+      else if (kind === 'bag') drawBag();
+      else if (kind === 'book') drawBook();
       else if (FISH[kind]) drawFishIcon(kind);
       else if (kind.startsWith('f:')) {
         const f = FURN[kind.slice(2)], w = f.w * T, h = f.h * T, s = 108 / Math.max(w, h + f.rise);
@@ -1727,6 +2044,85 @@
       else if (kind === 'seed') drawSeedBag();
     } finally { ctx = main; }
     return (iconCache[key] = c.toDataURL());
+  }
+
+  // ---------- bugs (drawn at x, y; s = scale, t = time for wings) ----------
+  function drawBugShape(k, x, y, s, t) {
+    ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+    const flap = 0.35 + 0.65 * Math.abs(Math.sin(t * 11));
+    const ink = '#2b2420';
+    if (k === 'butterfly') {
+      for (const side of [-1, 1]) {
+        ctx.fillStyle = '#f6b3c4'; ctx.beginPath(); ctx.ellipse(side * 4.5 * flap, -2, 4.6 * flap, 4.2, side * 0.4, 0, 7); ctx.fill();
+        ctx.fillStyle = '#fbe0a0'; ctx.beginPath(); ctx.ellipse(side * 3.4 * flap, 3, 3 * flap, 2.8, side * -0.3, 0, 7); ctx.fill();
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(side * 5 * flap, -3, 1, 0, 7); ctx.fill();
+      }
+      ctx.fillStyle = ink; ctx.beginPath(); ctx.ellipse(0, 0, 1.1, 4.5, 0, 0, 7); ctx.fill();
+      ctx.strokeStyle = ink; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(-0.5, -4); ctx.lineTo(-2, -7); ctx.moveTo(0.5, -4); ctx.lineTo(2, -7); ctx.stroke();
+    } else if (k === 'bee') {
+      ctx.fillStyle = 'rgba(255,255,255,0.75)';
+      ctx.beginPath(); ctx.ellipse(-2, -3.5 - flap, 2.6, 3.4 * flap + 0.6, -0.4, 0, 7); ctx.ellipse(2, -3.5 - flap, 2.6, 3.4 * flap + 0.6, 0.4, 0, 7); ctx.fill();
+      ctx.fillStyle = clayGrad(0, 0, 5, '#f8d978', '#f2c14e', '#d19b2a'); ctx.beginPath(); ctx.ellipse(0, 0, 5, 3.6, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = ink; ctx.fillRect(-1.6, -3.4, 1.4, 6.8); ctx.fillRect(1.4, -3.2, 1.3, 6.4);
+      ctx.beginPath(); ctx.arc(4.8, -0.3, 1.6, 0, 7); ctx.fill();
+    } else if (k === 'ladybug') {
+      ctx.fillStyle = ink; ctx.beginPath(); ctx.arc(0, -3.6, 2, 0, 7); ctx.fill();
+      ctx.fillStyle = clayGrad(0, 0, 5, '#ef7466', '#d9483b', '#a8302a'); ctx.beginPath(); ctx.ellipse(0, 0.5, 4.2, 4.6, 0, 0, 7); ctx.fill();
+      ctx.strokeStyle = ink; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(0, -3.8); ctx.lineTo(0, 5); ctx.stroke();
+      ctx.fillStyle = ink; for (const [dx, dy] of [[-2, -1], [2, -1], [-2.2, 2.4], [2.2, 2.4]]) { ctx.beginPath(); ctx.arc(dx, dy, 0.9, 0, 7); ctx.fill(); }
+    } else if (k === 'grasshopper') {
+      ctx.strokeStyle = '#5f8f3a'; ctx.lineWidth = 1; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(-1, 0); ctx.lineTo(-4, -4); ctx.lineTo(-6, 2); ctx.moveTo(1, 0); ctx.lineTo(2, 3); ctx.moveTo(4, 0); ctx.lineTo(5, 3); ctx.stroke();
+      ctx.fillStyle = clayGrad(0, -1, 7, '#b2d985', '#8cbf5a', '#6a9a3e'); ctx.beginPath(); ctx.ellipse(0, -1, 7, 2.4, -0.15, 0, 7); ctx.fill();
+      ctx.beginPath(); ctx.arc(6.6, -2.2, 2, 0, 7); ctx.fill();
+      ctx.fillStyle = ink; ctx.beginPath(); ctx.arc(7.2, -2.6, 0.6, 0, 7); ctx.fill();
+      ctx.strokeStyle = '#5f8f3a'; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(7.6, -3.6); ctx.quadraticCurveTo(10, -8, 12, -7); ctx.stroke();
+    } else if (k === 'dragonfly') {
+      ctx.fillStyle = 'rgba(220,240,255,0.7)';
+      for (const side of [-1, 1]) { ctx.beginPath(); ctx.ellipse(side * 5, -2.4, 5.2, 1.6 + flap * 0.4, side * 0.12, 0, 7); ctx.ellipse(side * 4.6, 0.6, 4.6, 1.4 + flap * 0.4, side * -0.12, 0, 7); ctx.fill(); }
+      ctx.fillStyle = clayGrad(0, 0, 6, '#8cc0ea', '#5b9bd5', '#3d78b0'); rr(ctx, -0.9, -2, 1.8, 11, 0.9); ctx.fill();
+      ctx.beginPath(); ctx.arc(0, -2.6, 1.8, 0, 7); ctx.fill();
+    } else if (k === 'cicada') {
+      ctx.fillStyle = 'rgba(230,240,240,0.65)'; ctx.beginPath(); ctx.ellipse(-2.4, 1.5, 2.6, 6, 0.25, 0, 7); ctx.ellipse(2.4, 1.5, 2.6, 6, -0.25, 0, 7); ctx.fill();
+      ctx.fillStyle = clayGrad(0, 0, 5, '#a8865f', '#8a6a48', '#6b4f34'); ctx.beginPath(); ctx.ellipse(0, -0.5, 3, 4.6, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = ink; ctx.beginPath(); ctx.arc(-2.2, -4, 0.9, 0, 7); ctx.arc(2.2, -4, 0.9, 0, 7); ctx.fill();
+    } else if (k === 'firefly') {
+      ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.beginPath(); ctx.ellipse(-1.8, -1.5, 1.8, 2.6 * flap + 0.4, -0.4, 0, 7); ctx.ellipse(1.8, -1.5, 1.8, 2.6 * flap + 0.4, 0.4, 0, 7); ctx.fill();
+      ctx.fillStyle = '#3d3326'; ctx.beginPath(); ctx.ellipse(0, -1, 1.8, 2.6, 0, 0, 7); ctx.fill();
+      const glow = 0.6 + 0.4 * Math.sin(t * 4);
+      ctx.fillStyle = `rgba(222,240,90,${0.7 + 0.3 * glow})`; ctx.beginPath(); ctx.ellipse(0, 2.6, 2, 2.2, 0, 0, 7); ctx.fill();
+    } else if (k === 'beetle') {
+      ctx.strokeStyle = '#2b1d14'; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(0, -5); ctx.quadraticCurveTo(0.5, -10, 3, -11); ctx.stroke();
+      ctx.fillStyle = clayGrad(-1, -1, 7, '#7a5a44', '#4a3326', '#2b1d14'); ctx.beginPath(); ctx.ellipse(0, 1.5, 4.6, 6, 0, 0, 7); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(0, -4.4, 3, 2.2, 0, 0, 7); ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(0, -2); ctx.lineTo(0, 7.4); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.beginPath(); ctx.ellipse(-1.8, 0, 1, 2.6, 0.2, 0, 7); ctx.fill();
+    }
+    ctx.restore();
+  }
+  function drawBug(b) {
+    if (b.a <= 0.01) return;
+    ctx.globalAlpha = b.a;
+    if (b.alt > 2 && BUGS[b.k].move !== 'perch') { ctx.fillStyle = 'rgba(80,60,40,0.14)'; ctx.beginPath(); ctx.ellipse(b.x, b.y, 4, 1.6, 0, 0, 7); ctx.fill(); }
+    drawBugShape(b.k, b.x, b.y - b.alt, 1.5, G.t + b.ph);
+    ctx.globalAlpha = 1;
+  }
+  function drawBag() {
+    ctx.fillStyle = clayGrad(0, 2, 12, '#e9c48f', '#d2a56c', '#a97d4b');
+    rr(ctx, -10, -4, 20, 16, 6); ctx.fill();
+    ctx.strokeStyle = '#a97d4b'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.arc(0, -4, 6.5, Math.PI, 0); ctx.stroke();
+    ctx.fillStyle = '#c8714f'; rr(ctx, -10, 0, 20, 4, 2); ctx.fill();
+    ctx.fillStyle = '#f2a7b8'; ctx.beginPath(); ctx.arc(-4, -5, 3, 0, 7); ctx.fill();
+    ctx.fillStyle = '#e8873a'; ctx.beginPath(); ctx.arc(3, -6, 3, 0, 7); ctx.fill();
+  }
+  function drawBook() {
+    ctx.fillStyle = clayGrad(0, 0, 13, '#9bb8d0', '#7fa3c4', '#5f84a6'); rr(ctx, -11, -10, 22, 20, 4); ctx.fill();
+    ctx.fillStyle = '#fbf6ec'; rr(ctx, -9, -8, 18, 16, 2.5); ctx.fill();
+    ctx.strokeStyle = '#d8cbb1'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, -8); ctx.lineTo(0, 8); ctx.stroke();
+    ctx.fillStyle = '#e05a47'; ctx.beginPath(); ctx.arc(-4.5, -1, 2.4, 0, 7); ctx.fill();
+    ctx.fillStyle = '#7fb3c4'; ctx.beginPath(); ctx.ellipse(4.5, 1, 3, 1.8, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#c95b45'; ctx.fillRect(6, -10, 3, 8);
   }
 
   function drawPlot(pl) {
@@ -1812,11 +2208,12 @@
     ctx.save(); ctx.translate(t.x, t.y); ctx.scale(t.s, t.s);
     ctx.fillStyle = 'rgba(100,80,50,0.18)'; ctx.beginPath(); ctx.ellipse(0, 0, 38, 11, 0, 0, 7); ctx.fill();
     ctx.fillStyle = clayGrad(0, -20, 12, '#b5875f', '#9a6c48', '#7c5236'); rr(ctx, -8, -44, 16, 46, 7); ctx.fill();
-    const sway = Math.sin(G.t * 0.8 + t.x) * 1.5;
+    const sway = Math.sin(G.t * 0.8 + t.x) * 1.5 + (t.shake > 0 ? Math.sin(G.t * 46) * t.shake * 5 : 0);
     for (const [x, y, r] of [[-22, -66, 26], [22, -68, 26], [0, -92, 30], [0, -62, 28]]) {
       ctx.fillStyle = clayGrad(x + sway, y, r, '#b9d68f', '#93b86c', '#77a058');
       ctx.beginPath(); ctx.arc(x + sway, y, r, 0, 7); ctx.fill();
     }
+    if (t.fruit) for (let i = 0; i < t.n; i++) { const [fx, fy] = FRUIT_SPOTS[i]; drawProduce(t.fruit, fx + sway, fy, 0.95); }
     ctx.restore();
   }
 
@@ -2196,20 +2593,15 @@
     list.push([shop.y + shop.h, drawShop]);
     list.push([pier.y + 4, drawPierSign]);
     [player, ...npcs].forEach((c) => list.push([c.y, () => { drawMong(c); if (!c.player) drawName(c); }]));
+    bugs.forEach((b) => list.push([b.y + 0.5, () => drawBug(b)]));
     list.sort((a, b) => a[0] - b[0]).forEach(([, fn]) => fn());
 
     drawFishing();
+    for (const d of drops) if (d.t >= d.delay) drawProduce(d.k, d.x, d.y - 6, 0.9);
     for (const q of parts) { ctx.globalAlpha = clamp(q.life / q.max, 0, 1); ctx.fillStyle = q.c; ctx.beginPath(); ctx.arc(q.x, q.y, q.r, 0, 7); ctx.fill(); }
     ctx.globalAlpha = 1;
 
     const night = nightAmount();
-    // butterflies by day
-    if (night < 0.8) for (const f of flies) {
-      const flap = Math.abs(Math.sin(G.t * 12 + f.p)) * 4 + 1;
-      ctx.globalAlpha = 1 - night; ctx.fillStyle = f.c;
-      ctx.beginPath(); ctx.ellipse(f.x - 3, f.y, flap, 4, 0.3, 0, 7); ctx.ellipse(f.x + 3, f.y, flap, 4, -0.3, 0, 7); ctx.fill();
-    }
-    ctx.globalAlpha = 1;
 
     // time-of-day tint over the world
     const [r, g, b, a] = tint();
@@ -2220,7 +2612,7 @@
       const glow = (x, y, rad, al) => { const gr = ctx.createRadialGradient(x, y, 0, x, y, rad); gr.addColorStop(0, `rgba(255,200,120,${al})`); gr.addColorStop(1, 'rgba(255,200,120,0)'); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(x, y, rad, 0, 7); ctx.fill(); };
       lamps.forEach((l) => glow(l.x, l.y - 62, 90, 0.35 * night));
       glow(house.x + 34, house.y + 48, 40, 0.3 * night); glow(house.x + house.w - 34, house.y + 48, 40, 0.3 * night);
-      for (const f of flies) { const tw = 0.5 + 0.5 * Math.sin(G.t * 3 + f.p * 5); glow(f.x, f.y, 10, 0.5 * night * tw); }
+      for (const b of bugs) if (b.k === 'firefly') { const tw = 0.5 + 0.5 * Math.sin(G.t * 3 + b.ph * 5); glow(b.x, b.y - b.alt, 16, 0.65 * night * tw * b.a); }
       ctx.globalCompositeOperation = 'source-over';
     }
 
