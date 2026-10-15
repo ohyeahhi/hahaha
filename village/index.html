@@ -73,7 +73,7 @@
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 14px rgba(0, 0, 0, 0.06);
     font: 700 13px var(--font); letter-spacing: 0;
   }
-  .round[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+  #enBtn[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
   button:focus-visible { outline: 3px solid var(--down); outline-offset: 2px; }
 
   .toast {
@@ -150,6 +150,47 @@
   .ledger div:last-child { border-bottom: 0; }
   .ledger span:last-child { font-weight: 700; }
   .label { font-size: 13px; font-weight: 600; color: var(--sub); padding-top: 4px; }
+
+  /* item pictures */
+  .pico { width: 20px; height: 20px; flex: none; margin-left: -4px; }
+  .item.has-icon { grid-template-columns: auto 1fr auto auto; }
+  .ico { width: 44px; height: 44px; flex: none; }
+
+  /* music / sound toggles: a slash marks "off" */
+  .round { position: relative; display: inline-grid; place-items: center; }
+  .round.off { color: #b9b2a9; }
+  .round.off::after { content: ""; position: absolute; width: 24px; height: 2.4px; border-radius: 2px; background: currentColor; transform: rotate(-45deg); box-shadow: 0 0 0 1.5px #ffffff; }
+
+  /* seed picker: one picture card per crop */
+  .seed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .seed-card {
+    position: relative; min-width: 0;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 14px 12px 14px; border: 0; border-radius: 20px;
+    background: var(--grouped); color: var(--ink);
+    font-family: var(--font); text-align: center; cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .seed-card:active { transform: scale(0.97); }
+  .seed-card:disabled { cursor: default; transform: none; }
+  .seed-card:disabled > :not(.badge) { opacity: 0.42; }
+  .seed-card img { width: 72px; height: 72px; margin-bottom: 2px; }
+  .seed-card .nm { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; }
+  .seed-card .profit { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; color: var(--up); font-variant-numeric: tabular-nums; line-height: 1.2; }
+  .seed-card .profit small { font-size: 13px; font-weight: 600; margin-right: 4px; letter-spacing: 0; }
+  .seed-card .math { font-size: 12px; font-weight: 500; color: var(--sub); font-variant-numeric: tabular-nums; }
+  .seed-card .time { width: 100%; display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 12px; font-weight: 600; color: var(--sub); font-variant-numeric: tabular-nums; }
+  .seed-card .time svg { flex: none; }
+  .seed-card .track { flex: 1; height: 6px; border-radius: 3px; background: rgba(31, 27, 23, 0.08); overflow: hidden; }
+  .seed-card .fill { display: block; height: 100%; border-radius: 3px; }
+  .badge {
+    position: absolute; top: 10px; right: 10px;
+    height: 24px; padding-inline: 8px; border-radius: 12px; box-sizing: border-box;
+    display: inline-flex; align-items: center;
+    background: var(--surface); color: var(--ink);
+    font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums;
+  }
+  .badge.none { color: var(--sub); }
 </style>
 </head>
 <body>
@@ -158,14 +199,19 @@
 <div class="hud">
   <div class="pills">
     <span class="pill" id="clock">1일째 · 아침</span>
-    <span class="pill"><span class="dot" style="background:var(--coin)"></span><span id="coins">0</span></span>
-    <span class="pill"><span class="dot" style="background:#a98257"></span><span id="seeds">0</span></span>
-    <span class="pill"><span class="dot" style="background:#e8873a"></span><span id="crops">0</span></span>
-    <span class="pill"><span class="dot" style="background:#7fb3c4"></span><span id="fish">0</span></span>
+    <span class="pill" title="코인"><img class="pico" data-icon="coin" alt="코인"><span id="coins">0</span></span>
+    <span class="pill" title="씨앗"><img class="pico" data-icon="seed" alt="씨앗"><span id="seeds">0</span></span>
+    <span class="pill" title="작물"><img class="pico" data-icon="carrot" alt="작물"><span id="crops">0</span></span>
+    <span class="pill" title="물고기"><img class="pico" data-icon="crucian" alt="물고기"><span id="fish">0</span></span>
   </div>
   <div class="tools">
     <button class="round" id="enBtn" type="button" aria-pressed="false" aria-label="영어 같이 보기">EN</button>
-    <button class="round" id="soundBtn" type="button" aria-label="소리 끄기">♪</button>
+    <button class="round" id="musicBtn" type="button" aria-pressed="true" aria-label="배경음악">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 17.5V6.2l10-2v11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.6" cy="17.6" r="2.6" fill="currentColor"/><circle cx="16.6" cy="15.3" r="2.6" fill="currentColor"/></svg>
+    </button>
+    <button class="round" id="soundBtn" type="button" aria-pressed="true" aria-label="효과음">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9.2v5.6h3.8L13 19V5L7.8 9.2H4z" fill="currentColor"/><path d="M16.2 8.6a5 5 0 0 1 0 6.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+    </button>
   </div>
 </div>
 
@@ -193,14 +239,16 @@
 
 <div class="sheet" id="seedSheet" hidden>
   <div class="row-head"><h2>무엇을 심을까요?</h2><span class="en" data-en>What will you plant?</span></div>
-  <div class="market" id="seedList"></div>
+  <div class="seed-grid" id="seedList"></div>
+  <p class="muted" id="seedNote"></p>
   <button class="btn soft" id="seedClose" type="button">그만두기</button>
 </div>
 
 <div class="sheet" id="houseSheet" hidden>
   <h2>우리 집</h2>
   <p>작고 포근한 집이에요. 집 꾸미기는 다음 버전에서 열려요.</p>
-  <div class="item">
+  <div class="item has-icon">
+    <img class="ico" data-icon="coin" alt="">
     <div class="name"><b>저금통 <span class="en" data-en>Piggy bank</span></b><span class="muted" id="bankInfo"></span></div>
     <div class="price"><b id="bankAmount">0코인</b><span class="delta up">하루 이자 5%</span></div>
     <div class="acts"><button class="btn small" id="depositBtn" type="button">10 넣기</button><button class="btn small soft" id="withdrawBtn" type="button">꺼내기</button></div>
@@ -216,7 +264,7 @@
   const $ = (id) => document.getElementById(id);
   const FONT = '"Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
   const canvas = $('world');
-  const ctx = canvas.getContext('2d');
+  let ctx = canvas.getContext('2d'); // swapped briefly while painting item pictures
 
   // ---------- small helpers ----------
   const store = {
@@ -290,7 +338,7 @@
     seeds: { carrot: 3, flower: 2, tomato: 0, strawberry: 0 },
     inv: { carrot: 0, flower: 0, tomato: 0, strawberry: 0, minnow: 0, crucian: 0, carp: 0 },
     prices: {}, prev: {}, ledger: [],
-    shirt: 'yellow', en: false, muted: false,
+    shirt: 'yellow', en: false, muted: false, music: true,
     tips: { planted: false, fished: false },
   };
   function rollPrices() {
@@ -300,11 +348,11 @@
   rollPrices(); G.prev = { ...G.prices };
 
   function save() {
-    return { v: 2, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, en: G.en, muted: G.muted, tips: G.tips, plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
+    return { v: 2, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, en: G.en, muted: G.muted, music: G.music, tips: G.tips, plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
   }
   function load(s) {
     if (!s || s.v !== 2) return false;
-    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, en: !!s.en, muted: !!s.muted, tips: s.tips || G.tips });
+    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: s.tips || G.tips });
     (s.plots || []).forEach((p, i) => { if (plots[i]) Object.assign(plots[i], p); });
     return true;
   }
@@ -365,8 +413,7 @@
   function tone(f, d = 0.18, type = 'triangle', v = 0.05, slide = 0, delay = 0) {
     if (G.muted) return;
     try {
-      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
-      if (ac.state === 'suspended') ac.resume();
+      ensureAudio();
       const t = ac.currentTime + delay;
       const o = ac.createOscillator(), g = ac.createGain();
       o.type = type; o.frequency.setValueAtTime(f, t);
@@ -388,6 +435,79 @@
     talk: () => { tone(rand(520, 640), 0.07, 'sine', 0.035); tone(rand(600, 720), 0.07, 'sine', 0.03, 0, 0.08); },
   };
 
+  function ensureAudio() {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    if (ac.state === 'suspended') ac.resume();
+    return ac;
+  }
+
+  // ---------- background music: a slow music-box loop, played live ----------
+  const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
+  const PROG = [[53, 57, 60, 64], [52, 55, 59, 62], [50, 53, 57, 60], [48, 52, 55, 59]]; // Fmaj7 Em7 Dm7 Cmaj7
+  const PENTA = [72, 74, 76, 79, 81, 84, 86, 88];                                           // C major pentatonic
+  const EIGHTH = 60 / 70 / 2;                                                               // 70 bpm
+  const M = { bus: null, nodes: [], timer: null, next: 0, step: 0, last: 76 };
+  function voice(f, t, d, type, v, attack = 0.008) {
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + attack); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(g).connect(M.bus); o.start(t); o.stop(t + d + 0.05);
+  }
+  function startMusic() {
+    if (!G.music || M.timer) return;
+    try {
+      ensureAudio();
+      const now = ac.currentTime;
+      const bus = ac.createGain();
+      bus.gain.setValueAtTime(0.0001, now); bus.gain.exponentialRampToValueAtTime(0.8, now + 2.5);
+      const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2600;
+      const echo = ac.createDelay(1); echo.delayTime.value = EIGHTH * 3;
+      const fb = ac.createGain(); fb.gain.value = 0.28;
+      const wet = ac.createGain(); wet.gain.value = 0.3;
+      bus.connect(lp); lp.connect(ac.destination);
+      lp.connect(echo); echo.connect(fb); fb.connect(echo); echo.connect(wet); wet.connect(ac.destination);
+      M.bus = bus; M.nodes = [bus, lp, echo, fb, wet];
+      M.next = now + 0.2; M.step = 0;
+      M.timer = setInterval(scheduleMusic, 100);
+    } catch (e) {}
+  }
+  function stopMusic() {
+    if (!M.timer) return;
+    clearInterval(M.timer); M.timer = null;
+    const nodes = M.nodes, bus = M.bus;
+    try {
+      const now = ac.currentTime;
+      bus.gain.cancelScheduledValues(now); bus.gain.setValueAtTime(Math.max(0.0001, bus.gain.value), now); bus.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
+    } catch (e) {}
+    setTimeout(() => nodes.forEach((n) => { try { n.disconnect(); } catch (e) {} }), 1500);
+  }
+  function scheduleMusic() {
+    if (!ac || ac.state !== 'running' || !M.bus) return;
+    while (M.next < ac.currentTime + 0.4) {
+      const t = M.next, s = M.step, bar = Math.floor(s / 8) % 4, beat = s % 8;
+      const chord = PROG[bar], soft = isNight() ? 0.6 : 1;
+      if (beat === 0) {
+        voice(mtof(chord[0] - 12), t, EIGHTH * 8, 'sine', 0.07 * soft, 0.04);                       // bass
+        chord.forEach((m, i) => voice(mtof(m), t + i * 0.04, EIGHTH * 7.6, 'sine', 0.012 * soft, 0.7)); // pad
+      }
+      // music box: chord tones on the strong beats, gentle pentatonic steps in between
+      const r = mulberry32(Math.floor(s / 32) * 977 + s)();
+      const strong = beat === 0 || beat === 4;
+      if (strong || r < (isNight() ? 0.22 : 0.42)) {
+        let m;
+        if (strong) { m = chord[beat === 0 ? bar : (bar + 2) % 4] + 24; while (m > 88) m -= 12; }
+        else {
+          const i = Math.max(0, PENTA.indexOf(M.last));
+          m = PENTA[clamp(i + (r < 0.21 ? -1 : r < 0.32 ? 1 : r < 0.37 ? 2 : -2), 0, PENTA.length - 1)];
+        }
+        M.last = PENTA.reduce((a, b) => (Math.abs(b - m) < Math.abs(a - m) ? b : a));
+        voice(mtof(m), t, 1.5, 'triangle', 0.04 * soft);
+        voice(mtof(m + 12), t, 0.45, 'sine', 0.008 * soft);                                         // bell shimmer
+      }
+      M.next += EIGHTH; M.step++;
+    }
+  }
+
   // ---------- UI ----------
   const ui = { clock: $('clock'), coins: $('coins'), seeds: $('seeds'), crops: $('crops'), fish: $('fish'), toast: $('toast') };
   const CROP_KEYS = Object.keys(CROPS), FISH_KEYS = Object.keys(FISH);
@@ -402,15 +522,17 @@
   function syncHud() {
     const tn = timeName(G.time);
     ui.clock.textContent = G.en ? `Day ${G.day} · ${tn[1]}` : `${G.day}일째 · ${tn[0]}`;
-    ui.coins.textContent = G.coins + (G.en ? ' coins' : '');
-    ui.seeds.textContent = (G.en ? 'Seeds ' : '씨앗 ') + sum(G.seeds, CROP_KEYS);
-    ui.crops.textContent = (G.en ? 'Crops ' : '작물 ') + sum(G.inv, CROP_KEYS);
-    ui.fish.textContent = (G.en ? 'Fish ' : '물고기 ') + sum(G.inv, FISH_KEYS);
+    ui.coins.textContent = G.coins;
+    ui.seeds.textContent = sum(G.seeds, CROP_KEYS);
+    ui.crops.textContent = sum(G.inv, CROP_KEYS);
+    ui.fish.textContent = sum(G.inv, FISH_KEYS);
   }
   function syncToggles() {
     $('enBtn').setAttribute('aria-pressed', String(G.en));
-    $('soundBtn').textContent = G.muted ? '×' : '♪';
-    $('soundBtn').setAttribute('aria-label', G.muted ? '소리 켜기' : '소리 끄기');
+    for (const [id, on] of [['musicBtn', G.music], ['soundBtn', !G.muted]]) {
+      $(id).setAttribute('aria-pressed', String(on));
+      $(id).classList.toggle('off', !on);
+    }
     document.querySelectorAll('[data-en]').forEach((el) => { el.hidden = !G.en; });
   }
 
@@ -436,8 +558,9 @@
   function renderShop() {
     $('shopDay').textContent = G.en ? `Day ${G.day} prices` : `${G.day}일째 시세`;
     const m = $('market'); m.innerHTML = '';
-    const row = (nameKo, nameEn, have, price, prev, actions) => {
-      const el = document.createElement('div'); el.className = 'item';
+    const row = (nameKo, nameEn, have, price, prev, actions, icon) => {
+      const el = document.createElement('div'); el.className = 'item has-icon';
+      const img = document.createElement('img'); img.className = 'ico'; img.alt = ''; img.src = iconURL(icon); el.append(img);
       const n = document.createElement('div'); n.className = 'name';
       n.innerHTML = `<b></b><span class="muted"></span>`;
       n.querySelector('b').textContent = nameKo + (G.en ? ` · ${nameEn}` : '');
@@ -463,7 +586,7 @@
       row(it.ko, it.en, `가지고 있음 ${have}개`, G.prices[k], G.prev[k] ?? null, [
         ['1개 팔기', () => sell(k, 1), have > 0],
         ['모두', () => sell(k, have), have > 1],
-      ]);
+      ], k);
     }
     section('씨앗 사기', 'Buy seeds');
     for (const k of CROP_KEYS) {
@@ -471,7 +594,7 @@
       row(`${c.ko} 씨앗`, `${c.en} seed`, `가진 씨앗 ${G.seeds[k]}개 · 오늘 팔면 이익 ${profit >= 0 ? '+' : ''}${profit}`, c.seed, null, [
         ['1개 사기', () => buySeeds(k, 1), G.coins >= c.seed],
         ['3개', () => buySeeds(k, 3), G.coins >= c.seed * 3],
-      ]);
+      ], k);
     }
     $('coinsNow').textContent = `지금 ${G.coins}코인`;
     const l = $('ledger'); l.innerHTML = '';
@@ -500,30 +623,39 @@
 
   // seed picker, opened from an empty plot
   let pendingPlot = null;
+  const CLOCK_SVG = '<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 4.6V8l2.3 1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
   function renderSeeds() {
     const list = $('seedList'); list.innerHTML = '';
+    const slowest = Math.max(...CROP_KEYS.map((k) => CROPS[k].grow));
     for (const k of CROP_KEYS) {
-      const c = CROPS[k], have = G.seeds[k];
-      const el = document.createElement('div'); el.className = 'item';
-      const n = document.createElement('div'); n.className = 'name';
-      const b = document.createElement('b'); b.textContent = c.ko + (G.en ? ` · ${c.en}` : '');
-      const s = document.createElement('span'); s.className = 'muted';
-      s.textContent = `씨앗 ${have}개 · 다 자라는 데 약 ${c.grow * 3}초`;
-      n.append(b, s);
-      const p = document.createElement('div'); p.className = 'price';
+      const c = CROPS[k], have = G.seeds[k], secs = c.grow * 3;
       const profit = G.prices[k] - c.seed;
-      p.innerHTML = `<b></b><span class="delta"></span>`;
-      p.querySelector('b').textContent = `${c.seed} → ${G.prices[k]}`;
-      p.querySelector('span').textContent = `이익 ${profit >= 0 ? '+' : ''}${profit}`;
-      p.querySelector('span').classList.add(profit > 0 ? 'up' : 'down');
-      const a = document.createElement('div'); a.className = 'acts';
-      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'btn small'; btn.textContent = '심기'; btn.disabled = have <= 0;
-      btn.addEventListener('click', () => plant(k));
-      a.append(btn); el.append(n, p, a); list.append(el);
+      const card = document.createElement('button');
+      card.type = 'button'; card.className = 'seed-card'; card.disabled = have <= 0;
+      card.setAttribute('aria-label', `${c.ko} 심기. 씨앗 ${have}개, 이익 ${profit}코인, ${secs}초`);
+      const fast = c.grow / slowest;
+      card.innerHTML =
+        `<span class="badge${have ? '' : ' none'}"></span>` +
+        `<img alt="" width="72" height="72">` +
+        `<span class="nm"></span>` +
+        `<span class="profit"><small>이익</small></span>` +
+        `<span class="math"></span>` +
+        `<span class="time">${CLOCK_SVG}<span class="track"><span class="fill"></span></span><span class="secs"></span></span>`;
+      card.querySelector('.badge').textContent = have ? `씨앗 ${have}` : '씨앗 없음';
+      card.querySelector('img').src = iconURL(k);
+      card.querySelector('.nm').textContent = c.ko + (G.en ? ` ${c.en}` : '');
+      card.querySelector('.profit').append(`${profit >= 0 ? '+' : ''}${profit}`);
+      card.querySelector('.math').textContent = `씨앗 ${c.seed} → 팔 때 ${G.prices[k]}코인`;
+      const fill = card.querySelector('.fill');
+      fill.style.width = `${Math.round(fast * 100)}%`;
+      fill.style.background = fast < 0.5 ? '#7fb069' : fast < 0.8 ? '#e2bd55' : '#e0704a';
+      card.querySelector('.secs').textContent = `${secs}초`;
+      card.addEventListener('click', () => plant(k));
+      list.append(card);
     }
-    const note = document.createElement('p'); note.className = 'muted';
-    note.textContent = '숫자는 씨앗값 → 오늘 판매값이에요. 씨앗이 없으면 도담이네 가게에서 살 수 있어요.';
-    list.append(note);
+    $('seedNote').textContent = sum(G.seeds, CROP_KEYS)
+      ? '이익 = 팔 때 값 − 씨앗값. 막대가 짧을수록 빨리 자라요.'
+      : '씨앗이 없어요. 도담이네 가게에서 살 수 있어요.';
   }
   function plant(k) {
     const p = pendingPlot; closeSheet(); pendingPlot = null;
@@ -557,7 +689,7 @@
   $('seedClose').addEventListener('click', () => { pendingPlot = null; closeSheet(); });
 
   $('startBtn').addEventListener('click', () => {
-    G.started = true; closeSheet(); tone(523, 0.2);
+    G.started = true; closeSheet(); tone(523, 0.2); startMusic();
     persist();
     if (!G.tips.planted) setTimeout(() => toast('집 앞 밭을 눌러 씨앗을 심어보세요.', 'Tap the garden to plant a seed.'), 600);
   });
@@ -568,7 +700,20 @@
     setTimeout(() => { newDay(); G.time = 0.03; player.x = house.door.x; player.y = house.door.y + 10; }, 700);
   });
   $('enBtn').addEventListener('click', () => { G.en = !G.en; syncToggles(); syncHud(); if (modal === 'shopSheet') renderShop(); if (modal === 'seedSheet') renderSeeds(); persist(); });
-  $('soundBtn').addEventListener('click', () => { G.muted = !G.muted; syncToggles(); persist(); });
+  $('soundBtn').addEventListener('click', () => {
+    G.muted = !G.muted; syncToggles(); persist();
+    toast(G.muted ? '효과음을 껐어요.' : '효과음을 켰어요.', G.muted ? 'Sound effects off.' : 'Sound effects on.');
+    if (!G.muted) tone(660, 0.15);
+  });
+  $('musicBtn').addEventListener('click', () => {
+    G.music = !G.music; syncToggles(); persist();
+    if (G.music) startMusic(); else stopMusic();
+    toast(G.music ? '배경음악을 켰어요.' : '배경음악을 껐어요.', G.music ? 'Music on.' : 'Music off.');
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (!ac) return;
+    try { if (document.hidden) ac.suspend(); else ac.resume(); } catch (e) {}
+  });
 
   function newDay() {
     G.day++; rollPrices();
@@ -975,6 +1120,45 @@
     ctx.restore();
   }
 
+  function drawFishIcon(col) {
+    ctx.fillStyle = clayGrad(2, 0, 11, shade(col, 0.18), col, shade(col, -0.12));
+    ctx.beginPath(); ctx.ellipse(2, 0, 11, 6.5, 0, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-7, 0); ctx.lineTo(-14, -6.5); ctx.quadraticCurveTo(-12, 0, -14, 6.5); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.beginPath(); ctx.ellipse(3, -3, 5, 1.6, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = HAIR; ctx.beginPath(); ctx.arc(8.5, -1.5, 1.3, 0, 7); ctx.fill();
+  }
+  function drawCoin() {
+    ctx.fillStyle = clayGrad(0, 0, 11, '#f9e092', '#e2bd55', '#b8902f');
+    ctx.beginPath(); ctx.arc(0, 0, 11, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(0, 0, 7, 0, 7); ctx.stroke();
+    ctx.fillStyle = 'rgba(150,110,30,0.55)'; ctx.font = `800 9px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('동', 0, 0.5);
+  }
+  function drawSeedBag() {
+    ctx.fillStyle = clayGrad(0, 3, 12, '#ead2a8', '#c9a77a', '#a4835a');
+    ctx.beginPath(); ctx.moveTo(-6, -6); ctx.quadraticCurveTo(-13, 2, -10, 9); ctx.quadraticCurveTo(0, 14, 10, 9); ctx.quadraticCurveTo(13, 2, 6, -6); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0, -8, 6.5, 3, 0, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#8a6a48'; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(-6, -5.5); ctx.lineTo(6, -5.5); ctx.stroke();
+    ctx.strokeStyle = '#6f9a58'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(0, 7); ctx.lineTo(0, 1); ctx.stroke();
+    ctx.fillStyle = '#8fbf6a';
+    ctx.beginPath(); ctx.ellipse(-3, 1.5, 3.2, 1.7, 0.5, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(3, 1.5, 3.2, 1.7, -0.5, 0, 7); ctx.fill();
+  }
+  // paints an item with the same clay drawing used in the world, returns a data URL for <img>
+  const iconCache = {};
+  function iconURL(kind) {
+    if (iconCache[kind]) return iconCache[kind];
+    const c = document.createElement('canvas'); c.width = c.height = 128;
+    const main = ctx; ctx = c.getContext('2d');
+    try {
+      ctx.translate(64, 66); ctx.scale(4, 4);
+      if (CROPS[kind]) drawProduce(kind, 0, 0, 1, kind === 'flower' ? '#f2a7b8' : undefined);
+      else if (FISH[kind]) drawFishIcon(FISH[kind].color);
+      else if (kind === 'coin') drawCoin();
+      else if (kind === 'seed') drawSeedBag();
+    } finally { ctx = main; }
+    return (iconCache[kind] = c.toDataURL());
+  }
+
   function drawPlot(pl) {
     const cx = pl.x + pl.w / 2;
     ctx.fillStyle = pl.watered ? '#7b5b40' : '#a07a53';
@@ -1268,6 +1452,7 @@
     const restored = load((data && data.v === 1 && data) || store.get('donggle-village', null));
     player.shirt = (SHIRTS.find((s) => s.id === G.shirt) || SHIRTS[2]).c;
     if (restored) $('startBtn').textContent = '이어서 놀기';
+    document.querySelectorAll('img[data-icon]').forEach((im) => { im.src = iconURL(im.dataset.icon); });
     syncSwatches(); syncToggles(); syncHud(); resize();
     ground = buildGround();
     cam.x = player.x; cam.y = player.y;
