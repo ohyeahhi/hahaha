@@ -161,36 +161,33 @@
   .round.off { color: #b9b2a9; }
   .round.off::after { content: ""; position: absolute; width: 24px; height: 2.4px; border-radius: 2px; background: currentColor; transform: rotate(-45deg); box-shadow: 0 0 0 1.5px #ffffff; }
 
-  /* seed picker: one picture card per crop */
+  /* seed picker: one picture card per crop, one message per card */
   .seed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .seed-card {
-    position: relative; min-width: 0;
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-    padding: 14px 12px 14px; border: 0; border-radius: 20px;
+    min-width: 0;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 16px 10px 12px; border: 0; border-radius: 20px;
     background: var(--grouped); color: var(--ink);
     font-family: var(--font); text-align: center; cursor: pointer;
     transition: transform 0.1s;
   }
   .seed-card:active { transform: scale(0.97); }
   .seed-card:disabled { cursor: default; transform: none; }
-  .seed-card:disabled > :not(.badge) { opacity: 0.42; }
-  .seed-card img { width: 72px; height: 72px; margin-bottom: 2px; }
-  .seed-card .nm { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; }
-  .seed-card .profit { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; color: var(--up); font-variant-numeric: tabular-nums; line-height: 1.2; }
-  .seed-card .profit small { font-size: 13px; font-weight: 600; margin-right: 4px; letter-spacing: 0; }
-  .seed-card .math { font-size: 12px; font-weight: 500; color: var(--sub); font-variant-numeric: tabular-nums; }
-  .seed-card .time { width: 100%; display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 12px; font-weight: 600; color: var(--sub); font-variant-numeric: tabular-nums; }
-  .seed-card .time svg { flex: none; }
-  .seed-card .track { flex: 1; height: 6px; border-radius: 3px; background: rgba(31, 27, 23, 0.08); overflow: hidden; }
-  .seed-card .fill { display: block; height: 100%; border-radius: 3px; }
-  .badge {
-    position: absolute; top: 10px; right: 10px;
-    height: 24px; padding-inline: 8px; border-radius: 12px; box-sizing: border-box;
+  .seed-card:disabled > :not(.own) { opacity: 0.4; }
+  .seed-card > img { width: 68px; height: 68px; margin-bottom: 4px; }
+  .seed-card .nm { font-size: 16px; font-weight: 600; color: var(--sub); }
+  .seed-card .earn { display: inline-flex; align-items: center; gap: 4px; font-size: 22px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .seed-card .earn img { width: 22px; height: 22px; }
+  .seed-card .earn small { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; margin-left: -3px; }
+  .seed-card .speed { font-size: 13px; font-weight: 500; color: var(--sub); }
+  .seed-card .own {
+    margin-top: 10px; min-height: 28px; padding: 4px 12px; box-sizing: border-box; border-radius: 14px;
     display: inline-flex; align-items: center;
-    background: var(--surface); color: var(--ink);
-    font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums;
+    background: var(--surface); font-size: 13px; font-weight: 700;
   }
-  .badge.none { color: var(--sub); }
+  .seed-card .own.none { color: var(--accent); }
+  .example { margin: 0; padding: 12px 14px; border-radius: 14px; background: var(--grouped); font-size: 14px; line-height: 1.55; color: var(--ink); }
+  .example b { font-weight: 700; }
 </style>
 </head>
 <body>
@@ -240,7 +237,7 @@
 <div class="sheet" id="seedSheet" hidden>
   <div class="row-head"><h2>무엇을 심을까요?</h2><span class="en" data-en>What will you plant?</span></div>
   <div class="seed-grid" id="seedList"></div>
-  <p class="muted" id="seedNote"></p>
+  <p class="example" id="seedNote"></p>
   <button class="btn soft" id="seedClose" type="button">그만두기</button>
 </div>
 
@@ -329,6 +326,7 @@
   const ITEMS = { ...CROPS, ...FISH };
   const BANK_RATE = 0.05;
   // Korean object particle: 당근을 / 토마토를
+  const topic = (w) => { const c = w.charCodeAt(w.length - 1) - 0xac00; return w + (c >= 0 && c < 11172 && c % 28 ? '은' : '는'); };
   const eul = (w) => { const c = w.charCodeAt(w.length - 1) - 0xac00; return w + (c >= 0 && c < 11172 && c % 28 ? '을' : '를'); };
   const sum = (o, keys) => keys.reduce((a, k) => a + (o[k] || 0), 0);
 
@@ -623,39 +621,38 @@
 
   // seed picker, opened from an empty plot
   let pendingPlot = null;
-  const CLOCK_SVG = '<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 4.6V8l2.3 1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+  // how long a crop takes, in words a child can read at a glance
+  function speedWord(k) {
+    const slowest = Math.max(...CROP_KEYS.map((x) => CROPS[x].grow));
+    const r = CROPS[k].grow / slowest;
+    return r <= 0.45 ? '금방 자라요' : r <= 0.6 ? '조금 걸려요' : r <= 0.8 ? '오래 걸려요' : '아주 오래 걸려요';
+  }
   function renderSeeds() {
     const list = $('seedList'); list.innerHTML = '';
-    const slowest = Math.max(...CROP_KEYS.map((k) => CROPS[k].grow));
     for (const k of CROP_KEYS) {
       const c = CROPS[k], have = G.seeds[k], secs = c.grow * 3;
-      const profit = G.prices[k] - c.seed;
+      const left = G.prices[k] - c.seed;
       const card = document.createElement('button');
       card.type = 'button'; card.className = 'seed-card'; card.disabled = have <= 0;
-      card.setAttribute('aria-label', `${c.ko} 심기. 씨앗 ${have}개, 이익 ${profit}코인, ${secs}초`);
-      const fast = c.grow / slowest;
-      card.innerHTML =
-        `<span class="badge${have ? '' : ' none'}"></span>` +
-        `<img alt="" width="72" height="72">` +
-        `<span class="nm"></span>` +
-        `<span class="profit"><small>이익</small></span>` +
-        `<span class="math"></span>` +
-        `<span class="time">${CLOCK_SVG}<span class="track"><span class="fill"></span></span><span class="secs"></span></span>`;
-      card.querySelector('.badge').textContent = have ? `씨앗 ${have}` : '씨앗 없음';
-      card.querySelector('img').src = iconURL(k);
+      card.setAttribute('aria-label', `${c.ko}. ${left}코인 남아요. ${speedWord(k)}. 씨앗 ${have}개 있어요.`);
+      card.innerHTML = `<img alt="" width="68" height="68"><span class="nm"></span><span class="earn"><img alt="" width="22" height="22"><span class="n"></span><small>코인</small></span><span class="speed"></span><span class="own"></span>`;
+      const [pic, coin] = card.querySelectorAll('img');
+      pic.src = iconURL(k); coin.src = iconURL('coin');
       card.querySelector('.nm').textContent = c.ko + (G.en ? ` ${c.en}` : '');
-      card.querySelector('.profit').append(`${profit >= 0 ? '+' : ''}${profit}`);
-      card.querySelector('.math').textContent = `씨앗 ${c.seed} → 팔 때 ${G.prices[k]}코인`;
-      const fill = card.querySelector('.fill');
-      fill.style.width = `${Math.round(fast * 100)}%`;
-      fill.style.background = fast < 0.5 ? '#7fb069' : fast < 0.8 ? '#e2bd55' : '#e0704a';
-      card.querySelector('.secs').textContent = `${secs}초`;
+      card.querySelector('.n').textContent = `${left >= 0 ? '+' : ''}${left}`;
+      card.querySelector('.speed').textContent = `${speedWord(k)} · ${secs}초`;
+      const own = card.querySelector('.own');
+      if (have) own.textContent = `씨앗 ${have}개 있어요`;
+      else { own.textContent = `가게에서 ${c.seed}코인`; own.classList.add('none'); }
       card.addEventListener('click', () => plant(k));
       list.append(card);
     }
-    $('seedNote').textContent = sum(G.seeds, CROP_KEYS)
-      ? '이익 = 팔 때 값 − 씨앗값. 막대가 짧을수록 빨리 자라요.'
-      : '씨앗이 없어요. 도담이네 가게에서 살 수 있어요.';
+    const note = $('seedNote'); note.innerHTML = '';
+    const ex = CROP_KEYS.find((k) => G.seeds[k] > 0);
+    if (!ex) { note.textContent = '씨앗이 없어요. 도담이네 가게에서 살 수 있어요.'; return; }
+    const c = CROPS[ex], left = G.prices[ex] - c.seed;
+    const b = (t) => { const e = document.createElement('b'); e.textContent = t; return e; };
+    note.append(`${topic(c.ko)} 오늘 `, b(`${G.prices[ex]}코인`), `에 팔려요. 씨앗값 `, b(`${c.seed}코인`), `을 빼면 `, b(`${left}코인`), `이 남아요.`);
   }
   function plant(k) {
     const p = pendingPlot; closeSheet(); pendingPlot = null;

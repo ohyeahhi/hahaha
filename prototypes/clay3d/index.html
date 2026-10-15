@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>동글이 클레이 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap">
+<style>
+  /* Layout: a clay photo studio. The 3D stage fills the screen; a title floats top-left and
+     one segmented control for clay texture sits at the bottom, like a camera app. */
+  :root {
+    --studio: #f3e9d8;      /* seamless paper backdrop, same as the reference photos */
+    --surface: #ffffff;
+    --ink: #1f1b17;
+    --sub: #8b857d;
+    --accent: #c8714f;
+    --font: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+    color-scheme: light;
+  }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; overflow: hidden;
+    background: var(--studio); color: var(--ink);
+    font-family: var(--font); letter-spacing: -0.01em;
+    word-break: keep-all;
+    -webkit-font-smoothing: antialiased;
+    touch-action: none; -webkit-user-select: none; user-select: none;
+  }
+  #stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .top {
+    position: fixed; top: 0; left: 0; right: 0;
+    padding-top: calc(18px + env(safe-area-inset-top, 0px));
+    padding-left: max(20px, env(safe-area-inset-left, 0px));
+    padding-right: max(20px, env(safe-area-inset-right, 0px));
+    pointer-events: none;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.035em; }
+  .top p { margin: 0; font-size: 14px; color: var(--sub); }
+  .bottom {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    pointer-events: none;
+  }
+  .seg {
+    pointer-events: auto;
+    display: inline-flex; padding: 4px; gap: 2px; border-radius: 14px;
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 6px 18px rgba(0, 0, 0, 0.07);
+  }
+  .seg button {
+    border: 0; background: transparent; color: var(--sub); cursor: pointer;
+    height: 36px; padding-inline: 16px; border-radius: 10px;
+    font: 600 14px var(--font); letter-spacing: -0.01em;
+  }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: #ffffff; }
+  .seg button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .hint { font-size: 13px; color: var(--sub); }
+  .err { position: fixed; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--sub); }
+</style>
+</head>
+<body>
+<canvas id="stage" aria-label="3D 클레이 동글이 다섯 명. 끌어서 돌려보고, 누르면 인사해요."></canvas>
+
+<div class="top">
+  <h1>동글이 클레이 3D</h1>
+  <p>끌어서 돌려보고, 동글이를 눌러보세요</p>
+</div>
+
+<div class="bottom">
+  <div class="seg" role="group" aria-label="찰흙 질감">
+    <button type="button" id="tex-smooth" aria-pressed="false">매끈</button>
+    <button type="button" id="tex-clay" aria-pressed="true">찰흙</button>
+    <button type="button" id="tex-rough" aria-pressed="false">손자국</button>
+  </div>
+  <div class="seg" role="group" aria-label="조명">
+    <button type="button" id="light-day" aria-pressed="true">낮</button>
+    <button type="button" id="light-eve" aria-pressed="false">저녁</button>
+  </div>
+</div>
+
+<div class="err" id="err" hidden>3D 화면을 불러오지 못했어요. 새로고침해 보세요.</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+<script>
+(() => {
+  'use strict';
+  if (!window.THREE) { document.getElementById('err').hidden = false; return; }
+  const T = THREE;
+  T.ColorManagement.legacyMode = false; // treat hex colours as sRGB
+
+  const canvas = document.getElementById('stage');
+  const renderer = new T.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputEncoding = T.sRGBEncoding;
+  renderer.toneMapping = T.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = T.PCFSoftShadowMap;
+
+  const scene = new T.Scene();
+  const STUDIO = new T.Color('#f3e9d8');
+  scene.background = STUDIO;
+  scene.fog = new T.Fog(STUDIO, 14, 26);
+
+  const camera = new T.PerspectiveCamera(28, 1, 0.1, 60);
+
+  // ---------- lights: soft studio, warm key from upper left ----------
+  const hemi = new T.HemisphereLight('#fff7ec', '#d8c09c', 0.85);
+  scene.add(hemi);
+  const key = new T.DirectionalLight('#fff1dd', 1.35);
+  key.position.set(-4, 7, 6);
+  key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.camera.left = -5; key.shadow.camera.right = 5; key.shadow.camera.top = 5; key.shadow.camera.bottom = -5;
+  key.shadow.radius = 6; key.shadow.bias = -0.0004; key.shadow.normalBias = 0.02;
+  scene.add(key);
+  const rim = new T.DirectionalLight('#ffe0c2', 0.35);
+  rim.position.set(5, 4, -6);
+  scene.add(rim);
+
+  // seamless paper floor
+  const floor = new T.Mesh(new T.PlaneGeometry(60, 60), new T.MeshStandardMaterial({ color: '#f3e9d8', roughness: 1 }));
+  floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true;
+  scene.add(floor);
+
+  // ---------- clay surface: speckle, thumb smudges and grain baked into a bump map ----------
+  function clayMaps(seed) {
+    let s = seed;
+    const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+    const size = 512;
+    const bump = document.createElement('canvas'); bump.width = bump.height = size;
+    const b = bump.getContext('2d');
+    b.fillStyle = '#808080'; b.fillRect(0, 0, size, size);
+    // broad, soft thumb presses
+    for (let i = 0; i < 70; i++) {
+      const x = rnd() * size, y = rnd() * size, r = 18 + rnd() * 60;
+      const g = b.createRadialGradient(x, y, 0, x, y, r);
+      const v = rnd() < 0.5 ? 0 : 255;
+      g.addColorStop(0, `rgba(${v},${v},${v},0.10)`); g.addColorStop(1, `rgba(${v},${v},${v},0)`);
+      b.fillStyle = g; b.beginPath(); b.arc(x, y, r, 0, 7); b.fill();
+    }
+    // fingerprint-ish arcs
+    b.lineWidth = 1.2;
+    for (let i = 0; i < 9; i++) {
+      const cx = rnd() * size, cy = rnd() * size;
+      for (let k = 0; k < 7; k++) {
+        b.strokeStyle = `rgba(${k % 2 ? 0 : 255},${k % 2 ? 0 : 255},${k % 2 ? 0 : 255},0.06)`;
+        b.beginPath(); b.arc(cx, cy, 6 + k * 3.2, rnd() * 3, rnd() * 3 + 2.4); b.stroke();
+      }
+    }
+    // fine grain
+    const img = b.getImageData(0, 0, size, size), d = img.data;
+    for (let i = 0; i < d.length; i += 4) { const n = (rnd() - 0.5) * 22; d[i] += n; d[i + 1] += n; d[i + 2] += n; }
+    b.putImageData(img, 0, 0);
+    // tiny dark specks, like dust caught in air-dry clay
+    const spec = document.createElement('canvas'); spec.width = spec.height = size;
+    const c = spec.getContext('2d');
+    c.fillStyle = '#ffffff'; c.fillRect(0, 0, size, size);
+    for (let i = 0; i < 260; i++) { c.fillStyle = `rgba(110,85,60,${0.12 + rnd() * 0.25})`; c.beginPath(); c.arc(rnd() * size, rnd() * size, 0.6 + rnd() * 1.1, 0, 7); c.fill(); }
+    const bumpTex = new T.CanvasTexture(bump);
+    const specTex = new T.CanvasTexture(spec); specTex.encoding = T.sRGBEncoding;
+    for (const t of [bumpTex, specTex]) { t.wrapS = t.wrapT = T.RepeatWrapping; t.repeat.set(2, 2); t.anisotropy = 4; }
+    return { bumpTex, specTex };
+  }
+  const MAPS = clayMaps(7);
+  const TEXTURE = { smooth: 0.0, clay: 0.018, rough: 0.045 };
+  const clayMats = [];
+  function clay(color, rough = 0.82) {
+    const m = new T.MeshStandardMaterial({ color, roughness: rough, metalness: 0, bumpMap: MAPS.bumpTex, bumpScale: TEXTURE.clay, map: MAPS.specTex });
+    clayMats.push(m);
+    return m;
+  }
+
+  const CREAM = '#f1dfc0';
+  const HAIR = '#26201c';
+  const SHIRTS = ['#8d5f45', '#7f9b6b', '#e2bd55', '#c95b45', '#a39d93'];
+
+  const SEG = 48;
+  const ball = (r, mat) => { const m = new T.Mesh(new T.SphereGeometry(r, SEG, SEG / 2), mat); m.castShadow = true; m.receiveShadow = true; return m; };
+  const tube = (pts, r, mat) => {
+    const curve = new T.CatmullRomCurve3(pts);
+    const m = new T.Mesh(new T.TubeGeometry(curve, 40, r, 10, false), mat);
+    m.castShadow = true;
+    // round the strand ends
+    for (const p of [pts[0], pts[pts.length - 1]]) { const cap = new T.Mesh(new T.SphereGeometry(r, 10, 8), mat); cap.position.copy(p); m.add(cap); }
+    return m;
+  };
+
+  // a point on the head surface from face-plane coords (u right, v up), head radius R, lifted by `lift`
+  const onHead = (u, v, R, lift = 0.012) => {
+    const z = Math.sqrt(Math.max(0, 1 - u * u - v * v));
+    return new T.Vector3(u, v, z).normalize().multiplyScalar(R + lift);
+  };
+
+  // ---------- one 동글이 ----------
+  function makeDongle(shirt, prop, seed) {
+    const root = new T.Group();      // stays on the floor
+    const body = new T.Group();      // squashes and stretches
+    root.add(body);
+    const skin = clay(CREAM);
+    const line = new T.MeshStandardMaterial({ color: HAIR, roughness: 0.55 });
+
+    // feet
+    for (const x of [-0.17, 0.17]) { const f = ball(0.15, skin); f.scale.set(1, 0.8, 1.15); f.position.set(x, 0.12, 0.04); body.add(f); }
+    // torso (shirt or bare clay)
+    const torso = ball(0.36, shirt ? clay(shirt, 0.88) : skin);
+    torso.scale.set(1, 1.02, 0.92); torso.position.y = 0.52; body.add(torso);
+    // hands, set by the pose
+    const handL = ball(0.12, skin), handR = ball(0.12, skin);
+    body.add(handL, handR);
+    // head: big, slightly wider than tall
+    const R = 0.66;
+    const head = new T.Group(); head.position.y = 1.36; body.add(head);
+    const skull = ball(R, skin); skull.scale.set(1.04, 0.95, 1); head.add(skull);
+
+    // hair: thin clay noodles pressed flat on the head, parted at the crown and
+    // falling left and right (traced from docs/art-reference/base-pose.webp, face-plane coords)
+    const HAIR_R = 0.018;
+    // starts are spread along the front of the crown with a parting gap, so the
+    // strands never meet in one point (that read as spider legs from above)
+    const STRANDS = [
+      [[-0.32, 0.9], [-0.55, 0.8], [-0.72, 0.6]],
+      [[-0.22, 0.91], [-0.4, 0.75], [-0.52, 0.55]],
+      [[-0.1, 0.92], [-0.22, 0.76], [-0.3, 0.56]],
+      [[0.06, 0.92], [0.12, 0.78], [0.14, 0.62]],
+      [[0.18, 0.91], [0.34, 0.76], [0.46, 0.55]],
+      [[0.3, 0.9], [0.52, 0.8], [0.7, 0.6]],
+    ];
+    const flat = (pts) => pts.map(([u, v]) => { const q = onHead(u, v, R, HAIR_R * 0.45); q.x *= 1.04; q.y *= 0.95; return q; });
+    STRANDS.forEach((s) => {
+      // smooth the three traced points into a gentle arc before laying it on the head
+      const c = new T.QuadraticBezierCurve(new T.Vector2(...s[0]), new T.Vector2(s[1][0] * 2 - (s[0][0] + s[2][0]) / 2, s[1][1] * 2 - (s[0][1] + s[2][1]) / 2), new T.Vector2(...s[2]));
+      head.add(tube(flat(c.getPoints(10).map((v) => [v.x, v.y])), HAIR_R, line));
+    });
+
+    // closed happy eyes ^ ^ and a small smile, drawn as clay coils on the face
+    const arc = (cx, cy, rad, from, to, n = 10) => {
+      const pts = [];
+      for (let k = 0; k <= n; k++) { const t = from + (to - from) * (k / n); pts.push(onHead(cx + Math.cos(t) * rad, cy + Math.sin(t) * rad, R * 0.98)); }
+      pts.forEach((p) => { p.x *= 1.04; p.y *= 0.95; });
+      return pts;
+    };
+    // small and close together, a little above the middle, as in the reference figures
+    head.add(tube(arc(-0.115, 0.0, 0.058, Math.PI * 0.12, Math.PI * 0.88), 0.014, line));
+    head.add(tube(arc(0.115, 0.0, 0.058, Math.PI * 0.12, Math.PI * 0.88), 0.014, line));
+    head.add(tube(arc(0, -0.085, 0.055, Math.PI * 1.15, Math.PI * 1.85), 0.014, line));
+
+    // props held in front of the tummy
+    const holdY = 0.6, holdZ = 0.42;
+    let pose = { l: [-0.36, 0.58, 0.12], r: [0.36, 0.58, 0.12] };
+    if (prop === 'mug') {
+      const g = new T.Group();
+      const cup = new T.Mesh(new T.CylinderGeometry(0.16, 0.15, 0.26, 32, 1, true), clay('#7a4c33', 0.7)); cup.castShadow = true;
+      const bottom = new T.Mesh(new T.CircleGeometry(0.15, 32), cup.material); bottom.rotation.x = Math.PI / 2; bottom.position.y = -0.13;
+      const coffee = new T.Mesh(new T.CircleGeometry(0.15, 32), new T.MeshStandardMaterial({ color: '#3a2418', roughness: 0.3 })); coffee.rotation.x = -Math.PI / 2; coffee.position.y = 0.09;
+      const inner = new T.Mesh(new T.CylinderGeometry(0.155, 0.145, 0.25, 32, 1, true), clay('#6a412b', 0.7)); inner.material.side = T.BackSide;
+      g.add(cup, bottom, coffee, inner);
+      g.position.set(0, holdY + 0.02, holdZ + 0.06); body.add(g);
+      pose = { l: [-0.2, holdY, holdZ + 0.04], r: [0.2, holdY, holdZ + 0.04] };
+    } else if (prop === 'pot') {
+      const g = new T.Group();
+      const pot = new T.Mesh(new T.CylinderGeometry(0.2, 0.15, 0.26, 32), clay('#b8653f', 0.85)); pot.castShadow = true;
+      const rimM = new T.Mesh(new T.TorusGeometry(0.2, 0.03, 12, 32), pot.material); rimM.rotation.x = Math.PI / 2; rimM.position.y = 0.13;
+      const soil = new T.Mesh(new T.CircleGeometry(0.19, 32), clay('#5b4030', 0.95)); soil.rotation.x = -Math.PI / 2; soil.position.y = 0.12;
+      g.add(pot, rimM, soil);
+      const stemM = new T.MeshStandardMaterial({ color: '#6f9a58', roughness: 0.8 });
+      [[-0.07, 0.3, 0.02], [0.06, 0.36, -0.02], [0.0, 0.26, 0.07]].forEach(([x, h, z], i) => {
+        const stem = new T.Mesh(new T.CylinderGeometry(0.012, 0.014, h, 8), stemM); stem.position.set(x, 0.12 + h / 2, z); g.add(stem);
+        const col = ['#f4d35e', '#f2a7b8', '#f4d35e'][i];
+        const fl = new T.Group(); fl.position.set(x, 0.12 + h, z);
+        for (let k = 0; k < 6; k++) { const p = ball(0.035, clay(col, 0.8)); const a = (k / 6) * Math.PI * 2; p.position.set(Math.cos(a) * 0.045, 0, Math.sin(a) * 0.045); p.scale.y = 0.55; fl.add(p); }
+        const c = ball(0.03, clay('#e9a23b', 0.8)); fl.add(c);
+        fl.rotation.x = 0.5; g.add(fl);
+        const leaf = ball(0.05, clay('#8fbf6a', 0.85)); leaf.scale.set(1.6, 0.4, 0.8); leaf.position.set(x + (i % 2 ? 0.05 : -0.05), 0.2 + h * 0.3, z); g.add(leaf);
+      });
+      g.position.set(0, holdY - 0.02, holdZ + 0.08); body.add(g);
+      pose = { l: [-0.24, holdY - 0.02, holdZ + 0.02], r: [0.24, holdY - 0.02, holdZ + 0.02] };
+    } else if (prop === 'can') {
+      const g = new T.Group();
+      const m = clay('#7f9b6b', 0.8);
+      const can = new T.Mesh(new T.CylinderGeometry(0.15, 0.17, 0.26, 32), m); can.castShadow = true;
+      const top = new T.Mesh(new T.TorusGeometry(0.15, 0.025, 10, 32), m); top.rotation.x = Math.PI / 2; top.position.y = 0.13;
+      const spout = new T.Mesh(new T.CylinderGeometry(0.025, 0.04, 0.36, 12), m); spout.position.set(0.24, 0.05, 0); spout.rotation.z = -1.0;
+      const handle = new T.Mesh(new T.TorusGeometry(0.1, 0.025, 10, 24, Math.PI), m); handle.position.set(-0.15, 0.04, 0); handle.rotation.z = Math.PI / 2;
+      g.add(can, top, spout, handle);
+      g.position.set(0.22, holdY - 0.02, holdZ - 0.04); g.rotation.y = -0.5; body.add(g);
+      pose = { l: [-0.34, holdY + 0.05, 0.18], r: [0.18, holdY + 0.12, holdZ - 0.04] };
+    } else if (prop === 'hat') {
+      const hat = new T.Mesh(new T.ConeGeometry(0.2, 0.42, 32), clay('#e2bd55', 0.8)); hat.castShadow = true;
+      const pom = ball(0.06, clay('#f6efe2'));
+      pom.position.y = 0.23; hat.add(pom);
+      hat.position.set(0.18, R * 0.95 + 0.12, 0.05); hat.rotation.z = -0.32; head.add(hat);
+      pose = { l: [-0.42, 0.82, 0.16], r: [0.42, 0.82, 0.16] }; // cheering
+    }
+    handL.position.set(...pose.l); handR.position.set(...pose.r);
+
+    root.userData = { body, head, seed, hop: 0, baseRotY: 0 };
+    return root;
+  }
+
+  // the five, arranged like the reference photo: two at the back, three in front
+  const cast = [
+    { shirt: null, prop: 'mug', pos: [-0.85, 0, -0.9] },
+    { shirt: null, prop: 'none', pos: [0.85, 0, -0.9] },
+    { shirt: SHIRTS[1], prop: 'can', pos: [-1.65, 0, 0.55] },
+    { shirt: SHIRTS[2], prop: 'pot', pos: [0, 0, 0.75] },
+    { shirt: SHIRTS[3], prop: 'hat', pos: [1.65, 0, 0.55] },
+  ];
+  const turntable = new T.Group(); scene.add(turntable);
+  const dongles = cast.map((c, i) => {
+    const d = makeDongle(c.shirt, c.prop, i * 1.7);
+    d.position.set(...c.pos);
+    d.userData.baseRotY = -c.pos[0] * 0.12;
+    d.rotation.y = d.userData.baseRotY;
+    const s = 0.92 + ((i * 37) % 10) / 70; d.scale.setScalar(s);
+    turntable.add(d);
+    return d;
+  });
+
+  const PORTRAIT_POS = [[-0.8, 0, -1.7], [0.8, 0, -1.7], [-0.85, 0, 0.75], [0, 0, -0.45], [0.85, 0, 0.75]];
+  function layout(portrait) {
+    dongles.forEach((d, i) => {
+      const pos = portrait ? PORTRAIT_POS[i] : cast[i].pos;
+      d.position.set(...pos);
+      d.userData.baseRotY = -pos[0] * 0.12; d.rotation.y = d.userData.baseRotY;
+    });
+  }
+
+  // ---------- framing ----------
+  function resize() {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    // pull back on narrow screens so all five fit
+    const portrait = camera.aspect < 0.8;
+    layout(portrait);
+    const halfW = portrait ? 1.9 : 2.75;                      // half the width of the group, plus a margin
+    const halfFovX = Math.atan(Math.tan(T.MathUtils.degToRad(camera.fov / 2)) * camera.aspect);
+    const dist = Math.max(9.5, halfW / Math.tan(halfFovX));
+    camera.position.set(0, dist * 0.22, dist);
+    camera.lookAt(0, 1.0, 0);
+    camera.updateProjectionMatrix();
+    scene.fog.near = dist + 5; scene.fog.far = dist + 20;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // ---------- controls ----------
+  let spin = 0, spinVel = 0, dragging = false, lastX = 0, downX = 0, downY = 0;
+  canvas.addEventListener('pointerdown', (e) => { dragging = true; lastX = downX = e.clientX; downY = e.clientY; canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener('pointermove', (e) => { if (!dragging) return; const dx = e.clientX - lastX; lastX = e.clientX; spinVel = dx * 0.008; spin += spinVel; });
+  canvas.addEventListener('pointerup', (e) => {
+    dragging = false;
+    if (Math.hypot(e.clientX - downX, e.clientY - downY) < 6) tap(e);
+  });
+  const ray = new T.Raycaster(), ndc = new T.Vector2();
+  function tap(e) {
+    const r = canvas.getBoundingClientRect();
+    ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    const hit = ray.intersectObjects(dongles, true)[0];
+    if (!hit) return;
+    let o = hit.object; while (o && !dongles.includes(o)) o = o.parent;
+    if (o && o.userData.hop <= 0) { o.userData.hop = 1; boop(); }
+  }
+  let ac = null;
+  function boop() {
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'sine'; o.frequency.setValueAtTime(520, t); o.frequency.exponentialRampToValueAtTime(820, t + 0.12);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.06, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+      o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 0.3);
+    } catch (err) {}
+  }
+
+  const setPressed = (ids, on) => ids.forEach((id) => document.getElementById(id).setAttribute('aria-pressed', String(id === on)));
+  ['smooth', 'clay', 'rough'].forEach((k) => document.getElementById('tex-' + k).addEventListener('click', () => {
+    clayMats.forEach((m) => { m.bumpScale = TEXTURE[k]; m.roughness = k === 'smooth' ? 0.55 : k === 'clay' ? 0.82 : 0.92; m.needsUpdate = true; });
+    setPressed(['tex-smooth', 'tex-clay', 'tex-rough'], 'tex-' + k);
+  }));
+  const LIGHTS = {
+    day: { bg: '#f3e9d8', key: '#fff1dd', keyI: 1.35, hemiSky: '#fff7ec', hemiGround: '#d8c09c', hemiI: 0.85, pos: [-4, 7, 6] },
+    eve: { bg: '#ead2bd', key: '#ffb98a', keyI: 1.2, hemiSky: '#c9c3e6', hemiGround: '#b89277', hemiI: 0.7, pos: [-7, 3.2, 3] },
+  };
+  ['day', 'eve'].forEach((k) => document.getElementById('light-' + k).addEventListener('click', () => {
+    const L = LIGHTS[k];
+    STUDIO.set(L.bg); scene.fog.color.copy(STUDIO); floor.material.color.set(L.bg);
+    key.color.set(L.key); key.intensity = L.keyI; key.position.set(...L.pos);
+    hemi.color.set(L.hemiSky); hemi.groundColor.set(L.hemiGround); hemi.intensity = L.hemiI;
+    setPressed(['light-day', 'light-eve'], 'light-' + k);
+  }));
+
+  // ---------- life ----------
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const clock = new T.Clock();
+  function frame() {
+    const dt = Math.min(0.05, clock.getDelta()), t = clock.elapsedTime;
+    if (!dragging) { spinVel *= 0.92; spin += spinVel; spin += (0 - spin) * 0.01; }
+    turntable.rotation.y = spin;
+    for (const d of dongles) {
+      const u = d.userData;
+      const breathe = reduce ? 0 : Math.sin(t * 1.8 + u.seed) * 0.018;
+      let hopY = 0, squash = breathe;
+      if (u.hop > 0) {
+        u.hop = Math.max(0, u.hop - dt * 1.6);
+        const p = 1 - u.hop;                                   // 0 → 1 over the hop
+        hopY = Math.sin(Math.min(1, p * 1.25) * Math.PI) * 0.45;
+        squash += p < 0.12 ? -0.12 * Math.sin((p / 0.12) * Math.PI) : p > 0.8 ? -0.1 * Math.sin(((p - 0.8) / 0.2) * Math.PI) : 0.06;
+      }
+      u.body.position.y = hopY;
+      u.body.scale.set(1 - squash * 0.6, 1 + squash, 1 - squash * 0.6);
+      u.head.rotation.z = reduce ? 0 : Math.sin(t * 0.9 + u.seed) * 0.05;
+      u.head.rotation.x = reduce ? 0 : Math.sin(t * 0.7 + u.seed * 2) * 0.03 - 0.04;
+    }
+    renderer.render(scene, camera);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
