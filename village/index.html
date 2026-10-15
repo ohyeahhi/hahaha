@@ -78,7 +78,7 @@
 
   .toast {
     position: fixed; left: 50%; transform: translateX(-50%);
-    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(86px + env(safe-area-inset-bottom, 0px));
     width: max-content; max-width: min(420px, calc(100% - 32px)); box-sizing: border-box;
     padding: 13px 18px; border-radius: 14px;
     background: rgba(31, 27, 23, 0.88); color: #ffffff;
@@ -194,6 +194,79 @@
   .seed-card .own.none { color: var(--accent); }
   .example { margin: 0; padding: 12px 14px; border-radius: 14px; background: var(--grouped); font-size: 14px; line-height: 1.55; color: var(--ink); }
   .example b { font-weight: 700; }
+
+  /* "what can I do here" chip, Toss-style floating CTA */
+  .ctx-chip {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    height: 52px; padding-inline: 24px; border: 0; border-radius: 26px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--ink); color: #ffffff;
+    font: 700 16px var(--font); letter-spacing: -0.02em;
+    box-shadow: 0 8px 24px rgba(31, 27, 23, 0.25);
+  }
+  .ctx-chip img { width: 26px; height: 26px; }
+  .ctx-chip:active { transform: translateX(-50%) scale(0.96); }
+
+  /* fishing: the reel meter */
+  .reel { position: fixed; inset: 0; display: flex; align-items: flex-end; justify-content: center; padding: 0 16px calc(24px + env(safe-area-inset-bottom, 0px)); cursor: pointer; }
+  .reel-card {
+    width: min(400px, 100%); box-sizing: border-box; padding: 18px 18px 16px; border-radius: 22px;
+    background: var(--surface); box-shadow: 0 10px 30px rgba(31, 27, 23, 0.18);
+    display: flex; flex-direction: column; gap: 12px; text-align: center;
+  }
+  .reel-card b { font-size: 20px; font-weight: 800; letter-spacing: -0.03em; }
+  .reel-track { position: relative; height: 22px; border-radius: 11px; background: var(--grouped); overflow: hidden; }
+  .reel-zone { position: absolute; top: 0; bottom: 0; border-radius: 11px; background: #8fcf7a; }
+  .reel-mark { position: absolute; top: -3px; bottom: -3px; width: 8px; margin-left: -4px; border-radius: 4px; background: var(--ink); box-shadow: 0 0 0 3px #ffffff; }
+  @media (prefers-reduced-motion: no-preference) {
+    .reel-card { animation: rise 0.25s ease-out; }
+  }
+
+  /* catch card + fish book */
+  .catch-pic { width: 150px; height: 150px; }
+  .new-badge { display: inline-flex; align-items: center; height: 26px; padding-inline: 10px; border-radius: 13px; background: #fde7e3; color: var(--up); font-size: 13px; font-weight: 800; }
+  .catch-size { font-size: 34px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .catch-size small { font-size: 18px; font-weight: 700; margin-left: 2px; }
+  .dex { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .dex-card { min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 6px 10px; border-radius: 18px; background: var(--grouped); text-align: center; }
+  .dex-card img { width: 64px; height: 64px; }
+  .dex-card.unknown img { filter: brightness(0); opacity: 0.18; }
+  .dex-card b { font-size: 14px; font-weight: 700; }
+  .dex-card span { font-size: 12px; color: var(--sub); font-variant-numeric: tabular-nums; }
+  .pill.tap { pointer-events: auto; cursor: pointer; border: 0; color: var(--ink); font-family: var(--font); }
+
+  /* house: bottom bar, decorating sheet, placing banner */
+  .room-bar {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    display: flex; gap: 8px; justify-content: center;
+    padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  }
+  .room-bar .btn { flex: 1; max-width: 160px; box-shadow: 0 6px 18px rgba(31, 27, 23, 0.14); }
+  .tabs { display: flex; gap: 4px; padding: 4px; border-radius: 14px; background: var(--grouped); }
+  .tabs button { flex: 1; height: 36px; border: 0; border-radius: 10px; background: transparent; color: var(--sub); font: 600 14px var(--font); cursor: pointer; }
+  .tabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .deco-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .deco-card {
+    min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 12px 6px 10px; border: 0; border-radius: 18px; background: var(--grouped);
+    color: var(--ink); font-family: var(--font); text-align: center; cursor: pointer;
+  }
+  .deco-card img { width: 64px; height: 64px; }
+  .deco-card b { font-size: 13px; font-weight: 700; letter-spacing: -0.02em; }
+  .deco-card .cta { margin-top: 4px; min-height: 26px; padding: 3px 10px; box-sizing: border-box; border-radius: 13px; background: var(--accent-weak); color: var(--accent); font-size: 12px; font-weight: 700; }
+  .deco-card .cta.owned { background: var(--ink); color: #ffffff; }
+  .deco-card .cta.short { background: transparent; color: var(--sub); font-weight: 600; }
+  .deco-card .cta.using { background: transparent; color: var(--sub); }
+  .swatch-pic { width: 64px; height: 64px; border-radius: 16px; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06); }
+  .place-banner {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    top: calc(64px + env(safe-area-inset-top, 0px));
+    width: max-content; max-width: calc(100% - 32px); box-sizing: border-box;
+    display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 16px; border-radius: 18px;
+    background: var(--ink); color: #ffffff; font-size: 15px; font-weight: 600;
+  }
+  .place-banner button { height: 34px; padding-inline: 14px; border: 0; border-radius: 10px; background: rgba(255,255,255,0.16); color: #ffffff; font: 600 14px var(--font); cursor: pointer; }
 </style>
 </head>
 <body>
@@ -205,7 +278,7 @@
     <span class="pill" title="코인"><img class="pico" data-icon="coin" alt="코인"><span id="coins">0</span></span>
     <span class="pill" title="씨앗"><img class="pico" data-icon="seed" alt="씨앗"><span id="seeds">0</span></span>
     <span class="pill" title="작물"><img class="pico" data-icon="carrot" alt="작물"><span id="crops">0</span></span>
-    <span class="pill" title="물고기"><img class="pico" data-icon="crucian" alt="물고기"><span id="fish">0</span></span>
+    <button class="pill tap" id="fishPill" type="button" title="물고기 도감" aria-label="물고기 도감 열기"><img class="pico" data-icon="crucian" alt=""><span id="fish">0</span></button>
   </div>
   <div class="tools">
     <button class="round" id="enBtn" type="button" aria-pressed="false" aria-label="영어 같이 보기">EN</button>
@@ -248,8 +321,7 @@
 </div>
 
 <div class="sheet" id="houseSheet" hidden>
-  <h2>우리 집</h2>
-  <p>작고 포근한 집이에요. 집 꾸미기는 다음 버전에서 열려요.</p>
+  <h2>저금통</h2>
   <div class="item has-icon">
     <img class="ico" data-icon="coin" alt="">
     <div class="name"><b>저금통 <span class="en" data-en>Piggy bank</span></b><span class="muted" id="bankInfo"></span></div>
@@ -258,8 +330,65 @@
   </div>
   <p class="muted">자고 일어나면 다음 날 아침이 되고, 저금통에 이자가 붙고, 가게 시세가 새로 정해져요.</p>
   <button class="btn" id="sleepBtn" type="button">잠자기</button>
-  <button class="btn soft" id="houseClose" type="button">밖으로 나가기</button>
+  <button class="btn soft" id="houseClose" type="button">닫기</button>
 </div>
+
+<button class="ctx-chip" id="ctxChip" type="button" hidden><img alt="" id="ctxIcon" width="26" height="26"><span id="ctxLabel"></span></button>
+
+<div class="reel" id="reel" hidden>
+  <div class="reel-card">
+    <b id="reelTitle">물었어요!</b>
+    <div class="reel-track"><span class="reel-zone" id="reelZone"></span><span class="reel-mark" id="reelMark"></span></div>
+    <span class="muted">까만 막대가 초록 칸에 오면 화면을 누르세요</span>
+  </div>
+</div>
+
+<div class="sheet center" id="catchSheet" hidden>
+  <span class="new-badge" id="catchNew" hidden>새로 발견!</span>
+  <img class="catch-pic" id="catchPic" alt="" width="150" height="150">
+  <h2 id="catchName">붕어</h2>
+  <div class="catch-size" id="catchSize">23<small>cm</small></div>
+  <p class="muted" id="catchNote"></p>
+  <button class="btn" id="catchOk" type="button">가방에 넣기</button>
+  <button class="btn soft" id="catchDex" type="button">도감 보기</button>
+</div>
+
+<div class="sheet" id="dexSheet" hidden>
+  <div class="row-head"><h2>물고기 도감</h2><span class="muted" id="dexCount"></span></div>
+  <div class="dex" id="dexList"></div>
+  <p class="muted">연못을 누르거나 낚시터 다리에서 낚시할 수 있어요. 어떤 물고기는 밤에만 나와요.</p>
+  <button class="btn soft" id="dexClose" type="button">닫기</button>
+</div>
+
+<div class="room-bar" id="roomBar" hidden>
+  <button class="btn" id="decoBtn" type="button">꾸미기</button>
+  <button class="btn soft" id="bankBtn" type="button">저금통</button>
+  <button class="btn soft" id="exitBtn" type="button">나가기</button>
+</div>
+
+<div class="sheet" id="decoSheet" hidden>
+  <div class="row-head"><h2>집 꾸미기</h2><span class="muted" id="decoCoins"></span></div>
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" id="tab-furn" aria-selected="true">가구</button>
+    <button type="button" role="tab" id="tab-wall" aria-selected="false">벽 장식</button>
+    <button type="button" role="tab" id="tab-room" aria-selected="false">벽지·바닥</button>
+  </div>
+  <div class="deco-grid" id="decoList"></div>
+  <p class="example" id="decoNote"></p>
+  <button class="btn soft" id="decoClose" type="button">닫기</button>
+</div>
+
+<div class="sheet" id="furnSheet" hidden>
+  <div class="item has-icon" style="grid-template-columns: auto 1fr">
+    <img class="ico" id="furnPic" alt="">
+    <div class="name"><b id="furnName"></b><span class="muted" id="furnInfo"></span></div>
+  </div>
+  <button class="btn" id="furnSleep" type="button" hidden>잠자기</button>
+  <button class="btn soft" id="furnMove" type="button">옮기기</button>
+  <button class="btn soft" id="furnStore" type="button">넣어두기</button>
+</div>
+
+<div class="place-banner" id="placeBanner" hidden><span id="placeText">놓을 자리를 눌러주세요</span><button type="button" id="placeCancel">그만두기</button></div>
 
 <script>
 (() => {
@@ -313,13 +442,33 @@
   const PATH = [[310, 300], [470, 318], [620, 400], [770, 440], [905, 380], [1050, 340]];
   const PATH2 = [[790, 520], [880, 600], [960, 640]];
 
+  // a little wooden fishing pier reaching into the pond from the west
+  const pier = { x: 862, y: 727, w: 118, h: 26, tip: { x: 966, y: 741 }, bob: { x: 1036, y: 748 } };
+  const onPier = (x, y) => x > pier.x && x < pier.x + pier.w - 4 && y > pier.y - 2 && y < pier.y + pier.h + 4;
   function blocked(x, y) {
     if (x < 40 || x > W - 40 || y < 70 || y > H - 30) return true;
+    if (onPier(x, y)) return false;
     if (x > house.x - 8 && x < house.x + house.w + 8 && y > house.y - 10 && y < house.y + house.h + 8) return true;
     if (x > shop.x - 6 && x < shop.x + shop.w + 6 && y > shop.y - 10 && y < shop.y + shop.h + 10) return true;
     const dx = (x - pond.cx) / (pond.rx + 12), dy = (y - pond.cy) / (pond.ry + 10);
     if (dx * dx + dy * dy < 1) return true;
     for (const t of trees) if (Math.hypot(x - t.x, (y - t.y) * 1.6) < 15) return true;
+    return false;
+  }
+
+  // ---------- inside the house: a floor of tiles with one back wall ----------
+  let scene = 'village';
+  const T = 44, COLS = 7, ROWS = 5, FW = T * COLS, FH = T * ROWS, WALLH = 120;
+  const DOOR = { x: FW / 2, y: FH + 16 };
+  const isDoorTile = (c, r) => c === 3 && r === ROWS - 1;
+  function roomBlocked(x, y) {
+    const inDoor = Math.abs(x - FW / 2) < 22 && y > FH - 8 && y < FH + 32;
+    if (!inDoor && (x < 12 || x > FW - 12 || y < 14 || y > FH - 6)) return true;
+    for (const p of G.home.placed) {
+      const f = FURN[p.k];
+      if (f.walk) continue;
+      if (x > p.c * T + 6 && x < (p.c + f.w) * T - 6 && y > p.r * T + 4 && y < (p.r + f.h) * T + 4) return true;
+    }
     return false;
   }
 
@@ -332,12 +481,49 @@
     tomato:     { ko: '토마토', en: 'Tomato', seed: 5, base: 15, grow: 14, color: '#d9503f' },
     strawberry: { ko: '딸기', en: 'Strawberry', seed: 8, base: 24, grow: 18, color: '#e04a5f' },
   };
+  // size in cm; weight = how often it bites; zone = width of the green catch zone; speed = marker speed
   const FISH = {
-    minnow:  { ko: '송사리', en: 'Minnow', base: 4, color: '#9cc7d3' },
-    crucian: { ko: '붕어', en: 'Crucian carp', base: 10, color: '#7fb3c4' },
-    carp:    { ko: '잉어', en: 'Carp', base: 18, color: '#e2a35a' },
+    minnow:   { ko: '송사리', en: 'Minnow', base: 4, color: '#9cc7d3', size: [3, 6], weight: 40, zone: 0.34, speed: 0.8 },
+    crucian:  { ko: '붕어', en: 'Crucian carp', base: 10, color: '#7fb3c4', size: [12, 30], weight: 30, zone: 0.27, speed: 1.0 },
+    carp:     { ko: '잉어', en: 'Carp', base: 18, color: '#e2a35a', size: [30, 70], weight: 14, zone: 0.21, speed: 1.25 },
+    catfish:  { ko: '메기', en: 'Catfish', base: 22, color: '#8d927c', size: [30, 80], weight: 16, zone: 0.21, speed: 1.2, night: true },
+    goldfish: { ko: '금붕어', en: 'Goldfish', base: 30, color: '#f08a3c', size: [5, 12], weight: 7, zone: 0.16, speed: 1.45 },
+    koi:      { ko: '비단잉어', en: 'Koi', base: 45, color: '#f6efe4', spots: '#e05a47', size: [40, 80], weight: 3, zone: 0.13, speed: 1.6 },
   };
+
+  // ---------- house ----------
+  // w,h = floor tiles; rise = how tall it stands; walk = can be walked over (rugs, cushions)
+  const FURN = {
+    bed:     { ko: '포근한 침대', en: 'Cozy bed', price: 40, w: 2, h: 3, rise: 26 },
+    rug:     { ko: '동그란 러그', en: 'Round rug', price: 12, w: 2, h: 2, rise: 0, walk: true, flat: true },
+    table:   { ko: '둥근 탁자', en: 'Round table', price: 20, w: 2, h: 2, rise: 30 },
+    stool:   { ko: '나무 의자', en: 'Wooden stool', price: 8, w: 1, h: 1, rise: 18 },
+    sofa:    { ko: '말랑 소파', en: 'Squishy sofa', price: 35, w: 3, h: 1, rise: 30 },
+    plant:   { ko: '몬스테라 화분', en: 'Potted plant', price: 10, w: 1, h: 1, rise: 52 },
+    lamp:    { ko: '버섯 스탠드', en: 'Mushroom lamp', price: 14, w: 1, h: 1, rise: 50 },
+    shelf:   { ko: '책장', en: 'Bookshelf', price: 28, w: 2, h: 1, rise: 86 },
+    cushion: { ko: '방석', en: 'Floor cushion', price: 5, w: 1, h: 1, rise: 6, walk: true },
+  };
+  const DECOR = {
+    window:  { ko: '창문', en: 'Window', price: 22 },
+    frame:   { ko: '꽃 그림 액자', en: 'Flower painting', price: 10 },
+    clock:   { ko: '동그란 시계', en: 'Round clock', price: 15 },
+    garland: { ko: '가랜드', en: 'Garland', price: 8 },
+  };
+  const PAPERS = {
+    cream: { ko: '크림 벽지', price: 0, c: '#f4e6cf', s: '#eedcbf' },
+    mint:  { ko: '민트 벽지', price: 10, c: '#dcebdb', s: '#cde0cc' },
+    peach: { ko: '복숭아 벽지', price: 10, c: '#f6dccd', s: '#efcbb8' },
+    sky:   { ko: '하늘 벽지', price: 10, c: '#dbe6f0', s: '#cbd9e8' },
+  };
+  const FLOORS = {
+    wood:    { ko: '나무 바닥', price: 0, c: '#d9b68c', s: '#c9a276' },
+    checker: { ko: '체크 타일', price: 12, c: '#efe5d3', s: '#d9c7a8' },
+    moss:    { ko: '이끼 카펫', price: 12, c: '#b9cf98', s: '#a8c186' },
+  };
+  const WALL_SLOTS = 5;
   const ITEMS = { ...CROPS, ...FISH };
+  const villageBlocked = (x, y) => blocked(x, y);
   const BANK_RATE = 0.05;
   // Korean object particle: 당근을 / 토마토를
   const topic = (w) => { const c = w.charCodeAt(w.length - 1) - 0xac00; return w + (c >= 0 && c < 11172 && c % 28 ? '은' : '는'); };
@@ -348,10 +534,17 @@
     started: false, t: 0, day: 1, time: 0.05,
     coins: 20, bank: 0,
     seeds: { carrot: 3, flower: 2, tomato: 0, strawberry: 0 },
-    inv: { carrot: 0, flower: 0, tomato: 0, strawberry: 0, minnow: 0, crucian: 0, carp: 0 },
+    inv: { carrot: 0, flower: 0, tomato: 0, strawberry: 0, minnow: 0, crucian: 0, carp: 0, catfish: 0, goldfish: 0, koi: 0 },
+    dex: {},
+    home: {
+      owned: {},
+      placed: [{ k: 'bed', c: 0, r: 0 }, { k: 'rug', c: 3, r: 1 }, { k: 'plant', c: 6, r: 0 }],
+      wall: [null, null, 'window', null, null],
+      paper: 'cream', floor: 'wood', papers: ['cream'], floors: ['wood'],
+    },
     prices: {}, prev: {}, ledger: [],
     shirt: 'yellow', look: 1, en: false, muted: false, music: true,
-    tips: { planted: false, fished: false },
+    tips: { planted: false, fished: false, room: false },
   };
   function rollPrices() {
     G.prev = { ...G.prices };
@@ -360,11 +553,11 @@
   rollPrices(); G.prev = { ...G.prices };
 
   function save() {
-    return { v: 2, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
+    return { v: 2, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
   }
   function load(s) {
     if (!s || s.v !== 2) return false;
-    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: s.tips || G.tips });
+    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home });
     (s.plots || []).forEach((p, i) => { if (plots[i]) Object.assign(plots[i], p); });
     return true;
   }
@@ -562,8 +755,8 @@
   function syncSwatches() { LOOKS.forEach((n) => $('look-' + n).setAttribute('aria-checked', String(G.look === n))); }
 
   let modal = null;
-  function openSheet(id) { closeSheet(); modal = id; $(id).hidden = false; }
-  function closeSheet() { if (modal) $(modal).hidden = true; modal = null; }
+  function openSheet(id) { closeSheet(); modal = id; $(id).hidden = false; syncRoomUI(); }
+  function closeSheet() { if (modal) $(modal).hidden = true; modal = null; syncRoomUI(); }
 
   function addLedger(text, amount) {
     G.ledger.unshift({ day: G.day, text, amount });
@@ -710,7 +903,7 @@
   $('houseClose').addEventListener('click', closeSheet);
   $('sleepBtn').addEventListener('click', () => {
     closeSheet(); sleepFade = 1.6;
-    setTimeout(() => { newDay(); G.time = 0.03; player.x = house.door.x; player.y = house.door.y + 10; }, 700);
+    setTimeout(() => { newDay(); G.time = 0.03; if (scene === 'village') { player.x = house.door.x; player.y = house.door.y + 10; } }, 700);
   });
   $('enBtn').addEventListener('click', () => { G.en = !G.en; syncToggles(); syncHud(); if (modal === 'shopSheet') renderShop(); if (modal === 'seedSheet') renderSeeds(); persist(); });
   $('soundBtn').addEventListener('click', () => {
@@ -769,26 +962,263 @@
       bob: { x: pond.cx + Math.cos(a) * (pond.rx - 55), y: pond.cy + Math.sin(a) * (pond.ry - 36) },
     };
   }
+  const FISH_KEYS_ALL = Object.keys(FISH);
+  function pickFish() {
+    const night = isNight();
+    const pool = FISH_KEYS_ALL.filter((k) => !FISH[k].night || night);
+    let r = Math.random() * pool.reduce((a, k) => a + FISH[k].weight, 0);
+    for (const k of pool) { r -= FISH[k].weight; if (r <= 0) return k; }
+    return pool[0];
+  }
   function startFishing(bob) {
-    player.fishing = { phase: 'wait', t: rand(1.8, 5), bob, dip: 0 };
+    player.fishing = { phase: 'wait', t: rand(1.6, 4.5), bob };
     player.dir = Math.sign(bob.x - player.x) || 1;
     sfx.cast();
-    if (!G.tips.fished) { G.tips.fished = true; toast('찌가 쏙 들어가고 ! 가 뜨면 화면을 탭하세요.', 'When you see !, tap the screen.'); }
+    if (!G.tips.fished) { G.tips.fished = true; toast('찌를 던졌어요. 물고기가 물 때까지 기다려요.', 'Cast! Wait for a bite.'); }
   }
+  // a bite opens the reel meter: a marker sweeps back and forth, tap while it is in the green zone
+  function bite() {
+    const f = player.fishing, k = pickFish(), fish = FISH[k];
+    f.phase = 'reel'; f.fish = k; f.t = 0; f.tries = 0;
+    f.zoneW = fish.zone; f.zone0 = rand(0.1, 0.9 - fish.zone);
+    $('reelZone').style.left = `${f.zone0 * 100}%`; $('reelZone').style.width = `${f.zoneW * 100}%`;
+    $('reelTitle').textContent = fish.weight <= 7 ? '묵직해요! 큰 녀석이에요' : '물었어요!';
+    $('reel').hidden = false;
+    ui.toast.style.opacity = 0; toastT = 0;
+    sfx.bite();
+  }
+  const markerPos = (f) => { const p = (f.t * FISH[f.fish].speed) % 2; return p < 1 ? p : 2 - p; };
   function reel() {
     const f = player.fishing; if (!f) return;
-    if (f.phase === 'bite') {
-      const r = Math.random(); const k = r < 0.5 ? 'minnow' : r < 0.85 ? 'crucian' : 'carp';
-      G.inv[k]++; player.fishing = null;
-      player.hold = 'fish'; player.holdColor = ITEMS[k].color; player.holdT = 1.6;
-      burst(f.bob.x, f.bob.y, 16, '#cfeaf2', { up: 120 }); sfx.catch();
-      toast(`${eul(ITEMS[k].ko)} 낚았어요!`,`You caught a ${ITEMS[k].en.toLowerCase()}!`);
-      persist();
-    } else {
-      player.fishing = null; sfx.soft();
-      toast('낚싯대를 거뒀어요.', 'You reeled in.');
+    if (f.phase === 'reel') {
+      const pos = markerPos(f);
+      if (pos >= f.zone0 && pos <= f.zone0 + f.zoneW) return landFish(f);
+      f.tries++;
+      sfx.soft();
+      if (f.tries >= 2) { $('reel').hidden = true; f.phase = 'wait'; f.t = rand(1.5, 4); toast('아깝다! 다시 물 때까지 기다려봐요.', 'So close! Wait for another bite.'); }
+      else { $('reelTitle').textContent = '조금만 더! 한 번 더 눌러요'; }
+      return;
     }
+    player.fishing = null; sfx.soft();
+    toast('낚싯대를 거뒀어요.', 'You reeled in.');
   }
+  function landFish(f) {
+    const k = f.fish, fish = FISH[k];
+    const size = Math.round(fish.size[0] + (fish.size[1] - fish.size[0]) * Math.pow(Math.random(), 1.6));
+    const rec = G.dex[k] || { n: 0, best: 0 };
+    const isNew = rec.n === 0, isBest = !isNew && size > rec.best;
+    rec.n++; rec.best = Math.max(rec.best, size); G.dex[k] = rec;
+    G.inv[k]++;
+    $('reel').hidden = true; player.fishing = null;
+    player.hold = 'fish'; player.holdColor = fish.color; player.holdT = 2.2;
+    burst(f.bob.x, f.bob.y, 18, '#cfeaf2', { up: 130 }); sfx.catch();
+    $('catchNew').hidden = !isNew;
+    $('catchNew').textContent = '새로 발견!';
+    if (isBest) { $('catchNew').hidden = false; $('catchNew').textContent = '최고 기록!'; }
+    $('catchPic').src = iconURL(k, 320);
+    $('catchName').textContent = fish.ko + (G.en ? ` · ${fish.en}` : '');
+    $('catchSize').innerHTML = `${size}<small>cm</small>`;
+    $('catchNote').textContent = `오늘 가게에서 ${G.prices[k]}코인에 팔 수 있어요.` + (fish.night ? ' 밤에만 나오는 물고기예요.' : '');
+    ui.toast.style.opacity = 0; toastT = 0;
+    openSheet('catchSheet');
+    persist();
+  }
+  function renderDex() {
+    const list = $('dexList'); list.innerHTML = '';
+    let found = 0;
+    for (const k of FISH_KEYS_ALL) {
+      const fish = FISH[k], rec = G.dex[k];
+      if (rec) found++;
+      const card = document.createElement('div');
+      card.className = 'dex-card' + (rec ? '' : ' unknown');
+      const im = document.createElement('img'); im.src = iconURL(k); im.alt = ''; im.width = 64; im.height = 64;
+      const b = document.createElement('b'); b.textContent = rec ? fish.ko : '???';
+      const s = document.createElement('span');
+      s.textContent = rec ? `${rec.n}마리 · 최고 ${rec.best}cm` : fish.night ? '밤에 나와요' : fish.weight <= 7 ? '아주 드물어요' : '아직 못 만났어요';
+      card.append(im, b, s); list.append(card);
+    }
+    $('dexCount').textContent = `${found} / ${FISH_KEYS_ALL.length}`;
+  }
+  $('catchOk').addEventListener('click', closeSheet);
+  $('catchDex').addEventListener('click', () => { openSheet('dexSheet'); renderDex(); });
+  $('dexClose').addEventListener('click', closeSheet);
+  $('fishPill').addEventListener('click', () => { if (!G.started) return; openSheet('dexSheet'); renderDex(); });
+  $('reel').addEventListener('pointerdown', (e) => { e.preventDefault(); reel(); });
+
+  // ---------- house: going in and out ----------
+  function transition(fn) { sleepFade = 1.6; setTimeout(fn, 700); }
+  function syncRoomUI() {
+    const inRoom = scene === 'room';
+    $('roomBar').hidden = !inRoom || !!modal || !!placing;
+    $('placeBanner').hidden = !placing;
+  }
+  let switching = false;
+  function enterRoom() {
+    if (switching) return;
+    switching = true; stopPlacing();
+    transition(() => {
+      switching = false;
+      scene = 'room'; player.goal = null; player.fishing = null;
+      player.x = DOOR.x; player.y = FH - 24; player.dir = 1;
+      syncRoomUI(); sfx.talk();
+      if (!G.tips.room) { G.tips.room = true; toast('우리 집이에요. 꾸미기를 눌러 가구를 사고 놓아보세요.', 'Your home! Tap Decorate to buy and place furniture.'); }
+    });
+  }
+  function exitRoom() {
+    if (switching) return;
+    switching = true; stopPlacing(); closeSheet();
+    transition(() => {
+      switching = false;
+      scene = 'village'; player.goal = null;
+      player.x = house.door.x; player.y = house.door.y + 14;
+      cam.x = player.x; cam.y = player.y;
+      syncRoomUI();
+    });
+  }
+
+  // ---------- house: placing furniture ----------
+  let placing = null; // { k, wall: bool, hover: {c, r} }
+  function footprintHits(a, b) {
+    const fa = FURN[a.k], fb = FURN[b.k];
+    return a.c < b.c + fb.w && b.c < a.c + fa.w && a.r < b.r + fb.h && b.r < a.r + fa.h;
+  }
+  function canPlace(k, c, r) {
+    const f = FURN[k];
+    if (c < 0 || r < 0 || c + f.w > COLS || r + f.h > ROWS) return false;
+    for (let i = 0; i < f.w; i++) for (let j = 0; j < f.h; j++) if (isDoorTile(c + i, r + j) && !f.flat) return false;
+    const me = { k, c, r };
+    // rugs may sit under furniture but not on other rugs; solid pieces never overlap
+    return !G.home.placed.some((p) => footprintHits(me, p) && (FURN[p.k].flat === !!f.flat));
+  }
+  function startPlacing(k, wall) {
+    closeSheet();
+    placing = { k, wall: !!wall, hover: null };
+    const name = (wall ? DECOR[k] : FURN[k]).ko;
+    $('placeText').textContent = wall ? `${eul(name)} 걸 벽을 눌러주세요` : `${eul(name)} 놓을 자리를 눌러주세요`;
+    syncRoomUI();
+  }
+  function stopPlacing() { placing = null; syncRoomUI(); }
+  // cancelling leaves the piece in storage (it was bought or picked up already)
+  $('placeCancel').addEventListener('click', () => { stopPlacing(); sfx.soft(); persist(); });
+  function roomTap(sx, sy) {
+    const p = toRoom(sx, sy);
+    if (placing) {
+      if (placing.wall) {
+        if (p.y > -WALLH && p.y < 0 && p.x > 0 && p.x < FW) {
+          const i = clamp(Math.floor(p.x / (FW / WALL_SLOTS)), 0, WALL_SLOTS - 1);
+          const prev = G.home.wall[i];
+          if (prev) G.home.owned[prev] = (G.home.owned[prev] || 0) + 1;
+          G.home.wall[i] = placing.k; G.home.owned[placing.k]--;
+          burst(slotX(i), WALL_CY, 10, '#fff4e6', { up: 60 }); sfx.plant();
+          toast(`${eul(DECOR[placing.k].ko)} 걸었어요.`, 'Hung on the wall.');
+          stopPlacing(); persist();
+        } else toast('벽을 눌러주세요.', 'Tap the wall.');
+        return;
+      }
+      const f = FURN[placing.k];
+      const c = clamp(Math.round(p.x / T - f.w / 2), 0, COLS - f.w), r = clamp(Math.round(p.y / T - f.h / 2), 0, ROWS - f.h);
+      if (placing.hover && placing.hover.c === c && placing.hover.r === r && canPlace(placing.k, c, r)) {
+        // second tap on the same spot confirms
+        G.home.placed.push({ k: placing.k, c, r }); G.home.owned[placing.k]--;
+        if (!f.walk && roomBlocked(player.x, player.y)) { player.x = DOOR.x; player.y = FH - 20; }
+        burst((c + f.w / 2) * T, (r + f.h / 2) * T, 14, '#fff4e6', { up: 70 }); sfx.plant();
+        toast(`${eul(f.ko)} 놓았어요.`, 'Placed!');
+        stopPlacing(); persist();
+      } else {
+        placing.hover = { c, r };
+        $('placeText').textContent = canPlace(placing.k, c, r) ? '여기가 좋으면 한 번 더 눌러요' : '다른 가구가 있어요. 다른 자리를 눌러요';
+      }
+      return;
+    }
+    // tap the door mat to leave
+    if (p.y > FH - 4 && Math.abs(p.x - FW / 2) < 34) { goTo(DOOR, exitRoom); return; }
+    // tap a wall decoration
+    if (p.y < 0 && p.y > -WALLH) {
+      const i = clamp(Math.floor(p.x / (FW / WALL_SLOTS)), 0, WALL_SLOTS - 1);
+      if (G.home.wall[i] && Math.abs(p.x - slotX(i)) < 34) { openFurn({ wall: true, i }); return; }
+    }
+    // tap a piece of furniture (front-most first)
+    const hits = G.home.placed.map((q, idx) => ({ q, idx })).filter(({ q }) => {
+      const f = FURN[q.k];
+      return p.x > q.c * T && p.x < (q.c + f.w) * T && p.y > q.r * T - f.rise && p.y < (q.r + f.h) * T;
+    }).sort((a, b) => (b.q.r + FURN[b.q.k].h) - (a.q.r + FURN[a.q.k].h) || (FURN[a.q.k].flat ? 1 : -1));
+    if (hits.length) { openFurn({ idx: hits[0].idx }); return; }
+    if (p.y > 0 && p.y < FH) goTo({ x: clamp(p.x, 14, FW - 14), y: clamp(p.y, 16, FH - 8) }, null, true);
+  }
+
+  // ---------- house: one piece's menu ----------
+  let furnSel = null;
+  function openFurn(sel) {
+    furnSel = sel;
+    const k = sel.wall ? G.home.wall[sel.i] : G.home.placed[sel.idx].k;
+    const item = sel.wall ? DECOR[k] : FURN[k];
+    $('furnPic').src = iconURL((sel.wall ? 'd:' : 'f:') + k);
+    $('furnName').textContent = item.ko + (G.en ? ` · ${item.en}` : '');
+    $('furnInfo').textContent = k === 'bed' ? '자고 일어나면 다음 날 아침이 돼요.' : '옮기거나 넣어둘 수 있어요. 넣어둔 가구는 다시 꺼낼 수 있어요.';
+    $('furnSleep').hidden = k !== 'bed';
+    openSheet('furnSheet'); syncRoomUI();
+  }
+  function takeSel() {
+    const sel = furnSel; furnSel = null;
+    if (!sel) return null;
+    let k;
+    if (sel.wall) { k = G.home.wall[sel.i]; G.home.wall[sel.i] = null; }
+    else { k = G.home.placed[sel.idx].k; G.home.placed.splice(sel.idx, 1); }
+    G.home.owned[k] = (G.home.owned[k] || 0) + 1;
+    return { k, wall: !!sel.wall };
+  }
+  $('furnMove').addEventListener('click', () => { const t = takeSel(); if (t) startPlacing(t.k, t.wall); });
+  $('furnStore').addEventListener('click', () => { const t = takeSel(); closeSheet(); syncRoomUI(); if (t) { toast('넣어뒀어요. 꾸미기에서 다시 놓을 수 있어요.', 'Stored.'); persist(); } });
+  $('furnSleep').addEventListener('click', () => { furnSel = null; $('sleepBtn').click(); });
+
+  // ---------- house: the decorating sheet ----------
+  let decoTab = 'furn';
+  function buy(price, label) {
+    if (G.coins < price) return false;
+    G.coins -= price; addLedger(`${label} 구입`, -price); sfx.coin();
+    return true;
+  }
+  function renderDeco() {
+    ['furn', 'wall', 'room'].forEach((t) => $('tab-' + t).setAttribute('aria-selected', String(decoTab === t)));
+    $('decoCoins').textContent = `${G.coins}코인 있어요`;
+    const list = $('decoList'); list.innerHTML = '';
+    const card = (pic, name, cta, cls, onClick, disabled) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'deco-card'; b.disabled = !!disabled;
+      b.append(pic);
+      const n = document.createElement('b'); n.textContent = name; b.append(n);
+      const c = document.createElement('span'); c.className = 'cta ' + (cls || ''); c.textContent = cta; b.append(c);
+      if (!disabled) b.addEventListener('click', onClick);
+      list.append(b);
+    };
+    const img = (key) => { const im = document.createElement('img'); im.src = iconURL(key); im.alt = ''; im.width = 64; im.height = 64; return im; };
+    const swatch = (o) => { const d = document.createElement('span'); d.className = 'swatch-pic'; d.style.background = `repeating-linear-gradient(90deg, ${o.c} 0 12px, ${o.s} 12px 18px)`; return d; };
+    if (decoTab === 'furn' || decoTab === 'wall') {
+      const cat = decoTab === 'furn' ? FURN : DECOR, wall = decoTab === 'wall';
+      for (const k in cat) {
+        const it = cat[k], own = G.home.owned[k] || 0, name = it.ko;
+        if (own > 0) card(img((wall ? 'd:' : 'f:') + k), name, `놓기 · ${own}개`, 'owned', () => startPlacing(k, wall));
+        else if (G.coins >= it.price) card(img((wall ? 'd:' : 'f:') + k), name, `${it.price}코인에 사기`, '', () => { if (buy(it.price, name)) { G.home.owned[k] = 1; persist(); startPlacing(k, wall); } });
+        else card(img((wall ? 'd:' : 'f:') + k), name, `${it.price - G.coins}코인 더 필요해요`, 'short', null, true);
+      }
+    } else {
+      const both = [['paper', 'papers', PAPERS], ['floor', 'floors', FLOORS]];
+      for (const [cur, ownedKey, cat] of both) for (const k in cat) {
+        const it = cat[k];
+        if (G.home[cur] === k) card(swatch(it), it.ko, '쓰는 중', 'using', null, true);
+        else if (G.home[ownedKey].includes(k)) card(swatch(it), it.ko, '바꾸기', 'owned', () => { G.home[cur] = k; sfx.plant(); persist(); renderDeco(); });
+        else if (G.coins >= it.price) card(swatch(it), it.ko, `${it.price}코인에 사기`, '', () => { if (buy(it.price, it.ko)) { G.home[ownedKey].push(k); G.home[cur] = k; persist(); renderDeco(); } });
+        else card(swatch(it), it.ko, `${it.price - G.coins}코인 더 필요해요`, 'short', null, true);
+      }
+    }
+    const placedN = G.home.placed.length + G.home.wall.filter(Boolean).length;
+    $('decoNote').textContent = `가구는 한 번 사면 계속 내 거예요. 지금 집에 ${placedN}개가 놓여 있어요. 놓은 가구를 누르면 옮기거나 넣어둘 수 있어요.`;
+  }
+  ['furn', 'wall', 'room'].forEach((t) => $('tab-' + t).addEventListener('click', () => { decoTab = t; renderDeco(); }));
+  $('decoBtn').addEventListener('click', () => { openSheet('decoSheet'); renderDeco(); syncRoomUI(); });
+  $('decoClose').addEventListener('click', () => { closeSheet(); syncRoomUI(); });
+  $('bankBtn').addEventListener('click', () => { openSheet('houseSheet'); renderHouse(); syncRoomUI(); });
+  $('exitBtn').addEventListener('click', exitRoom);
+
   function talkTo(n) {
     n.dir = Math.sign(player.x - n.x) || 1;
     if (n.shopkeeper) { say(n, pick(LINES_SHOP)); }
@@ -805,6 +1235,7 @@
     if (!G.started || modal) return;
     if (ac && ac.state === 'suspended') ac.resume();
     const r = canvas.getBoundingClientRect();
+    if (scene === 'room') { roomTap(e.clientX - r.left, e.clientY - r.top); return; }
     const w = toWorld(e.clientX - r.left, e.clientY - r.top);
     if (player.fishing) { reel(); return; }
 
@@ -814,7 +1245,8 @@
     }
     for (const p of plots) if (w.x > p.x - 4 && w.x < p.x + p.w + 4 && w.y > p.y - 18 && w.y < p.y + p.h + 4) { goTo(plotSpot(p), () => useplot(p)); return; }
     if (w.x > shop.x - 10 && w.x < shop.x + shop.w + 10 && w.y > shop.y - 50 && w.y < shop.y + shop.h + 10) { goTo(shop.spot, () => { openSheet('shopSheet'); renderShop(); talkTo(npcs[4]); }); return; }
-    if (w.x > house.x - 15 && w.x < house.x + house.w + 15 && w.y > house.y - 70 && w.y < house.y + house.h + 10) { goTo(house.door, () => { openSheet('houseSheet'); renderHouse(); }); return; }
+    if (w.x > house.x - 15 && w.x < house.x + house.w + 15 && w.y > house.y - 70 && w.y < house.y + house.h + 10) { goTo(house.door, enterRoom); return; }
+    if ((w.x > pier.x - 30 && w.x < pier.x + pier.w && w.y > pier.y - 60 && w.y < pier.y + pier.h + 8)) { goTo(pier.tip, () => startFishing(pier.bob)); return; }
     const dx = (w.x - pond.cx) / pond.rx, dy = (w.y - pond.cy) / pond.ry;
     if (dx * dx + dy * dy < 1.05) { const e2 = pondEdge(player.x, player.y); goTo(e2.stand, () => startFishing(e2.bob)); return; }
     goTo(w, null, true);
@@ -833,14 +1265,15 @@
     if (e.code === 'Escape') { closeSheet(); return; }
     if (modal) return;
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)) { keys.add(e.code); player.goal = null; if (player.fishing) player.fishing = null; e.preventDefault(); }
-    if (e.code === 'Space' || e.code === 'KeyE') { e.preventDefault(); if (player.fishing) reel(); else interactNearest(); }
+    if (e.code === 'Space' || e.code === 'KeyE') { e.preventDefault(); if (player.fishing) reel(); else if (scene === 'room') { if (Math.hypot(player.x - DOOR.x, player.y - FH) < 50) exitRoom(); } else interactNearest(); }
   });
   window.addEventListener('keyup', (e) => keys.delete(e.code));
   function interactNearest() {
     const opts = [];
     plots.forEach((p) => opts.push([plotSpot(p), () => useplot(p)]));
-    opts.push([shop.spot, () => { openSheet('shopSheet'); renderShop(); talkTo(npcs[4]); }]);
-    opts.push([house.door, () => { openSheet('houseSheet'); renderHouse(); }]);
+    opts.push([shop.spot, openShop]);
+    opts.push([house.door, enterRoom]);
+    opts.push([pier.tip, () => startFishing(pier.bob)]);
     npcs.forEach((n) => opts.push([n, () => talkTo(n)]));
     const e2 = pondEdge(player.x, player.y); opts.push([e2.stand, () => startFishing(e2.bob)]);
     let best = null, bd = 60;
@@ -848,9 +1281,39 @@
     if (best) best();
   }
 
+  // ---------- "what can I do here": a floating action chip near things you can use ----------
+  function openShop() { openSheet('shopSheet'); renderShop(); talkTo(npcs[4]); }
+  let ctxT = 0, ctxKey = '', ctxRun = null;
+  function nearbyAction() {
+    if (!G.started || scene !== 'village' || modal || player.fishing || player.goal || sleepFade > 0) return null;
+    const opts = [];
+    for (const pl of plots) {
+      const lab = pl.stage === 0 ? ['씨앗 심기', 'Plant', 'seed'] : pl.stage < 4 && !pl.watered ? ['물 주기', 'Water', 'can'] : pl.stage === 4 ? ['수확하기', 'Harvest', pl.crop || 'flower'] : null;
+      if (lab) opts.push([plotSpot(pl), lab, () => useplot(pl)]);
+    }
+    opts.push([shop.spot, ['가게 들어가기', 'Enter shop', 'coin'], openShop]);
+    opts.push([house.door, ['집에 들어가기', 'Go inside', 'house'], enterRoom]);
+    opts.push([pier.tip, ['낚시하기', 'Go fishing', 'crucian'], () => startFishing(pier.bob)]);
+    const e2 = pondEdge(player.x, player.y);
+    opts.push([e2.stand, ['낚시하기', 'Go fishing', 'crucian'], () => startFishing(e2.bob)]);
+    let best = null, bd = 56;
+    for (const o of opts) { const d = Math.hypot(o[0].x - player.x, o[0].y - player.y); if (d < bd) { bd = d; best = o; } }
+    return best;
+  }
+  function syncCtxChip() {
+    const a = nearbyAction();
+    ctxRun = a ? a[2] : null;
+    const key = a ? a[1].join('|') + G.en : '';
+    if (key === ctxKey) return;
+    ctxKey = key;
+    $('ctxChip').hidden = !a;
+    if (a) { $('ctxLabel').textContent = G.en ? a[1][1] : a[1][0]; $('ctxIcon').src = iconURL(a[1][2]); }
+  }
+  $('ctxChip').addEventListener('click', () => { if (!ctxRun) return; const fn = ctxRun; fn(); ctxKey = '__'; syncCtxChip(); });
+
   // ---------- update ----------
   const isNight = () => G.time > 0.7 && G.time < 0.94;
-  function moveChar(c, tx, ty, speed, dt) {
+  function moveChar(c, tx, ty, speed, dt, blocked = villageBlocked) {
     const dx = tx - c.x, dy = ty - c.y, d = Math.hypot(dx, dy);
     if (d < 2) { c.moving = false; return true; }
     const step = Math.min(d, speed * dt);
@@ -890,9 +1353,9 @@
     if (keys.has('ArrowDown') || keys.has('KeyS')) ky++;
     if (kx || ky) {
       const l = Math.hypot(kx, ky);
-      moveChar(p, p.x + (kx / l) * 30, p.y + (ky / l) * 30, 130, dt);
+      moveChar(p, p.x + (kx / l) * 30, p.y + (ky / l) * 30, scene === 'room' ? 100 : 130, dt, scene === 'room' ? roomBlocked : villageBlocked);
     } else if (p.goal) {
-      const arrived = moveChar(p, p.goal.x, p.goal.y, 130, dt);
+      const arrived = moveChar(p, p.goal.x, p.goal.y, scene === 'room' ? 100 : 130, dt, scene === 'room' ? roomBlocked : villageBlocked);
       const dist = Math.hypot(p.goal.x - p.x, p.goal.y - p.y);
       if (!arrived && (p.lastMoved || 0) < 0.3) p.stuckT += dt; else p.stuckT = 0;
       if (arrived || p.stuckT > 0.25) {
@@ -901,11 +1364,20 @@
       }
     } else p.moving = false;
     if (p.holdT > 0) { p.holdT -= dt; if (p.holdT <= 0) p.hold = null; }
+    if (scene === 'room' && p.y > FH + 6) exitRoom();
+    ctxT -= dt; if (ctxT <= 0) { ctxT = 0.15; syncCtxChip(); }
 
+    const reeling = !!(p.fishing && p.fishing.phase === 'reel');
+    if ($('reel').hidden === reeling) $('reel').hidden = !reeling;
     if (p.fishing) {
-      const f = p.fishing; f.t -= dt;
-      if (f.phase === 'wait' && f.t <= 0) { f.phase = 'bite'; f.t = 0.95; sfx.bite(); }
-      else if (f.phase === 'bite' && f.t <= 0) { p.fishing = null; sfx.soft(); toast('물고기가 도망갔어요. 괜찮아요, 다시 해봐요.', 'It got away. Try again!'); }
+      const f = p.fishing;
+      if (f.phase === 'wait') { f.t -= dt; if (f.t <= 0 && !modal) bite(); }
+      else if (f.phase === 'reel') {
+        f.t += dt;
+        $('reelMark').style.left = `${markerPos(f) * 100}%`;
+        // the fish slips away after a few sweeps; it will bite again
+        if (f.t * FISH[f.fish].speed > 6) { $('reel').hidden = true; f.phase = 'wait'; f.t = rand(1.5, 4); toast('물고기가 도망갔어요. 다시 기다려봐요.', 'It got away. Wait for another bite.'); }
+      }
     }
 
     // plants grow only while watered; they never wilt
@@ -922,7 +1394,7 @@
       if (n.emote) { n.emote.t -= dt; if (n.emote.t <= 0) n.emote = null; }
       n.greetCd -= dt; n.chatCd -= dt;
       if (n.chatCd <= 0) { n.chatCd = rand(9, 20); if (!n.bubble && Math.random() < 0.55) say(n, n.shopkeeper ? pick(LINES_SHOP) : pick(isNight() ? LINES_NIGHT : LINES_DAY)); }
-      if (G.started && n.greetCd <= 0 && Math.hypot(n.x - p.x, n.y - p.y) < 70) { n.greetCd = 40; say(n, ['안녕!', 'Hi!'], 2); n.dir = Math.sign(p.x - n.x) || 1; }
+      if (G.started && scene === 'village' && n.greetCd <= 0 && Math.hypot(n.x - p.x, n.y - p.y) < 70) { n.greetCd = 40; say(n, ['안녕!', 'Hi!'], 2); n.dir = Math.sign(p.x - n.x) || 1; }
       if (n.shopkeeper) { n.moving = false; continue; }
       if (n.target) {
         const arrived = moveChar(n, n.target.x, n.target.y, n.speed, dt);
@@ -1069,7 +1541,7 @@
     ctx.translate(0, -hop);
     ctx.save();
     ctx.rotate(tilt);
-    ctx.scale((c.dir < 0 ? -1 : 1) * (1 + squash * 0.6), 1 - squash);
+    ctx.scale(1 + squash * 0.6, 1 - squash); // never mirrored: the photo's light would flip too
     ctx.drawImage(img, -w / 2, -h + 2, w, h); // feet sink a touch into the grass
     ctx.restore();
     ctx.save(); ctx.scale(c.dir < 0 ? -1 : 1, 1); drawHeld(c, -24); ctx.restore();
@@ -1198,12 +1670,19 @@
     ctx.restore();
   }
 
-  function drawFishIcon(col) {
+  function drawFishIcon(k) {
+    const fish = FISH[k], col = fish.color;
+    const big = k === 'goldfish' || k === 'koi';
     ctx.fillStyle = clayGrad(2, 0, 11, shade(col, 0.18), col, shade(col, -0.12));
-    ctx.beginPath(); ctx.ellipse(2, 0, 11, 6.5, 0, 0, 7); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(-7, 0); ctx.lineTo(-14, -6.5); ctx.quadraticCurveTo(-12, 0, -14, 6.5); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(2, 0, 11, k === 'goldfish' ? 8 : 6.5, 0, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-7, 0);
+    if (big) { ctx.quadraticCurveTo(-16, -12, -15, -7); ctx.quadraticCurveTo(-11, 0, -15, 7); ctx.quadraticCurveTo(-16, 12, -7, 0); }
+    else { ctx.lineTo(-14, -6.5); ctx.quadraticCurveTo(-12, 0, -14, 6.5); ctx.closePath(); }
+    ctx.fill();
+    if (fish.spots) { ctx.fillStyle = fish.spots; for (const [sx, sy, r] of [[0, -3, 3.2], [6, 2, 2.4], [-4, 2.5, 2]]) { ctx.beginPath(); ctx.arc(sx, sy, r, 0, 7); ctx.fill(); } }
     ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.beginPath(); ctx.ellipse(3, -3, 5, 1.6, 0, 0, 7); ctx.fill();
     ctx.fillStyle = HAIR; ctx.beginPath(); ctx.arc(8.5, -1.5, 1.3, 0, 7); ctx.fill();
+    if (k === 'catfish') { ctx.strokeStyle = HAIR; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(12, 1); ctx.quadraticCurveTo(16, 3, 17, 7); ctx.moveTo(12, 2); ctx.quadraticCurveTo(15, 6, 14, 9); ctx.stroke(); }
   }
   function drawCoin() {
     ctx.fillStyle = clayGrad(0, 0, 11, '#f9e092', '#e2bd55', '#b8902f');
@@ -1223,18 +1702,31 @@
   }
   // paints an item with the same clay drawing used in the world, returns a data URL for <img>
   const iconCache = {};
-  function iconURL(kind) {
-    if (iconCache[kind]) return iconCache[kind];
-    const c = document.createElement('canvas'); c.width = c.height = 128;
+  function iconURL(kind, px = 128) {
+    const key = kind + '@' + px;
+    if (iconCache[key]) return iconCache[key];
+    const c = document.createElement('canvas'); c.width = c.height = px;
     const main = ctx; ctx = c.getContext('2d');
     try {
+      ctx.scale(px / 128, px / 128);
       ctx.translate(64, 66); ctx.scale(4, 4);
       if (CROPS[kind]) drawProduce(kind, 0, 0, 1, kind === 'flower' ? '#f2a7b8' : undefined);
-      else if (FISH[kind]) drawFishIcon(FISH[kind].color);
+      else if (FISH[kind]) drawFishIcon(kind);
+      else if (kind.startsWith('f:')) {
+        const f = FURN[kind.slice(2)], w = f.w * T, h = f.h * T, s = 108 / Math.max(w, h + f.rise);
+        ctx.scale(s / 4, s / 4); ctx.translate(0, -2);
+        drawFurniture(kind.slice(2), -w / 2, -(h - f.rise) / 2);
+      } else if (kind.startsWith('d:')) { ctx.scale(0.4, 0.4); drawDecor(kind.slice(2), 0, 0); }
+      else if (kind === 'can') { ctx.rotate(0.2); ctx.fillStyle = clayGrad(0, 0, 12, '#9fb78c', '#7f9b6b', '#62804f'); rr(ctx, -11, -8, 18, 17, 4); ctx.fill(); ctx.strokeStyle = '#6f8b5c'; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(6, 3); ctx.lineTo(15, -6); ctx.stroke(); ctx.beginPath(); ctx.arc(-11, 0, 6, Math.PI / 2, Math.PI * 1.5); ctx.stroke(); }
+      else if (kind === 'house') {
+        ctx.fillStyle = clayGrad(0, 4, 14, '#fdf4e3', '#f1e1c4', '#dcc39d'); rr(ctx, -11, -3, 22, 15, 3); ctx.fill();
+        ctx.fillStyle = clayGrad(0, -8, 14, '#df8e6d', '#c8714f', '#a85a3d'); ctx.beginPath(); ctx.moveTo(-14, -1); ctx.quadraticCurveTo(0, -18, 14, -1); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#9a6c48'; rr(ctx, -3, 3, 6, 9, 3); ctx.fill();
+      }
       else if (kind === 'coin') drawCoin();
       else if (kind === 'seed') drawSeedBag();
     } finally { ctx = main; }
-    return (iconCache[kind] = c.toDataURL());
+    return (iconCache[key] = c.toDataURL());
   }
 
   function drawPlot(pl) {
@@ -1423,18 +1915,235 @@
     const tx = player.x + 40 * player.dir, ty = player.y - 78;
     ctx.strokeStyle = '#9a6c48'; ctx.lineWidth = 3; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(tx, ty); ctx.stroke();
-    const dip = f.phase === 'bite' ? 3 + Math.sin(G.t * 30) * 2 : Math.sin(G.t * 3) * 1.2;
+    const dip = f.phase === 'reel' ? 3 + Math.sin(G.t * 30) * 2 : Math.sin(G.t * 3) * 1.2;
     const bx = f.bob.x, by = f.bob.y + dip;
     ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(tx, ty); ctx.quadraticCurveTo((tx + bx) / 2, Math.max(ty, by) + 20, bx, by); ctx.stroke();
     ctx.fillStyle = '#fffaf1'; ctx.beginPath(); ctx.arc(bx, by, 5, 0, 7); ctx.fill();
     ctx.fillStyle = '#c95b45'; ctx.beginPath(); ctx.arc(bx, by, 5, Math.PI, 0); ctx.fill();
-    if (f.phase === 'bite') {
+    if (f.phase === 'reel') {
       ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.ellipse(bx, by + 3, 12 + Math.sin(G.t * 20) * 3, 4, 0, 0, 7); ctx.stroke();
       ctx.fillStyle = '#fffaf1'; ctx.beginPath(); ctx.arc(player.x, player.y - 112, 13, 0, 7); ctx.fill();
       ctx.fillStyle = '#c8714f'; ctx.font = `700 20px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('!', player.x, player.y - 111);
     }
+  }
+
+  // ---------- fishing pier ----------
+  function drawPier() {
+    const { x, y, w, h } = pier;
+    ctx.fillStyle = 'rgba(60,90,90,0.25)'; rr(ctx, x + 4, y + 6, w, h, 6); ctx.fill();
+    ctx.fillStyle = '#7a5a40';
+    for (const px of [x + 30, x + 62, x + 94]) { ctx.beginPath(); ctx.ellipse(px, y + h + 2, 4, 2.5, 0, 0, 7); ctx.fill(); }
+    ctx.fillStyle = clayGrad(x + w / 2, y + h / 2, w / 2, '#dcb488', '#c99a6b', '#a97b50'); rr(ctx, x, y, w, h, 6); ctx.fill();
+    ctx.strokeStyle = 'rgba(110,75,45,0.35)'; ctx.lineWidth = 1.5;
+    for (let px = x + 16; px < x + w - 4; px += 16) { ctx.beginPath(); ctx.moveTo(px, y + 3); ctx.lineTo(px, y + h - 3); ctx.stroke(); }
+  }
+  function drawPierSign() {
+    const sx = pier.x - 16, sy = pier.y + 4;
+    ctx.fillStyle = 'rgba(100,80,50,0.18)'; ctx.beginPath(); ctx.ellipse(sx, sy, 10, 3.5, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#8a6142'; rr(ctx, sx - 2.5, sy - 40, 5, 40, 2); ctx.fill();
+    ctx.fillStyle = clayGrad(sx, sy - 44, 24, '#e2bf93', '#cfa577', '#ad8358'); rr(ctx, sx - 26, sy - 58, 52, 24, 7); ctx.fill();
+    ctx.fillStyle = '#4a3a2e'; ctx.font = `700 11px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(G.en ? 'Fishing' : '낚시터', sx, sy - 45.5);
+  }
+
+  // ---------- furniture (room units; x, y = top-left corner of the footprint on the floor) ----------
+  const woodGrad = (x, y, r) => clayGrad(x, y, r, '#dcb084', '#c08a5a', '#9a6c48');
+  function floorShadow(x, y, w, h) { ctx.fillStyle = 'rgba(80,60,40,0.16)'; ctx.beginPath(); ctx.ellipse(x + w / 2, y + h * 0.62, w * 0.48, h * 0.36, 0, 0, 7); ctx.fill(); }
+  function drawFurniture(k, x, y) {
+    const f = FURN[k], w = f.w * T, h = f.h * T, cx = x + w / 2, base = y + h;
+    if (k === 'rug') {
+      ctx.fillStyle = '#efb3a5'; ctx.beginPath(); ctx.ellipse(cx, y + h / 2, w / 2 - 3, h / 2 - 7, 0, 0, 7); ctx.fill();
+      ctx.strokeStyle = '#f8d8cd'; ctx.lineWidth = 5; ctx.beginPath(); ctx.ellipse(cx, y + h / 2, w / 2 - 15, h / 2 - 18, 0, 0, 7); ctx.stroke();
+      ctx.fillStyle = '#e79f8e'; ctx.beginPath(); ctx.ellipse(cx, y + h / 2, w / 2 - 28, h / 2 - 30, 0, 0, 7); ctx.fill();
+    } else if (k === 'cushion') {
+      floorShadow(x, y, w, h);
+      ctx.fillStyle = clayGrad(cx, y + h / 2, 20, '#f3d98d', '#e2bd55', '#c39c3a'); rr(ctx, x + 6, y + 10, w - 12, h - 16, 11); ctx.fill();
+      ctx.fillStyle = '#c39c3a'; ctx.beginPath(); ctx.arc(cx, y + h / 2 + 2, 2.2, 0, 7); ctx.fill();
+    } else if (k === 'bed') {
+      floorShadow(x, y + 8, w, h);
+      ctx.fillStyle = woodGrad(cx, y - 12, 44); rr(ctx, x + 3, y - f.rise, w - 6, f.rise + 22, 15); ctx.fill();
+      ctx.fillStyle = woodGrad(cx, y + h / 2, 70); rr(ctx, x, y + 6, w, h - 4, 12); ctx.fill();
+      ctx.fillStyle = '#fbf4e6'; rr(ctx, x + 5, y + 3, w - 10, h - 13, 10); ctx.fill();
+      ctx.fillStyle = clayGrad(cx, y + 16, 28, '#ffffff', '#f6efe2', '#e2d6c0'); rr(ctx, x + 13, y + 8, w - 26, 20, 10); ctx.fill();
+      ctx.fillStyle = clayGrad(cx, y + h * 0.6, 70, '#bcd6a6', '#9fbf8a', '#83a56f'); rr(ctx, x + 5, y + h * 0.36, w - 10, h * 0.64 - 13, 10); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillRect(x + 5, y + h * 0.36 + 12, w - 10, 4);
+    } else if (k === 'table') {
+      floorShadow(x, y, w, h);
+      const top = y + h * 0.55 - f.rise;
+      ctx.fillStyle = woodGrad(cx, base - 20, 12); rr(ctx, cx - 6, top, 12, base - 14 - top, 5); ctx.fill();
+      ctx.fillStyle = '#9a6c48'; ctx.beginPath(); ctx.ellipse(cx, base - 14, 16, 5, 0, 0, 7); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(cx, top + 5, w / 2 - 6, h / 4, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = woodGrad(cx, top, w / 2); ctx.beginPath(); ctx.ellipse(cx, top, w / 2 - 6, h / 4, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = '#fbf6ec'; rr(ctx, cx - 7, top - 13, 14, 11, 4); ctx.fill();
+      ctx.fillStyle = '#7a4c33'; ctx.beginPath(); ctx.ellipse(cx, top - 12, 5.5, 1.8, 0, 0, 7); ctx.fill();
+    } else if (k === 'stool') {
+      floorShadow(x, y, w, h);
+      const top = base - 10 - f.rise;
+      ctx.strokeStyle = '#9a6c48'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(cx - 9, top + 4); ctx.lineTo(cx - 12, base - 8); ctx.moveTo(cx + 9, top + 4); ctx.lineTo(cx + 12, base - 8); ctx.stroke();
+      ctx.fillStyle = '#9a6c48'; ctx.beginPath(); ctx.ellipse(cx, top + 4, 16, 6, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = woodGrad(cx, top, 16); ctx.beginPath(); ctx.ellipse(cx, top, 16, 6, 0, 0, 7); ctx.fill();
+    } else if (k === 'sofa') {
+      floorShadow(x, y, w, h);
+      const top = base - 6 - f.rise - 10;
+      ctx.fillStyle = clayGrad(cx, top + 10, w / 2, '#f0d27c', '#e2bd55', '#c39c3a'); rr(ctx, x + 6, top, w - 12, f.rise + 4, 14); ctx.fill();
+      ctx.fillStyle = clayGrad(cx, base - 12, w / 2, '#f6e3a3', '#ebcb6c', '#cfa846'); rr(ctx, x + 8, base - 26, w - 16, 20, 9); ctx.fill();
+      ctx.strokeStyle = 'rgba(160,120,40,0.35)'; ctx.lineWidth = 1.5;
+      for (const sx of [x + w / 3, x + (2 * w) / 3]) { ctx.beginPath(); ctx.moveTo(sx, base - 25); ctx.lineTo(sx, base - 8); ctx.stroke(); }
+      for (const ax of [x + 1, x + w - 15]) { ctx.fillStyle = clayGrad(ax + 7, base - 20, 14, '#f0d27c', '#e2bd55', '#c39c3a'); rr(ctx, ax, base - 32, 14, 28, 7); ctx.fill(); }
+    } else if (k === 'plant') {
+      floorShadow(x, y, w, h);
+      const potTop = base - 30;
+      const leaves = [[-0.9, 26], [-0.35, 34], [0.25, 32], [0.8, 26], [0, 22]];
+      for (const [a, len] of leaves) {
+        const lx = cx + Math.sin(a) * len * 0.7, ly = potTop - Math.cos(a) * len * 0.85;
+        ctx.strokeStyle = '#6f9a58'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx, potTop + 2); ctx.lineTo(lx, ly); ctx.stroke();
+        ctx.fillStyle = clayGrad(lx, ly, 12, '#a7cf84', '#7fb069', '#5f8f4f'); ctx.beginPath(); ctx.ellipse(lx, ly, 11, 7, a - Math.PI / 2, 0, 7); ctx.fill();
+      }
+      ctx.fillStyle = clayGrad(cx, potTop + 12, 16, '#df8e6d', '#c8714f', '#a85a3d');
+      ctx.beginPath(); ctx.moveTo(cx - 14, potTop); ctx.lineTo(cx + 14, potTop); ctx.lineTo(cx + 10, base - 8); ctx.lineTo(cx - 10, base - 8); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#b8603f'; rr(ctx, cx - 15, potTop - 3, 30, 6, 3); ctx.fill();
+    } else if (k === 'lamp') {
+      floorShadow(x, y, w, h);
+      const capY = base - 12 - f.rise + 14;
+      ctx.fillStyle = clayGrad(cx, base - 20, 10, '#fdf4e3', '#f1e1c4', '#d8bf98'); rr(ctx, cx - 4.5, capY, 9, base - 10 - capY, 4); ctx.fill();
+      ctx.fillStyle = '#d8bf98'; ctx.beginPath(); ctx.ellipse(cx, base - 10, 10, 3.5, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = clayGrad(cx, capY - 6, 18, '#ef8a72', '#e06a52', '#b84e3a'); ctx.beginPath(); ctx.ellipse(cx, capY + 2, 19, 15, 0, Math.PI, 0); ctx.fill();
+      ctx.fillStyle = '#fff4e6';
+      for (const [dx, dy, r] of [[-8, -4, 3], [5, -8, 2.5], [10, -2, 2]]) { ctx.beginPath(); ctx.arc(cx + dx, capY + dy, r, 0, 7); ctx.fill(); }
+    } else if (k === 'shelf') {
+      floorShadow(x, y, w, h);
+      const top = base - 6 - f.rise;
+      ctx.fillStyle = woodGrad(cx, top + f.rise / 2, f.rise); rr(ctx, x + 4, top, w - 8, f.rise, 7); ctx.fill();
+      ctx.fillStyle = '#8a5f3f'; rr(ctx, x + 9, top + 6, w - 18, f.rise - 12, 4); ctx.fill();
+      const cols = ['#c95b45', '#7f9b6b', '#e2bd55', '#7fb3c4', '#f2a7b8', '#a39d93', '#8d5f45'];
+      for (let s = 0; s < 3; s++) {
+        const sy = top + 8 + s * ((f.rise - 14) / 3), sh = (f.rise - 14) / 3;
+        ctx.fillStyle = '#c08a5a'; ctx.fillRect(x + 9, sy + sh - 3, w - 18, 3);
+        let bx = x + 12;
+        for (let i = 0; bx < x + w - 18; i++) { const bw = 5 + ((s * 7 + i * 3) % 4); const bh = sh - 6 - ((i + s) % 3) * 2; ctx.fillStyle = cols[(i + s * 2) % cols.length]; rr(ctx, bx, sy + sh - 3 - bh, bw, bh, 1.5); ctx.fill(); bx += bw + 1.5; }
+      }
+    }
+  }
+  function drawDecor(k, cx, cy) {
+    const night = nightAmount();
+    if (k === 'window') {
+      ctx.fillStyle = '#fffaf1'; rr(ctx, cx - 31, cy - 27, 62, 52, 12); ctx.fill();
+      ctx.fillStyle = night > 0.5 ? '#2f3566' : '#cfe6ee'; rr(ctx, cx - 25, cy - 21, 50, 40, 8); ctx.fill();
+      if (night > 0.5) { ctx.fillStyle = '#fff4c8'; for (const [sx, sy] of [[-14, -10], [6, -14], [15, 4], [-4, 6]]) { ctx.beginPath(); ctx.arc(cx + sx, cy + sy, 1.3, 0, 7); ctx.fill(); } }
+      else { ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.beginPath(); ctx.ellipse(cx - 6, cy + 6, 10, 4, 0, 0, 7); ctx.ellipse(cx + 4, cy + 4, 8, 5, 0, 0, 7); ctx.fill(); }
+      ctx.fillStyle = '#fffaf1'; ctx.fillRect(cx - 2, cy - 21, 4, 40); ctx.fillRect(cx - 25, cy - 2, 50, 4);
+      for (const s of [-1, 1]) { ctx.fillStyle = clayGrad(cx + s * 30, cy, 14, '#f7cbbb', '#efb3a5', '#d9927f'); rr(ctx, cx + s * 30 - 7, cy - 29, 14, 50, 7); ctx.fill(); }
+    } else if (k === 'frame') {
+      ctx.fillStyle = woodGrad(cx, cy, 24); rr(ctx, cx - 22, cy - 19, 44, 38, 5); ctx.fill();
+      ctx.fillStyle = '#fbf6ec'; rr(ctx, cx - 17, cy - 14, 34, 28, 3); ctx.fill();
+      ctx.strokeStyle = '#6f9a58'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(cx, cy + 10); ctx.lineTo(cx, cy - 2); ctx.stroke();
+      drawBloom(cx, cy - 4, '#f2a7b8', 0.9); drawBloom(cx - 9, cy + 2, '#f4d35e', 0.55); drawBloom(cx + 9, cy + 3, '#b9a3e3', 0.55);
+    } else if (k === 'clock') {
+      ctx.fillStyle = woodGrad(cx, cy, 20); ctx.beginPath(); ctx.arc(cx, cy, 19, 0, 7); ctx.fill();
+      ctx.fillStyle = '#fbf6ec'; ctx.beginPath(); ctx.arc(cx, cy, 15, 0, 7); ctx.fill();
+      const a = G.time * Math.PI * 4, b = G.time * Math.PI * 48;
+      ctx.strokeStyle = '#4a3a2e'; ctx.lineCap = 'round';
+      ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.sin(a) * 8, cy - Math.cos(a) * 8); ctx.stroke();
+      ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.sin(b) * 12, cy - Math.cos(b) * 12); ctx.stroke();
+    } else if (k === 'garland') {
+      ctx.strokeStyle = '#8a6142'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(cx - 34, cy - 16); ctx.quadraticCurveTo(cx, cy + 4, cx + 34, cy - 16); ctx.stroke();
+      const cols = ['#e05a47', '#f4d35e', '#7fb3c4', '#f2a7b8', '#7f9b6b'];
+      for (let i = 0; i < 5; i++) {
+        const t = (i + 0.5) / 5, fx = cx - 34 + 68 * t, fy = (1 - t) * (1 - t) * (cy - 16) + 2 * (1 - t) * t * (cy + 4) + t * t * (cy - 16);
+        ctx.fillStyle = cols[i]; ctx.beginPath(); ctx.moveTo(fx - 6, fy); ctx.lineTo(fx + 6, fy); ctx.lineTo(fx, fy + 12); ctx.closePath(); ctx.fill();
+      }
+    }
+  }
+
+  // ---------- the room ----------
+  let roomV = { z: 1, ox: 0, oy: 0 };
+  function roomLayout() {
+    const cw = canvas.clientWidth, ch = canvas.clientHeight;
+    const topUI = 118, bottomUI = 96, availH = Math.max(200, ch - topUI - bottomUI);
+    const boxW = FW + 28, boxH = WALLH + FH + 56;
+    const z = Math.min((cw * 0.94) / boxW, availH / boxH, 2.4);
+    roomV = { z, ox: (cw - FW * z) / 2, oy: topUI + (availH - boxH * z) / 2 + (WALLH + 14) * z };
+  }
+  const toRoom = (sx, sy) => ({ x: (sx - roomV.ox) / roomV.z, y: (sy - roomV.oy) / roomV.z });
+  const slotX = (i) => (FW * (i + 0.5)) / WALL_SLOTS;
+  const WALL_CY = -WALLH * 0.52;
+
+  function drawRoom() {
+    roomLayout();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = '#e8dac3'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const s = roomV.z * dpr;
+    ctx.setTransform(s, 0, 0, s, roomV.ox * dpr, roomV.oy * dpr);
+    const paper = PAPERS[G.home.paper] || PAPERS.cream, floor = FLOORS[G.home.floor] || FLOORS.wood;
+    // the clay shell of the house, like a cut-away dollhouse
+    ctx.fillStyle = 'rgba(80,60,40,0.18)'; rr(ctx, -12, -WALLH - 10, FW + 24, WALLH + FH + 32, 24); ctx.fill();
+    ctx.fillStyle = clayGrad(FW / 2, -WALLH / 2, FW, '#f3e2c4', '#e4cda8', '#cdb08a'); rr(ctx, -14, -WALLH - 14, FW + 28, WALLH + FH + 28, 24); ctx.fill();
+    // wall
+    ctx.fillStyle = paper.c; ctx.fillRect(0, -WALLH, FW, WALLH);
+    ctx.fillStyle = paper.s; for (let x = 10; x < FW; x += 24) ctx.fillRect(x, -WALLH, 8, WALLH);
+    ctx.fillStyle = '#c08a5a'; ctx.fillRect(0, -9, FW, 9);
+    // floor
+    ctx.fillStyle = floor.c; ctx.fillRect(0, 0, FW, FH);
+    ctx.strokeStyle = floor.s; ctx.fillStyle = floor.s; ctx.lineWidth = 1.5;
+    if (G.home.floor === 'checker') { for (let r = 0; r < ROWS * 2; r++) for (let c = 0; c < COLS * 2; c++) if ((r + c) % 2) ctx.fillRect(c * T / 2, r * T / 2, T / 2, T / 2); }
+    else if (G.home.floor === 'moss') { const mr = mulberry32(9); for (let i = 0; i < 160; i++) { ctx.beginPath(); ctx.arc(mr() * FW, mr() * FH, 1 + mr() * 2, 0, 7); ctx.fill(); } }
+    else { for (let y = 22; y < FH; y += 22) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(FW, y); ctx.stroke(); } for (let y = 0, i = 0; y < FH; y += 22, i++) for (let x = (i % 2) * 40 + 30; x < FW; x += 80) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + 22); ctx.stroke(); } }
+    ctx.fillStyle = 'rgba(80,60,40,0.10)'; ctx.fillRect(0, 0, FW, 10);
+    // door gap and mat at the front
+    ctx.fillStyle = floor.c; ctx.fillRect(FW / 2 - 26, FH - 1, 52, 16);
+    ctx.fillStyle = clayGrad(FW / 2, FH + 18, 30, '#df8e6d', '#c8714f', '#a85a3d'); rr(ctx, FW / 2 - 30, FH + 8, 60, 22, 9); ctx.fill();
+    ctx.fillStyle = '#fff4e6'; ctx.font = `700 11px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(G.en ? 'Exit' : '나가기', FW / 2, FH + 19.5);
+
+    // wall decor
+    G.home.wall.forEach((k, i) => { if (k) drawDecor(k, slotX(i), WALL_CY); });
+
+    // placing: show the grid and where the piece would fit
+    if (placing) {
+      ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1;
+      if (placing.wall) { for (let i = 0; i < WALL_SLOTS; i++) { ctx.setLineDash([4, 4]); rr(ctx, slotX(i) - 30, WALL_CY - 28, 60, 54, 10); ctx.stroke(); ctx.setLineDash([]); } }
+      else {
+        for (let c = 1; c < COLS; c++) { ctx.beginPath(); ctx.moveTo(c * T, 0); ctx.lineTo(c * T, FH); ctx.stroke(); }
+        for (let r = 1; r < ROWS; r++) { ctx.beginPath(); ctx.moveTo(0, r * T); ctx.lineTo(FW, r * T); ctx.stroke(); }
+        if (placing.hover) {
+          const f = FURN[placing.k], ok = canPlace(placing.k, placing.hover.c, placing.hover.r);
+          ctx.fillStyle = ok ? 'rgba(143,207,122,0.45)' : 'rgba(240,68,82,0.3)';
+          ctx.fillRect(placing.hover.c * T, placing.hover.r * T, f.w * T, f.h * T);
+        }
+      }
+    }
+
+    // rugs lie flat; everything else sorts by its front edge with the player
+    const list = [];
+    for (const p of G.home.placed) {
+      const f = FURN[p.k];
+      if (f.flat) drawFurniture(p.k, p.c * T, p.r * T);
+      else list.push([(p.r + f.h) * T, () => drawFurniture(p.k, p.c * T, p.r * T)]);
+    }
+    if (placing && placing.hover && !placing.wall) {
+      ctx.globalAlpha = 0.55; drawFurniture(placing.k, placing.hover.c * T, placing.hover.r * T); ctx.globalAlpha = 1;
+    }
+    list.push([player.y, () => drawMong(player)]);
+    list.sort((a, b) => a[0] - b[0]).forEach(([, fn]) => fn());
+    for (const q of parts) { ctx.globalAlpha = clamp(q.life / q.max, 0, 1); ctx.fillStyle = q.c; ctx.beginPath(); ctx.arc(q.x, q.y, q.r, 0, 7); ctx.fill(); }
+    ctx.globalAlpha = 1;
+
+    // evening light: a soft dusk over the room, lamps glow warm
+    const night = nightAmount();
+    if (night > 0.02) {
+      ctx.fillStyle = `rgba(46,48,104,${0.22 * night})`; ctx.fillRect(-14, -WALLH - 14, FW + 28, WALLH + FH + 50);
+      ctx.globalCompositeOperation = 'lighter';
+      for (const p of G.home.placed) if (p.k === 'lamp') {
+        const gx = p.c * T + T / 2, gy = (p.r + 1) * T - 40;
+        const gr = ctx.createRadialGradient(gx, gy, 0, gx, gy, 110); gr.addColorStop(0, `rgba(255,200,120,${0.4 * night})`); gr.addColorStop(1, 'rgba(255,200,120,0)');
+        ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(gx, gy, 110, 0, 7); ctx.fill();
+      }
+      ctx.globalCompositeOperation = 'source-over';
+    }
+    drawBubble(player);
+    if (sleepFade > 0) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = `rgba(42,38,70,${clamp(1 - Math.abs(sleepFade - 0.8) / 0.8, 0, 1)})`; ctx.fillRect(0, 0, canvas.width, canvas.height); }
   }
 
   function nightAmount() {
@@ -1464,6 +2173,7 @@
   window.addEventListener('resize', resize);
 
   function draw() {
+    if (scene === 'room') return drawRoom();
     const tx = clamp(player.x, Math.min(vw / 2, W / 2), Math.max(W - vw / 2, W / 2));
     const ty = clamp(player.y - 30, Math.min(vh / 2, H / 2), Math.max(H - vh / 2, H / 2));
     cam.x = lerp(cam.x, tx, 0.12); cam.y = lerp(cam.y, ty, 0.12);
@@ -1474,6 +2184,7 @@
 
     ctx.drawImage(ground, 0, 0, W, H);
     drawPond();
+    drawPier();
     plots.forEach(drawPlot);
     drawMatProps();
     if (player.goal && player.goal.plain) { ctx.strokeStyle = 'rgba(255,250,241,0.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(player.goal.x, player.goal.y, 10, 4, 0, 0, 7); ctx.stroke(); }
@@ -1483,6 +2194,7 @@
     lamps.forEach((l) => list.push([l.y, () => drawLamp(l)]));
     list.push([house.y + house.h, drawHouse]);
     list.push([shop.y + shop.h, drawShop]);
+    list.push([pier.y + 4, drawPierSign]);
     [player, ...npcs].forEach((c) => list.push([c.y, () => { drawMong(c); if (!c.player) drawName(c); }]));
     list.sort((a, b) => a[0] - b[0]).forEach(([, fn]) => fn());
 
@@ -1527,7 +2239,7 @@
   }
 
   function boot(data) {
-    const restored = load((data && data.v === 1 && data) || store.get('donggle-village', null));
+    const restored = load((data && data.v === 2 && data) || store.get('donggle-village', null));
     player.shirt = (SHIRTS.find((s) => s.id === G.shirt) || SHIRTS[2]).c;
     player.look = LOOKS.includes(G.look) ? G.look : 1;
     if (restored) $('startBtn').textContent = '이어서 놀기';
