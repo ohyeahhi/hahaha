@@ -22,5 +22,9 @@ python3 -m http.server 8000
 
 - `village/`: 동글마을 시제품 (한 파일, 외부 라이브러리 없음)
 - `docs/기획서.md`: 지금까지 정한 내용과 다음 단계
-- `docs/art-reference/`: 캐릭터 참고 그림
+- `docs/art-reference/`: 캐릭터 원본 그림
+- `village/assets/dongle/`: 원본 그림에서 오려낸 동글이 캐릭터 (게임에서 사용)
+- `tools/cutout.py`: 배경이 단색인 사진에서 캐릭터를 오려내는 도구
+  (`python tools/cutout.py docs/art-reference/coffee.webp village/assets/dongle coffee 280`, OpenCV 필요)
+- `prototypes/clay3d/`: 3D 찰흙 캐릭터 실험
 - `prototypes/fox-run/`: 첫 시험용 점프 러너 (미니게임 후보)

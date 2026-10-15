@@ -128,9 +128,15 @@
   .btn.small.soft { background: var(--surface); color: var(--ink); }
   .btn:disabled { background: var(--grouped); color: #c4beb6; cursor: default; transform: none; filter: none; }
 
-  .swatches { display: flex; gap: 12px; justify-content: center; }
-  .swatch { width: 40px; height: 40px; border-radius: 50%; border: 0; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06); }
-  .swatch[aria-checked="true"] { box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--ink); }
+  .looks { display: flex; gap: 6px; justify-content: center; width: 100%; }
+  .look {
+    flex: 1; min-width: 0; max-width: 64px; aspect-ratio: 3 / 4;
+    display: grid; place-items: end center; padding: 6px 4px 4px; box-sizing: border-box;
+    border: 0; border-radius: 16px; background: var(--grouped); cursor: pointer;
+    transition: transform 0.12s;
+  }
+  .look img { width: 100%; height: 100%; object-fit: contain; object-position: bottom; }
+  .look[aria-checked="true"] { background: #fbeee2; box-shadow: inset 0 0 0 2.5px var(--accent); transform: translateY(-3px); }
 
   .market { display: flex; flex-direction: column; gap: 8px; }
   .item {
@@ -217,8 +223,8 @@
 <div class="sheet center" id="startSheet">
   <h1>동글마을</h1>
   <p>천천히 걸어도 괜찮은 작은 마을이에요.<br>작물을 키워 팔고, 물고기를 낚고, 이웃과 인사해요.</p>
-  <span class="label">내 옷 색깔</span>
-  <div class="swatches" id="swatches" role="radiogroup" aria-label="옷 색깔"></div>
+  <span class="label">내 동글이 고르기</span>
+  <div class="looks" id="swatches" role="radiogroup" aria-label="내 동글이"></div>
   <button class="btn" id="startBtn" type="button">마을로 가기</button>
   <p class="muted">땅을 누르면 걸어가요. 밭·연못·가게·집을 눌러보세요.</p>
 </div>
@@ -286,6 +292,14 @@
   const HAIR = '#2b2420';
   const FLOWER_COLORS = ['#f2a7b8', '#f4d35e', '#e05a47', '#fbf7ef', '#b9a3e3'];
 
+  // the 동글이 figures from the reference photos, cut out by tools/cutout.py
+  const LOOKS = [1, 2, 3, 4, 5];
+  const SPR = {};
+  for (const pose of ['base', 'coffee']) for (const n of LOOKS) {
+    const im = new Image(); im.decoding = 'async'; im.src = `assets/dongle/${pose}-${n}.png`; SPR[`${pose}-${n}`] = im;
+  }
+  const spriteReady = (im) => !!im && im.complete && im.naturalWidth > 0;
+
   // ---------- world ----------
   const W = 1400, H = 1000;
   const house = { x: 230, y: 170, w: 160, h: 112, door: { x: 310, y: 300 } };
@@ -336,7 +350,7 @@
     seeds: { carrot: 3, flower: 2, tomato: 0, strawberry: 0 },
     inv: { carrot: 0, flower: 0, tomato: 0, strawberry: 0, minnow: 0, crucian: 0, carp: 0 },
     prices: {}, prev: {}, ledger: [],
-    shirt: 'yellow', en: false, muted: false, music: true,
+    shirt: 'yellow', look: 1, en: false, muted: false, music: true,
     tips: { planted: false, fished: false },
   };
   function rollPrices() {
@@ -346,11 +360,11 @@
   rollPrices(); G.prev = { ...G.prices };
 
   function save() {
-    return { v: 2, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, en: G.en, muted: G.muted, music: G.music, tips: G.tips, plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
+    return { v: 2, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
   }
   function load(s) {
     if (!s || s.v !== 2) return false;
-    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: s.tips || G.tips });
+    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: s.tips || G.tips });
     (s.plots || []).forEach((p, i) => { if (plots[i]) Object.assign(plots[i], p); });
     return true;
   }
@@ -361,13 +375,13 @@
   function mong(name, shirt, x, y, extra) {
     return Object.assign({ name, shirt, x, y, dir: 1, face: 0, walkP: 0, moving: false, seed: Math.random() * 10, blink: rand(2, 5), bubble: null, emote: null, hold: null, holdT: 0 }, extra);
   }
-  const player = mong('나', '#e2bd55', 330, 330, { player: true, goal: null, stuckT: 0, fishing: null });
+  const player = mong('나', '#e2bd55', 330, 330, { player: true, goal: null, stuckT: 0, fishing: null, look: 1 });
   const npcs = [
-    mong('동이', '#8d5f45', 740, 500, { speed: 48 }),
-    mong('글이', '#7f9b6b', 800, 540, { speed: 44 }),
-    mong('포포', '#e2bd55', 560, 520, { speed: 52 }),
-    mong('말랑', '#c95b45', 900, 470, { speed: 50 }),
-    mong('도담', '#a39d93', 1050, 262, { shopkeeper: true }),
+    mong('동이', '#8d5f45', 740, 500, { speed: 48, look: 2 }),
+    mong('글이', '#7f9b6b', 800, 540, { speed: 44, look: 3 }),
+    mong('포포', '#e2bd55', 560, 520, { speed: 52, look: 4 }),
+    mong('말랑', '#c95b45', 900, 470, { speed: 50, look: 1 }),
+    mong('도담', '#a39d93', 1050, 262, { shopkeeper: true, look: 5 }),
   ];
   npcs.forEach((n) => { n.wait = rand(0.5, 4); n.target = null; n.greetCd = 0; n.chatCd = rand(4, 12); });
 
@@ -534,16 +548,18 @@
     document.querySelectorAll('[data-en]').forEach((el) => { el.hidden = !G.en; });
   }
 
-  // start sheet swatches
+  // start sheet: pick your own 동글이
   const sw = $('swatches');
-  SHIRTS.forEach((s) => {
+  LOOKS.forEach((n) => {
     const b = document.createElement('button');
-    b.type = 'button'; b.className = 'swatch'; b.style.background = s.c;
-    b.setAttribute('role', 'radio'); b.setAttribute('aria-label', s.ko); b.id = 'shirt-' + s.id;
-    b.addEventListener('click', () => { G.shirt = s.id; player.shirt = s.c; syncSwatches(); });
+    b.type = 'button'; b.className = 'look'; b.id = 'look-' + n;
+    b.setAttribute('role', 'radio'); b.setAttribute('aria-label', `동글이 ${n}번`);
+    const im = document.createElement('img'); im.src = `assets/dongle/base-${n}.png`; im.alt = '';
+    b.append(im);
+    b.addEventListener('click', () => { G.look = n; player.look = n; syncSwatches(); tone(520 + n * 40, 0.12); });
     sw.append(b);
   });
-  function syncSwatches() { SHIRTS.forEach((s) => $('shirt-' + s.id).setAttribute('aria-checked', String(G.shirt === s.id))); }
+  function syncSwatches() { LOOKS.forEach((n) => $('look-' + n).setAttribute('aria-checked', String(G.look === n))); }
 
   let modal = null;
   function openSheet(id) { closeSheet(); modal = id; $(id).hidden = false; }
@@ -926,6 +942,7 @@
     if (p.bubble) { p.bubble.t -= dt; if (p.bubble.t <= 0) p.bubble = null; }
 
     for (const c of [p, ...npcs]) {
+      c.idleT = c.moving ? 0 : (c.idleT || 0) + dt;
       c.face = lerp(c.face, c.moving ? c.dir : 0, Math.min(1, dt * 6));
       c.blink -= dt; if (c.blink < -0.12) c.blink = rand(2.5, 6);
     }
@@ -1007,7 +1024,71 @@
     return `rgb(${f(n >> 16)},${f((n >> 8) & 255)},${f(n & 255)})`;
   }
 
+  // ---------- the player's own clay figures as sprites ----------
+  const SPRITE_H = 80;
+  function atMat(c) { return !c.moving && c.x > mat.x - 10 && c.x < mat.x + mat.w + 10 && c.y > mat.y - 5 && c.y < mat.y + mat.h + 30; }
+  function spriteFor(c) {
+    const sip = !c.hold && !(c.player && c.fishing) && !c.shopkeeper && atMat(c) && (c.idleT || 0) > 1.5;
+    const im = SPR[(sip ? 'coffee-' : 'base-') + c.look];
+    return spriteReady(im) ? im : null;
+  }
+  function drawHeld(c, by) {
+    if (c.hold === 'can') {
+      ctx.save(); ctx.translate(16, by - 4); ctx.rotate(0.35);
+      ctx.fillStyle = clayGrad(0, 0, 9, '#9fb78c', '#7f9b6b', '#62804f');
+      rr(ctx, -8, -7, 15, 13, 3); ctx.fill();
+      ctx.strokeStyle = '#6f8b5c'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(6, 2); ctx.lineTo(15, -4); ctx.stroke();
+      ctx.restore(); ball(13.5, by, 4.8);
+    } else if (c.hold === 'crop') {
+      drawProduce(c.holdCrop, 17, by - 12, 1, c.holdColor); ball(13.5, by - 1, 4.8);
+    } else if (c.hold === 'fish') {
+      ctx.fillStyle = clayGrad(18, by - 8, 10, shade(c.holdColor, 0.15), c.holdColor, shade(c.holdColor, -0.1));
+      ctx.beginPath(); ctx.ellipse(18, by - 10, 10, 5.5, -0.5, 0, 7); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(10, by - 4); ctx.lineTo(5, by + 2); ctx.lineTo(4, by - 6); ctx.fill();
+      ctx.fillStyle = HAIR; ctx.beginPath(); ctx.arc(23, by - 13, 1.2, 0, 7); ctx.fill();
+      ball(13.5, by - 1, 4.8);
+    }
+  }
+  function drawEmote(c, top) {
+    if (!c.emote) return;
+    const a = Math.min(1, c.emote.t * 2), ry = top - 16 - (1.4 - c.emote.t) * 10;
+    ctx.globalAlpha = a; ctx.fillStyle = '#e58aa0';
+    ctx.beginPath(); ctx.moveTo(18, ry + 6); ctx.bezierCurveTo(8, ry - 2, 12, ry - 9, 18, ry - 3); ctx.bezierCurveTo(24, ry - 9, 28, ry - 2, 18, ry + 6); ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+  function drawSprite(c, img) {
+    const walking = c.moving, p = c.walkP;
+    const hop = walking ? Math.abs(Math.sin(p)) * 4.5 : 0;
+    // squash a little on landing, breathe when still
+    const squash = walking ? (1 - Math.abs(Math.sin(p))) * 0.06 : Math.sin(G.t * 2 + c.seed) * 0.012;
+    const tilt = walking ? Math.sin(p) * 0.07 : Math.sin(G.t * 0.9 + c.seed) * 0.015;
+    const h = SPRITE_H, w = h * img.naturalWidth / img.naturalHeight;
+    ctx.save(); ctx.translate(c.x, c.y);
+    const s = 1 - hop / 16;
+    ctx.fillStyle = 'rgba(100,80,50,0.22)'; ctx.beginPath(); ctx.ellipse(0, 0, w * 0.34 * s, 6 * s, 0, 0, 7); ctx.fill();
+    ctx.translate(0, -hop);
+    ctx.save();
+    ctx.rotate(tilt);
+    ctx.scale((c.dir < 0 ? -1 : 1) * (1 + squash * 0.6), 1 - squash);
+    ctx.drawImage(img, -w / 2, -h + 2, w, h); // feet sink a touch into the grass
+    ctx.restore();
+    ctx.save(); ctx.scale(c.dir < 0 ? -1 : 1, 1); drawHeld(c, -24); ctx.restore();
+    const top = -h + 4;
+    if (c.player) {
+      // a tiny sprout so you can spot yourself
+      ctx.strokeStyle = '#6f9a58'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(0, top + 2); ctx.lineTo(0, top - 7); ctx.stroke();
+      ctx.fillStyle = '#8fbf6a';
+      ctx.beginPath(); ctx.ellipse(-5, top - 8, 5, 2.6, 0.5, 0, 7); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(5, top - 8, 5, 2.6, -0.5, 0, 7); ctx.fill();
+    }
+    drawEmote(c, top);
+    ctx.restore();
+  }
+
   function drawMong(c) {
+    const img = spriteFor(c);
+    if (img) { drawSprite(c, img); return; }
     const walking = c.moving, p = c.walkP;
     const bob = walking ? Math.abs(Math.sin(p)) * 2.4 : Math.sin(G.t * 2 + c.seed) * 0.8;
     ctx.save(); ctx.translate(c.x, c.y);
@@ -1448,6 +1529,7 @@
   function boot(data) {
     const restored = load((data && data.v === 1 && data) || store.get('donggle-village', null));
     player.shirt = (SHIRTS.find((s) => s.id === G.shirt) || SHIRTS[2]).c;
+    player.look = LOOKS.includes(G.look) ? G.look : 1;
     if (restored) $('startBtn').textContent = '이어서 놀기';
     document.querySelectorAll('img[data-icon]').forEach((im) => { im.src = iconURL(im.dataset.icon); });
     syncSwatches(); syncToggles(); syncHud(); resize();
