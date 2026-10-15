@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>여우 달리기</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#2a2346">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="여우 달리기">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<style>
+  /* Layout: one full-screen canvas; HUD pinned to the top corners, menus float centered over the hills. */
+  :root {
+    --ink: #2a2346;        /* dusk indigo: panels, text on light */
+    --paper: #fff4e6;      /* warm paper: text on dark */
+    --fur: #f08a3c;        /* fox orange: primary accent */
+    --berry: #d6336c;      /* berry: score highlight */
+    --mist: rgba(42, 35, 70, 0.72);
+    --font-display: "Jua", "Gowun Dodum", system-ui, sans-serif;
+    --font-body: "Gowun Dodum", system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    color-scheme: dark;
+  }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--font-body);
+    overflow: hidden;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #stage { position: fixed; inset: 0; }
+  canvas { display: block; width: 100%; height: 100%; }
+
+  .hud {
+    position: fixed; top: 0; left: 0; right: 0;
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+    padding-top: calc(12px + env(safe-area-inset-top, 0px));
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    pointer-events: none;
+    font-family: var(--font-display);
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 2px 0 rgba(42, 35, 70, 0.35);
+  }
+  .score { font-size: 2rem; line-height: 1; }
+  .sub { font-family: var(--font-body); font-size: 0.85rem; opacity: 0.85; letter-spacing: 0.04em; }
+  .hud-right { display: flex; gap: 8px; pointer-events: auto; }
+  .icon-btn {
+    width: 44px; height: 44px; border-radius: 50%;
+    border: 2px solid rgba(255, 244, 230, 0.5);
+    background: var(--mist); color: var(--paper);
+    font: 1.1rem var(--font-display); cursor: pointer;
+  }
+  .icon-btn:focus-visible, .cta:focus-visible { outline: 3px solid var(--fur); outline-offset: 3px; }
+
+  .panel {
+    position: fixed; left: 50%; top: 50%; transform: translate(-50%, -55%);
+    width: min(340px, calc(100% - 32px));
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+    padding: 24px 20px;
+    background: var(--mist);
+    border-radius: 20px;
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    text-align: center;
+  }
+  .panel h1, .panel h2 {
+    margin: 0; font-family: var(--font-display); font-weight: 400;
+    text-wrap: balance; color: var(--paper);
+  }
+  .panel h1 { font-size: 2.6rem; letter-spacing: 0.02em; }
+  .panel h1 span { color: var(--fur); }
+  .panel h2 { font-size: 2rem; }
+  .panel p { margin: 0; line-height: 1.6; font-size: 0.95rem; }
+  .keys { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; text-align: left; font-size: 0.9rem; }
+  .keys b { font-family: var(--font-display); font-weight: 400; color: var(--fur); }
+  .result { display: flex; gap: 28px; font-variant-numeric: tabular-nums; }
+  .result div { display: flex; flex-direction: column; gap: 2px; }
+  .result strong { font: 2.2rem var(--font-display); color: var(--paper); }
+  .result .new { color: var(--berry); }
+  .label { font-size: 0.75rem; letter-spacing: 0.12em; opacity: 0.8; }
+  .cta {
+    border: 0; border-radius: 999px; padding: 14px 32px;
+    background: var(--fur); color: var(--ink);
+    font: 1.25rem var(--font-display); cursor: pointer;
+    box-shadow: 0 4px 0 #b55a1c;
+  }
+  .cta:active { transform: translateY(3px); box-shadow: 0 1px 0 #b55a1c; }
+  .hint { font-size: 0.8rem; opacity: 0.75; }
+  @media (prefers-reduced-motion: no-preference) {
+    .panel { animation: pop 0.35s ease-out; }
+    @keyframes pop { from { opacity: 0.4; transform: translate(-50%, -48%) scale(0.96); } }
+  }
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="game" aria-label="여우 달리기 게임 화면"></canvas></div>
+
+<div class="hud">
+  <div>
+    <div class="score" id="score">0</div>
+    <div class="sub">최고 <span id="best">0</span> · 산딸기 <span id="berries">0</span></div>
+  </div>
+  <div class="hud-right">
+    <button class="icon-btn" id="pauseBtn" type="button" aria-label="일시정지" hidden>II</button>
+    <button class="icon-btn" id="soundBtn" type="button" aria-label="소리 끄기">♪</button>
+  </div>
+</div>
+
+<div class="panel" id="startPanel">
+  <h1>여우 <span>달리기</span></h1>
+  <p>해 질 녘 언덕을 달리는 여우를 도와주세요.<br>바위는 뛰어넘고, 올빼미는 아래로 지나가세요.</p>
+  <div class="keys">
+    <b>탭 / 스페이스</b><span>점프</span>
+    <b>공중에서 한 번 더</b><span>2단 점프</span>
+    <b>산딸기</b><span>+10점</span>
+  </div>
+  <button class="cta" id="startBtn" type="button">달리기 시작</button>
+  <div class="hint">홈 화면에 추가하면 앱처럼 실행됩니다</div>
+</div>
+
+<div class="panel" id="overPanel" hidden>
+  <h2 id="overTitle">넘어졌어요!</h2>
+  <div class="result">
+    <div><span class="label">점수</span><strong id="finalScore">0</strong></div>
+    <div><span class="label">최고 기록</span><strong id="finalBest">0</strong></div>
+  </div>
+  <p id="overNote">달린 거리 0m</p>
+  <button class="cta" id="retryBtn" type="button">다시 달리기</button>
+</div>
+
+<div class="panel" id="pausePanel" hidden>
+  <h2>잠깐 쉬는 중</h2>
+  <button class="cta" id="resumeBtn" type="button">계속 달리기</button>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const $ = (id) => document.getElementById(id);
+  const ui = {
+    score: $('score'), best: $('best'), berries: $('berries'),
+    start: $('startPanel'), over: $('overPanel'), pause: $('pausePanel'),
+    finalScore: $('finalScore'), finalBest: $('finalBest'), overTitle: $('overTitle'), overNote: $('overNote'),
+    pauseBtn: $('pauseBtn'), soundBtn: $('soundBtn'),
+  };
+
+  // ---------- storage (optional; game works without it) ----------
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  };
+
+  // ---------- world constants (logical units; view is 360 tall) ----------
+  const VIEW_H = 360;
+  const GROUND = 300;           // y of ground line
+  const GRAVITY = 2200;
+  const JUMP_V = 760;
+  const DOUBLE_V = 640;
+  const START_SPEED = 330;
+  const MAX_SPEED = 720;
+
+  let scale = 1, viewW = 640, dpr = 1;
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    scale = canvas.height / VIEW_H;
+    viewW = canvas.width / scale;
+  }
+  window.addEventListener('resize', resize);
+
+  // ---------- audio ----------
+  let audio = null;
+  let muted = store.get('fox-muted', false);
+  function syncSoundBtn() {
+    ui.soundBtn.textContent = muted ? '×' : '♪';
+    ui.soundBtn.setAttribute('aria-label', muted ? '소리 켜기' : '소리 끄기');
+  }
+  function beep(freq, dur, type = 'square', vol = 0.06, slide = 0) {
+    if (muted) return;
+    try {
+      if (!audio) audio = new (window.AudioContext || window.webkitAudioContext)();
+      if (audio.state === 'suspended') audio.resume();
+      const t = audio.currentTime;
+      const o = audio.createOscillator(), g = audio.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(freq, t);
+      if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(40, freq + slide), t + dur);
+      g.gain.setValueAtTime(vol, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g).connect(audio.destination);
+      o.start(t); o.stop(t + dur);
+    } catch (e) {}
+  }
+  const sfx = {
+    jump: () => beep(420, 0.14, 'square', 0.05, 280),
+    double: () => beep(620, 0.12, 'square', 0.05, 300),
+    berry: () => { beep(880, 0.08, 'triangle', 0.08); setTimeout(() => beep(1320, 0.1, 'triangle', 0.07), 60); },
+    hit: () => beep(220, 0.4, 'sawtooth', 0.07, -160),
+    mile: () => beep(1040, 0.15, 'triangle', 0.06),
+  };
+
+  // ---------- state ----------
+  const S = {
+    mode: 'menu',   // menu | play | pause | over
+    t: 0, dist: 0, speed: START_SPEED, berries: 0, bonus: 0,
+    best: store.get('fox-best', 0),
+    fox: null, obstacles: [], items: [], particles: [], stars: [],
+    spawnIn: 1.2, itemIn: 2, shake: 0, lastMilestone: 0,
+  };
+  for (let i = 0; i < 70; i++) S.stars.push({ x: Math.random(), y: Math.random() * 0.55, r: Math.random() * 1.3 + 0.4, p: Math.random() * 6 });
+
+  function newFox() { return { x: 90, y: GROUND, vy: 0, onGround: true, jumps: 0, run: 0, squash: 0 }; }
+  S.fox = newFox();
+
+  function score() { return Math.floor(S.dist / 10) + S.bonus; }
+
+  function reset() {
+    S.t = 0; S.dist = 0; S.speed = START_SPEED; S.berries = 0; S.bonus = 0;
+    S.fox = newFox(); S.obstacles = []; S.items = []; S.particles = [];
+    S.spawnIn = 1.0; S.itemIn = 1.8; S.shake = 0; S.lastMilestone = 0;
+  }
+
+  // ---------- input ----------
+  function jump() {
+    const f = S.fox;
+    if (f.onGround) {
+      f.vy = -JUMP_V; f.onGround = false; f.jumps = 1; sfx.jump();
+      dust(f.x, GROUND, 6);
+    } else if (f.jumps < 2) {
+      f.vy = -DOUBLE_V; f.jumps = 2; sfx.double();
+      for (let i = 0; i < 8; i++) S.particles.push({ x: f.x, y: f.y - 20, vx: (Math.random() - 0.5) * 180, vy: Math.random() * 120, life: 0.4, max: 0.4, c: '#fff4e6', r: 2 });
+    }
+  }
+  function press() {
+    if (S.mode === 'play') jump();
+  }
+  canvas.addEventListener('pointerdown', (e) => { e.preventDefault(); press(); });
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+      e.preventDefault();
+      if (e.repeat) return;
+      if (S.mode === 'play') jump();
+      else if (S.mode === 'menu' || S.mode === 'over') start();
+      else if (S.mode === 'pause') resume();
+    } else if (e.code === 'KeyP' || e.code === 'Escape') {
+      if (S.mode === 'play') pause(); else if (S.mode === 'pause') resume();
+    }
+  });
+
+  function start() {
+    reset();
+    S.mode = 'play';
+    ui.start.hidden = true; ui.over.hidden = true; ui.pause.hidden = true; ui.pauseBtn.hidden = false;
+    beep(523, 0.08, 'triangle', 0.05);
+  }
+  function pause() { if (S.mode !== 'play') return; S.mode = 'pause'; ui.pause.hidden = false; }
+  function resume() { if (S.mode !== 'pause') return; S.mode = 'play'; ui.pause.hidden = true; last = performance.now(); }
+  function gameOver() {
+    S.mode = 'over'; S.shake = 0.35; sfx.hit();
+    const sc = score();
+    const isNew = sc > S.best;
+    if (isNew) { S.best = sc; store.set('fox-best', sc); }
+    ui.finalScore.textContent = sc;
+    ui.finalBest.textContent = S.best;
+    ui.finalScore.classList.toggle('new', isNew);
+    ui.overTitle.textContent = isNew ? '새 최고 기록!' : '넘어졌어요!';
+    ui.overNote.textContent = `달린 거리 ${Math.floor(S.dist / 10)}m · 산딸기 ${S.berries}개`;
+    ui.pauseBtn.hidden = true;
+    setTimeout(() => { if (S.mode === 'over') ui.over.hidden = false; }, 450);
+  }
+
+  $('startBtn').addEventListener('click', start);
+  $('retryBtn').addEventListener('click', start);
+  $('resumeBtn').addEventListener('click', resume);
+  ui.pauseBtn.addEventListener('click', pause);
+  ui.soundBtn.addEventListener('click', () => { muted = !muted; store.set('fox-muted', muted); syncSoundBtn(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+
+  // ---------- spawning ----------
+  function spawnObstacle() {
+    const progress = Math.min(1, S.dist / 25000);
+    const r = Math.random();
+    const x = viewW + 40;
+    if (S.dist > 2500 && r < 0.22 + progress * 0.13) {
+      // owl: flies at head height; run under it, don't jump into it
+      S.obstacles.push({ kind: 'owl', x, y: GROUND - 78, w: 38, h: 26, flap: 0 });
+    } else if (r < 0.55) {
+      const w = 26 + Math.random() * 18;
+      S.obstacles.push({ kind: 'rock', x, y: GROUND, w, h: 22 + Math.random() * 14 });
+    } else if (r < 0.8) {
+      S.obstacles.push({ kind: 'stump', x, y: GROUND, w: 24, h: 42 + Math.random() * 12 });
+    } else {
+      // two rocks in a row: needs a long or double jump
+      S.obstacles.push({ kind: 'rock', x, y: GROUND, w: 28, h: 24 });
+      S.obstacles.push({ kind: 'rock', x: x + 70 + Math.random() * 30, y: GROUND, w: 30, h: 28 });
+    }
+    const gapMin = 0.75 - progress * 0.25, gapMax = 1.6 - progress * 0.5;
+    S.spawnIn = gapMin + Math.random() * (gapMax - gapMin);
+  }
+  function spawnItem() {
+    const high = Math.random() < 0.5;
+    const n = 1 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < n; i++) {
+      S.items.push({ x: viewW + 40 + i * 34, y: high ? GROUND - 120 - Math.sin(i) * 10 : GROUND - 30, bob: Math.random() * 6 });
+    }
+    S.itemIn = 1.5 + Math.random() * 2.5;
+  }
+
+  function dust(x, y, n) {
+    for (let i = 0; i < n; i++) S.particles.push({ x, y, vx: -60 - Math.random() * 120, vy: -Math.random() * 120, life: 0.45, max: 0.45, c: '#d9b48a', r: 2 + Math.random() * 2 });
+  }
+
+  // ---------- update ----------
+  function hit(a, b) { return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y; }
+
+  function update(dt) {
+    S.t += dt;
+    const f = S.fox;
+    if (S.mode === 'play') {
+      S.speed = Math.min(MAX_SPEED, START_SPEED + S.dist * 0.011);
+      S.dist += S.speed * dt;
+
+      // physics
+      f.vy += GRAVITY * dt;
+      f.y += f.vy * dt;
+      if (f.y >= GROUND) {
+        if (!f.onGround) { f.squash = 0.15; dust(f.x - 10, GROUND, 5); }
+        f.y = GROUND; f.vy = 0; f.onGround = true; f.jumps = 0;
+      }
+      f.run += dt * S.speed / 28;
+      f.squash = Math.max(0, f.squash - dt);
+
+      // spawn
+      S.spawnIn -= dt; if (S.spawnIn <= 0) spawnObstacle();
+      S.itemIn -= dt; if (S.itemIn <= 0) spawnItem();
+
+      const dx = S.speed * dt;
+      const foxBox = { x: f.x - 20, y: f.y - 30, w: 38, h: 28 };
+      for (const o of S.obstacles) {
+        o.x -= dx * (o.kind === 'owl' ? 1.12 : 1);
+        if (o.kind === 'owl') o.flap += dt * 14;
+        const box = o.kind === 'owl'
+          ? { x: o.x + 6, y: o.y - o.h / 2 + 4, w: o.w - 12, h: o.h - 8 }
+          : { x: o.x + 4, y: o.y - o.h + 4, w: o.w - 8, h: o.h - 4 };
+        if (hit(foxBox, box)) { gameOver(); break; }
+      }
+      S.obstacles = S.obstacles.filter((o) => o.x + o.w > -40);
+
+      for (const it of S.items) {
+        it.x -= dx;
+        if (!it.taken && Math.abs(it.x - f.x) < 26 && Math.abs((it.y) - (f.y - 16)) < 30) {
+          it.taken = true; S.berries++; S.bonus += 10; sfx.berry();
+          for (let i = 0; i < 10; i++) S.particles.push({ x: it.x, y: it.y, vx: (Math.random() - 0.5) * 220, vy: (Math.random() - 0.7) * 200, life: 0.5, max: 0.5, c: '#d6336c', r: 2.5 });
+        }
+      }
+      S.items = S.items.filter((it) => !it.taken && it.x > -40);
+
+      if (f.onGround && Math.random() < dt * 12) dust(f.x - 18, GROUND, 1);
+
+      const m = Math.floor(S.dist / 10 / 500);
+      if (m > S.lastMilestone) { S.lastMilestone = m; sfx.mile(); }
+    } else if (S.mode === 'menu') {
+      f.run += dt * 10;
+      S.dist += 120 * dt; // gentle scenery drift on the title screen
+    }
+
+    for (const p of S.particles) { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 600 * dt; p.life -= dt; }
+    S.particles = S.particles.filter((p) => p.life > 0);
+    S.shake = Math.max(0, S.shake - dt);
+  }
+
+  // ---------- sky: the day turns as you run (every 1500m) ----------
+  const SKIES = [
+    { top: [255, 190, 140], bot: [255, 226, 186], sun: [255, 120, 70], hills: ['#c97b6e', '#a2566a', '#6e3d63'], ground: '#4a2f55' }, // late afternoon
+    { top: [92, 70, 140], bot: [240, 140, 120], sun: [255, 94, 77], hills: ['#8c5579', '#5d3b6b', '#3b2a55'], ground: '#2f2147' },   // sunset
+    { top: [18, 20, 48], bot: [52, 48, 96], sun: [245, 240, 220], hills: ['#3a3a6e', '#2a2a55', '#1c1c3d'], ground: '#15142e' },     // night
+    { top: [120, 150, 210], bot: [250, 200, 190], sun: [255, 214, 150], hills: ['#8d8fb8', '#6b6a9a', '#4b4775'], ground: '#36305a' }, // dawn
+  ];
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const mix = (a, b, t) => `rgb(${Math.round(lerp(a[0], b[0], t))},${Math.round(lerp(a[1], b[1], t))},${Math.round(lerp(a[2], b[2], t))})`;
+  const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  function sky() {
+    const cyc = (S.dist / 15000) % SKIES.length;
+    const i = Math.floor(cyc), t = cyc - i;
+    // hold each sky, then blend in the last 30% of the stretch
+    const k = t < 0.7 ? 0 : (t - 0.7) / 0.3;
+    const a = SKIES[i], b = SKIES[(i + 1) % SKIES.length];
+    const night = (i === 2 ? 1 - k : 0) + (i === 1 ? k : 0);
+    return {
+      top: mix(a.top, b.top, k), bot: mix(a.bot, b.bot, k), sun: mix(a.sun, b.sun, k),
+      hills: a.hills.map((h, j) => mix(hex(h), hex(b.hills[j]), k)),
+      ground: mix(hex(a.ground), hex(b.ground), k),
+      night, isMoon: i === 2 || (i === 1 && k > 0.5),
+    };
+  }
+
+  function hillY(x, layer) {
+    const s = [0.004, 0.006, 0.009][layer];
+    return Math.sin(x * s) * 18 + Math.sin(x * s * 2.3 + layer) * 10 + Math.sin(x * s * 0.47 + 2) * 22;
+  }
+
+  // ---------- draw ----------
+  function draw() {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    const sh = S.shake > 0 ? (Math.random() - 0.5) * 10 * S.shake * scale : 0;
+    ctx.setTransform(scale, 0, 0, scale, sh, sh * 0.5);
+    const W = viewW, sk = sky();
+
+    const g = ctx.createLinearGradient(0, 0, 0, GROUND);
+    g.addColorStop(0, sk.top); g.addColorStop(1, sk.bot);
+    ctx.fillStyle = g; ctx.fillRect(-20, -20, W + 40, VIEW_H + 40);
+
+    // stars
+    if (sk.night > 0.02) {
+      ctx.fillStyle = '#fff4e6';
+      for (const st of S.stars) {
+        ctx.globalAlpha = sk.night * (0.5 + 0.5 * Math.sin(S.t * 2 + st.p));
+        ctx.beginPath(); ctx.arc(st.x * W, st.y * GROUND, st.r, 0, 7); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // sun / moon
+    const sx = W * 0.72, sy = 120;
+    ctx.fillStyle = sk.sun;
+    ctx.globalAlpha = 0.25; ctx.beginPath(); ctx.arc(sx, sy, 58, 0, 7); ctx.fill();
+    ctx.globalAlpha = 1; ctx.beginPath(); ctx.arc(sx, sy, 38, 0, 7); ctx.fill();
+    if (sk.isMoon) { ctx.fillStyle = sk.top; ctx.beginPath(); ctx.arc(sx + 16, sy - 10, 32, 0, 7); ctx.fill(); }
+
+    // parallax hills
+    const bases = [GROUND - 95, GROUND - 55, GROUND - 22];
+    const speeds = [0.12, 0.3, 0.55];
+    for (let L = 0; L < 3; L++) {
+      ctx.fillStyle = sk.hills[L];
+      ctx.beginPath(); ctx.moveTo(-10, VIEW_H);
+      const off = S.dist * speeds[L];
+      for (let x = -10; x <= W + 10; x += 8) ctx.lineTo(x, bases[L] - hillY(x + off, L));
+      ctx.lineTo(W + 10, VIEW_H); ctx.closePath(); ctx.fill();
+      if (L === 1) drawTrees(off, bases[L], sk.hills[2]);
+    }
+
+    // ground
+    ctx.fillStyle = sk.ground; ctx.fillRect(-20, GROUND, W + 40, VIEW_H - GROUND + 20);
+    ctx.fillStyle = 'rgba(255,244,230,0.12)';
+    const go = S.dist % 46;
+    for (let x = -go; x < W + 46; x += 46) ctx.fillRect(x, GROUND + 12 + ((x + S.dist) % 3), 18, 3);
+    ctx.fillStyle = 'rgba(255,244,230,0.22)'; ctx.fillRect(-20, GROUND, W + 40, 2);
+
+    for (const it of S.items) drawBerry(it);
+    for (const o of S.obstacles) o.kind === 'owl' ? drawOwl(o) : o.kind === 'rock' ? drawRock(o) : drawStump(o);
+    drawFox(S.fox);
+
+    for (const p of S.particles) {
+      ctx.globalAlpha = Math.max(0, p.life / p.max); ctx.fillStyle = p.c;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawTrees(off, base, color) {
+    ctx.fillStyle = color;
+    const spacing = 140;
+    const startI = Math.floor(off / spacing);
+    for (let i = startI; i < startI + Math.ceil(viewW / spacing) + 2; i++) {
+      if ((i * 7919) % 5 > 1) continue; // sparse, deterministic
+      const x = i * spacing - off + ((i * 37) % 60);
+      const y = base - hillY(x + off, 1) + 6;
+      const h = 34 + ((i * 13) % 20);
+      ctx.beginPath(); ctx.moveTo(x, y - h); ctx.lineTo(x - 12, y); ctx.lineTo(x + 12, y); ctx.closePath(); ctx.fill();
+    }
+  }
+
+  function drawFox(f) {
+    const sq = f.squash > 0 ? f.squash / 0.15 : 0;
+    const air = !f.onGround;
+    ctx.save();
+    ctx.translate(f.x, f.y);
+    ctx.scale(1 + sq * 0.15, 1 - sq * 0.15);
+    if (air) ctx.rotate(Math.max(-0.35, Math.min(0.35, f.vy / 2000)));
+    const bob = air ? 0 : Math.abs(Math.sin(f.run)) * -3;
+    ctx.translate(0, bob);
+
+    // tail
+    const tw = Math.sin(f.run * 0.7) * 4;
+    ctx.fillStyle = '#e0732b';
+    ctx.beginPath(); ctx.moveTo(-16, -20);
+    ctx.quadraticCurveTo(-38, -34 + tw, -46, -18 + tw);
+    ctx.quadraticCurveTo(-34, -10, -16, -12); ctx.fill();
+    ctx.fillStyle = '#fff4e6';
+    ctx.beginPath(); ctx.moveTo(-40, -24 + tw); ctx.quadraticCurveTo(-47, -20 + tw, -46, -18 + tw); ctx.quadraticCurveTo(-42, -15, -37, -16); ctx.fill();
+
+    // legs
+    ctx.strokeStyle = '#3b2430'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+    const a = air ? 0.7 : Math.sin(f.run) * 0.9, b = air ? -0.6 : Math.sin(f.run + Math.PI) * 0.9;
+    const leg = (x, ang) => { ctx.beginPath(); ctx.moveTo(x, -10); ctx.lineTo(x + Math.sin(ang) * 10, -10 + Math.cos(ang) * 10); ctx.stroke(); };
+    leg(-10, a); leg(-6, b); leg(10, b); leg(14, a);
+
+    // body
+    ctx.fillStyle = '#f08a3c';
+    ctx.beginPath(); ctx.ellipse(0, -18, 20, 11, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#fff4e6';
+    ctx.beginPath(); ctx.ellipse(6, -12, 11, 5, 0, 0, 7); ctx.fill();
+
+    // head
+    ctx.fillStyle = '#f08a3c';
+    ctx.beginPath(); ctx.moveTo(14, -32); ctx.lineTo(18, -44); ctx.lineTo(24, -33); ctx.fill(); // ear
+    ctx.beginPath(); ctx.ellipse(22, -28, 10, 8, 0, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(26, -32); ctx.lineTo(40, -24); ctx.lineTo(26, -21); ctx.fill(); // snout
+    ctx.fillStyle = '#fff4e6';
+    ctx.beginPath(); ctx.moveTo(24, -25); ctx.lineTo(38, -23.5); ctx.lineTo(26, -20); ctx.fill();
+    ctx.fillStyle = '#3b2430';
+    ctx.beginPath(); ctx.arc(40, -24, 2, 0, 7); ctx.fill(); // nose
+    if (S.mode === 'over') {
+      ctx.lineWidth = 1.6; ctx.beginPath();
+      ctx.moveTo(22, -31); ctx.lineTo(27, -27); ctx.moveTo(27, -31); ctx.lineTo(22, -27); ctx.stroke();
+    } else {
+      ctx.beginPath(); ctx.arc(25, -29, 1.8, 0, 7); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawRock(o) {
+    ctx.fillStyle = '#7a6f86';
+    ctx.beginPath();
+    ctx.moveTo(o.x, o.y);
+    ctx.quadraticCurveTo(o.x - 2, o.y - o.h * 0.8, o.x + o.w * 0.35, o.y - o.h);
+    ctx.quadraticCurveTo(o.x + o.w * 0.8, o.y - o.h * 1.05, o.x + o.w, o.y);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(255,244,230,0.25)';
+    ctx.beginPath(); ctx.ellipse(o.x + o.w * 0.38, o.y - o.h * 0.75, o.w * 0.16, o.h * 0.1, -0.4, 0, 7); ctx.fill();
+  }
+
+  function drawStump(o) {
+    ctx.fillStyle = '#6b4232'; ctx.fillRect(o.x, o.y - o.h, o.w, o.h);
+    ctx.fillStyle = '#c9925e'; ctx.beginPath(); ctx.ellipse(o.x + o.w / 2, o.y - o.h, o.w / 2, 5, 0, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#8a5a3c'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.ellipse(o.x + o.w / 2, o.y - o.h, o.w / 4, 2.4, 0, 0, 7); ctx.stroke();
+    ctx.fillStyle = '#4f2f24'; ctx.fillRect(o.x + 6, o.y - o.h + 10, 2, o.h - 14);
+  }
+
+  function drawOwl(o) {
+    const cx = o.x + o.w / 2, cy = o.y;
+    const w = Math.sin(o.flap) * 10;
+    ctx.fillStyle = '#5b4a6e';
+    ctx.beginPath(); ctx.moveTo(cx - 4, cy - 2); ctx.lineTo(cx - 22, cy - 6 - w); ctx.lineTo(cx - 6, cy + 6); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx + 4, cy - 2); ctx.lineTo(cx + 22, cy - 6 - w); ctx.lineTo(cx + 6, cy + 6); ctx.fill();
+    ctx.fillStyle = '#7d6a90'; ctx.beginPath(); ctx.ellipse(cx, cy, 11, 13, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#fff4e6';
+    ctx.beginPath(); ctx.arc(cx - 6, cy - 4, 4.5, 0, 7); ctx.arc(cx + 2, cy - 4, 4.5, 0, 7); ctx.fill();
+    ctx.fillStyle = '#2a2346';
+    ctx.beginPath(); ctx.arc(cx - 7, cy - 4, 2, 0, 7); ctx.arc(cx + 1, cy - 4, 2, 0, 7); ctx.fill();
+    ctx.fillStyle = '#f0b03c'; ctx.beginPath(); ctx.moveTo(cx - 4, cy); ctx.lineTo(cx - 2, cy + 4); ctx.lineTo(cx, cy); ctx.fill();
+  }
+
+  function drawBerry(it) {
+    const y = it.y + Math.sin(S.t * 4 + it.bob) * 3;
+    ctx.fillStyle = '#d6336c';
+    ctx.beginPath(); ctx.arc(it.x, y, 7, 0, 7); ctx.fill();
+    ctx.fillStyle = 'rgba(255,244,230,0.6)';
+    ctx.beginPath(); ctx.arc(it.x - 2.5, y - 2.5, 2, 0, 7); ctx.fill();
+    ctx.fillStyle = '#4f9a5a';
+    ctx.beginPath(); ctx.ellipse(it.x + 3, y - 8, 4, 2, -0.5, 0, 7); ctx.fill();
+  }
+
+  // ---------- HUD ----------
+  let shown = -1;
+  function hud() {
+    const sc = score();
+    if (sc !== shown) { shown = sc; ui.score.textContent = sc; }
+    ui.best.textContent = Math.max(S.best, S.mode === 'play' ? sc : 0);
+    ui.berries.textContent = S.berries;
+  }
+
+  // ---------- loop ----------
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.033, (now - last) / 1000);
+    last = now;
+    if (S.mode !== 'pause') update(dt);
+    draw();
+    hud();
+    requestAnimationFrame(frame);
+  }
+
+  function boot(data) {
+    if (data && data.best > S.best) S.best = data.best;
+    syncSoundBtn();
+    resize();
+    ui.best.textContent = S.best;
+    requestAnimationFrame(frame);
+  }
+  window.claude?.hot?.snapshot?.(() => ({ best: S.best }));
+  window.claude?.hot?.ready ? window.claude.hot.ready(boot) : boot(window.claude?.hot?.data ?? {});
+
+  // offline + installable when served from a normal web host
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
+  }
+})();
+</script>
+</body>
+</html>

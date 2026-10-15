@@ -1,0 +1,15 @@
+{
+  "name": "여우 달리기",
+  "short_name": "여우 달리기",
+  "description": "해 질 녘 언덕을 달리는 여우 점프 러너 게임",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#2a2346",
+  "theme_color": "#2a2346",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
