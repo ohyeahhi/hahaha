@@ -65,7 +65,9 @@
     font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap;
   }
   .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
-  .tools { display: flex; gap: 6px; pointer-events: auto; flex: none; }
+  .tools { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; pointer-events: auto; flex: none; }
+  .tool-row { display: flex; gap: 6px; }
+  .pill.grown { height: 28px; padding-inline: 10px; gap: 4px; font-size: 12px; font-weight: 600; color: var(--sub); }
   .round {
     width: 40px; height: 40px; border-radius: 50%; border: 0; cursor: pointer;
     background: rgba(255, 255, 255, 0.92); color: var(--ink);
@@ -307,6 +309,72 @@
   .dex-card.word { border: 0; font-family: var(--font); cursor: pointer; color: var(--ink); }
   .dex-card.word b { font-size: 16px; }
   .place-banner button { height: 34px; padding-inline: 14px; border: 0; border-radius: 10px; background: rgba(255,255,255,0.16); color: #ffffff; font: 600 14px var(--font); cursor: pointer; }
+
+  /* 보호자 화면 */
+  #parentSheet > * { flex-shrink: 0; }
+  .card .num-chip { background: var(--surface); }
+  .card { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 16px; background: var(--grouped); }
+  .card-h { font-size: 14px; font-weight: 700; }
+  .card-t { font-size: 14px; line-height: 1.55; }
+  .kpi { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .tile { display: flex; flex-direction: column; gap: 2px; padding: 12px; border-radius: 14px; background: var(--grouped); min-width: 0; }
+  .tile-l { font-size: 12px; font-weight: 600; color: var(--sub); }
+  .tile-v { font-size: 18px; font-weight: 800; letter-spacing: -0.03em; white-space: nowrap; }
+  .tile-n { font-size: 11px; color: var(--sub); }
+  .meter { height: 10px; border-radius: 5px; background: #dcebdf; overflow: hidden; }
+  .meter i { display: block; height: 100%; width: 0; border-radius: 5px; background: #3f9b5f; }
+  .legend { display: flex; gap: 14px; font-size: 13px; font-weight: 600; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 10px; height: 10px; border-radius: 3px; }
+  .legend i.in, .pbars i.in, .hbar i.in { background: var(--income); }
+  .legend i.out, .pbars i.out, .hbar i.out { background: var(--accent); }
+  .readout { font-size: 14px; color: var(--sub); }
+  .readout b { color: var(--ink); font-weight: 700; }
+  .pplot { position: relative; padding-left: 26px; }
+  .pgrid { position: absolute; left: 26px; right: 0; top: 0; height: 140px; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
+  .gl { position: relative; height: 0; border-top: 1px solid rgba(31, 27, 23, 0.1); }
+  .gl span { position: absolute; left: -26px; top: -8px; width: 22px; text-align: right; font-size: 11px; color: var(--sub); font-variant-numeric: tabular-nums; }
+  .pcols { position: relative; display: flex; }
+  .pcol { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; padding: 0; border: 0; border-radius: 10px; background: transparent; cursor: pointer; font-family: var(--font); }
+  .pcol.on { background: rgba(31, 27, 23, 0.06); }
+  .pbars { height: 140px; display: flex; align-items: flex-end; gap: 2px; }
+  .pbars i { display: block; width: 10px; border-radius: 4px 4px 0 0; }
+  .px { height: 24px; line-height: 24px; font-size: 11px; color: var(--sub); white-space: nowrap; }
+  .pcol.on .px { color: var(--ink); font-weight: 700; }
+  .linkish { align-self: flex-start; border: 0; padding: 4px 0; background: none; color: var(--sub); font: 600 13px var(--font); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .ptable { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+  .ptable th, .ptable td { padding: 6px 4px; border-bottom: 1px solid var(--hair); text-align: right; }
+  .ptable th:first-child, .ptable td:first-child { text-align: left; }
+  .ptable th { color: var(--sub); font-weight: 600; }
+  .hbars { display: flex; flex-direction: column; gap: 8px; }
+  .hbar { display: grid; grid-template-columns: 78px 1fr 34px; align-items: center; gap: 8px; }
+  .hbar-l { font-size: 13px; }
+  .hbar-track { height: 10px; }
+  .hbar i { display: block; height: 100%; border-radius: 0 4px 4px 0; }
+  .hbar-v { font-size: 13px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+  .lessons { gap: 0; padding-block: 4px; }
+  .lesson { display: flex; align-items: flex-start; gap: 10px; padding-block: 10px; border-bottom: 1px solid var(--hair); }
+  .lesson:last-child { border-bottom: 0; }
+  .tick { position: relative; width: 20px; height: 20px; flex: none; margin-top: 1px; border-radius: 50%; box-sizing: border-box; border: 2px solid #d6d0c7; }
+  .lesson.done .tick { border: 0; background: #3f9b5f; }
+  .lesson.done .tick::after { content: ""; position: absolute; left: 7px; top: 3.5px; width: 5px; height: 10px; border: solid #ffffff; border-width: 0 2.4px 2.4px 0; transform: rotate(45deg); }
+  .lesson-t { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .lesson-t b { font-size: 15px; }
+  .lesson:not(.done) .lesson-t b { color: var(--sub); }
+  .lesson-t .muted { font-size: 13px; line-height: 1.45; }
+  .tips { display: flex; flex-direction: column; gap: 8px; }
+  .seg { display: flex; gap: 2px; padding: 3px; border-radius: 12px; background: rgba(31, 27, 23, 0.06); }
+  .seg button { flex: 1; height: 34px; border: 0; border-radius: 9px; background: transparent; color: var(--ink); font: 600 14px var(--font); cursor: pointer; }
+  .seg button[aria-checked="true"] { background: var(--surface); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
+  .gate-q { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .gate-a { min-width: 120px; height: 52px; line-height: 52px; padding-inline: 16px; box-sizing: border-box; border-radius: 14px; background: var(--grouped); font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .gate-a.empty::before { content: "?"; color: #cfc8be; }
+  .gate-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
+  .gate-keys button { height: 52px; border: 0; border-radius: 14px; background: var(--grouped); color: var(--ink); font: 700 22px var(--font); cursor: pointer; }
+  .gate-keys button.fn { font-size: 15px; color: var(--sub); }
+  .gate-keys button:active { background: #ebe5dc; }
+  .rest-pic { width: 96px; height: 120px; object-fit: contain; }
+  @media (prefers-reduced-motion: no-preference) { .gate-a.nudge { animation: nudge 0.3s; } }
 </style>
 </head>
 <body>
@@ -320,12 +388,17 @@
     <button class="pill tap" id="dexPill" type="button" aria-label="도감 열기"><img class="pico" data-icon="book" alt=""><span id="dexN">도감 0</span></button>
   </div>
   <div class="tools">
+   <div class="tool-row">
     <button class="round" id="enBtn" type="button" aria-pressed="false" aria-label="영어 같이 보기">EN</button>
     <button class="round" id="musicBtn" type="button" aria-pressed="true" aria-label="배경음악">
       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 17.5V6.2l10-2v11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.6" cy="17.6" r="2.6" fill="currentColor"/><circle cx="16.6" cy="15.3" r="2.6" fill="currentColor"/></svg>
     </button>
     <button class="round" id="soundBtn" type="button" aria-pressed="true" aria-label="효과음">
       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9.2v5.6h3.8L13 19V5L7.8 9.2H4z" fill="currentColor"/><path d="M16.2 8.6a5 5 0 0 1 0 6.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+    </button>
+   </div>
+    <button class="pill tap grown" id="parentBtn" type="button" aria-label="보호자 화면 열기 (어른 확인)">
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.6" fill="currentColor"/><path d="M8.2 10.5V8a3.8 3.8 0 0 1 7.6 0v2.5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg>보호자
     </button>
   </div>
 </div>
@@ -476,6 +549,71 @@
   <div class="num-row" id="wordNums"></div>
   <div class="dex" id="wordList"></div>
   <button class="btn soft" id="wordBack" type="button">도서관으로 돌아가기</button>
+</div>
+
+<div class="sheet center" id="gateSheet" hidden>
+  <h2>보호자 확인</h2>
+  <p class="muted" id="gateMsg">아이와 함께라면 어른이 풀어 주세요.</p>
+  <div class="gate-q" id="gateQ" aria-live="polite">7 × 8 = ?</div>
+  <div class="gate-a empty" id="gateA" aria-label="입력한 답"> </div>
+  <div class="gate-keys" id="gateKeys"></div>
+  <button class="btn soft" id="gateCancel" type="button">돌아가기</button>
+</div>
+
+<div class="sheet center" id="restSheet" hidden>
+  <img class="rest-pic" id="restPic" src="assets/dongle/base-1.png" alt="" width="96" height="120">
+  <h2>잠깐 쉬어 갈까요?</h2>
+  <p id="restSay">오늘 30분 놀았어요. 동글이도 기지개를 켜고 싶대요.</p>
+  <p class="muted">물 한 잔 마시고 창밖을 봐요. 마을은 그대로 기다리고 있어요.</p>
+  <button class="btn soft" id="restMore" type="button">보호자: 10분 더 하기</button>
+</div>
+
+<div class="sheet" id="parentSheet" hidden>
+  <div class="row-head"><h2>보호자 화면</h2></div>
+  <p class="muted" id="pSub"></p>
+
+  <span class="label">돈 습관</span>
+  <div class="kpi" id="pKpi"></div>
+  <div class="card">
+    <p class="card-t" id="pSaveTxt"></p>
+    <div class="meter" id="pSaveMeter" role="meter" aria-label="번 돈 중 저금한 비율" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="pSaveFill"></i></div>
+  </div>
+  <div class="card">
+    <div class="row-head"><b class="card-h">날마다 번 돈과 쓴 돈</b><span class="muted">게임 속 최근 7일</span></div>
+    <div class="legend"><span><i class="in"></i>번 돈</span><span><i class="out"></i>쓴 돈</span></div>
+    <p class="readout" id="pRead" aria-live="polite"></p>
+    <div class="pplot" id="pPlot"></div>
+    <button class="linkish" id="pTableBtn" type="button" aria-expanded="false">숫자로 보기</button>
+    <table class="ptable" id="pTable" hidden></table>
+  </div>
+  <div class="card">
+    <b class="card-h">어디서 벌었나요</b>
+    <div class="hbars" id="pIn"></div>
+    <b class="card-h">어디에 썼나요</b>
+    <div class="hbars" id="pOut"></div>
+  </div>
+
+  <div class="row-head"><span class="label">배운 경제 개념</span><span class="muted" id="pLearnN"></span></div>
+  <div class="card lessons" id="pLearn"></div>
+
+  <span class="label">영어</span>
+  <div class="card">
+    <p class="card-t" id="pEngTxt"></p>
+    <div class="num-row" id="pWords"></div>
+  </div>
+
+  <span class="label">오늘 이렇게 이야기해 보세요</span>
+  <div class="tips" id="pTips"></div>
+
+  <span class="label">놀이 시간</span>
+  <div class="card">
+    <p class="card-t" id="pPlayTxt"></p>
+    <b class="card-h">쉬는 시간 알림</b>
+    <div class="seg" id="pLimit" role="radiogroup" aria-label="쉬는 시간 알림"></div>
+    <p class="muted" id="pLimitTxt"></p>
+  </div>
+  <p class="muted">기록은 이 기기에만 저장돼요. 어디로도 보내지 않아요.</p>
+  <button class="btn soft" id="parentClose" type="button">닫기</button>
 </div>
 
 <div class="room-bar" id="roomBar" hidden>
@@ -708,6 +846,8 @@
     seeds: { carrot: 3, flower: 2, tomato: 0, strawberry: 0 },
     inv: Object.fromEntries([...Object.keys(ITEMS), ...FOOD_KEYS].map((k) => [k, 0])),
     acct: 0, jobDay: 0, mprices: {}, haggle: null, reqs: null, words: {},
+    // for the grown-up's screen: coins in and out by kind, first times, real play time
+    stats: { days: {}, total: { in: {}, out: {}, save: 0 }, learn: {}, errands: 0, play: {}, limit: 0, more: null },
     dex: {},
     home: {
       owned: {},
@@ -726,11 +866,11 @@
   rollPrices(); G.prev = { ...G.prices };
 
   function save() {
-    return { v: 2, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
+    return { v: 2, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, stats: G.stats, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
   }
   function load(s) {
     if (!s || s.v !== 2) return false;
-    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home, acct: s.acct || 0, jobDay: s.jobDay || 0, mprices: s.mprices || {}, haggle: s.haggle || null, reqs: s.reqs || null, words: s.words || {} });
+    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home, acct: s.acct || 0, jobDay: s.jobDay || 0, mprices: s.mprices || {}, haggle: s.haggle || null, reqs: s.reqs || null, words: s.words || {}, stats: { ...G.stats, ...(s.stats || {}) } });
     (s.plots || []).forEach((p, i) => { if (plots[i]) Object.assign(plots[i], p); });
     (s.trees || []).forEach(([n, r], i) => { if (trees[i] && trees[i].fruit) { trees[i].n = n; trees[i].regrow = r; } });
     return true;
@@ -932,13 +1072,20 @@
   });
   function syncSwatches() { LOOKS.forEach((n) => $('look-' + n).setAttribute('aria-checked', String(G.look === n))); }
 
-  let modal = null;
-  function openSheet(id) { closeSheet(); modal = id; $(id).hidden = false; syncRoomUI(); }
-  function closeSheet() { if (modal) $(modal).hidden = true; modal = null; syncRoomUI(); }
+  let modal = null, resting = false;
+  function openSheet(id) {
+    if (resting && id !== 'restSheet' && id !== 'gateSheet') return; // break time: only a grown-up can go on
+    closeSheet(true); modal = id; $(id).hidden = false; syncRoomUI();
+  }
+  function closeSheet(force) {
+    if (resting && modal === 'restSheet' && force !== true) return;
+    if (modal) $(modal).hidden = true; modal = null; syncRoomUI();
+  }
 
-  function addLedger(text, amount) {
+  function addLedger(text, amount, cat) {
     G.ledger.unshift({ day: G.day, text, amount });
     G.ledger = G.ledger.slice(0, 6);
+    if (cat) track(cat, amount);
   }
   function renderShop() {
     $('shopDay').textContent = G.en ? `Day ${G.day} prices` : `${G.day}일째 시세`;
@@ -995,14 +1142,16 @@
     if (n <= 0 || G.inv[k] < n) return;
     const amount = G.prices[k] * n;
     G.inv[k] -= n; G.coins += amount;
-    addLedger(`${ITEMS[k].ko} ${n}개 판매`, amount);
+    addLedger(`${ITEMS[k].ko} ${n}개 판매`, amount, 'sell');
+    if (G.prices[k] > (G.prev[k] ?? G.prices[k])) learn('trend');
+    if (CROPS[k]) learn('profit');
     sfx.coin(); renderShop(); persist();
   }
   function buySeeds(k, n) {
     const cost = CROPS[k].seed * n;
     if (G.coins < cost) return;
     G.coins -= cost; G.seeds[k] += n;
-    addLedger(`${CROPS[k].ko} 씨앗 ${n}개 구입`, -cost);
+    addLedger(`${CROPS[k].ko} 씨앗 ${n}개 구입`, -cost, 'seed');
     sfx.coin(); renderShop(); persist();
   }
 
@@ -1062,12 +1211,12 @@
   }
   $('depositBtn').addEventListener('click', () => {
     const n = Math.min(10, G.coins); if (n <= 0) return;
-    G.coins -= n; G.bank += n; addLedger(`저금통에 ${n}코인 저축`, -n);
+    G.coins -= n; G.bank += n; addLedger(`저금통에 ${n}코인 저축`, -n, 'save');
     sfx.coin(); renderHouse(); persist();
   });
   $('withdrawBtn').addEventListener('click', () => {
     const n = G.bank; if (n <= 0) return;
-    G.bank = 0; G.coins += n; addLedger(`저금통에서 ${n}코인 꺼냄`, n);
+    G.bank = 0; G.coins += n; addLedger(`저금통에서 ${n}코인 꺼냄`, n, 'unsave');
     sfx.coin(); renderHouse(); persist();
   });
   $('seedClose').addEventListener('click', () => { pendingPlot = null; closeSheet(); });
@@ -1103,10 +1252,10 @@
     G.day++; rollPrices(); rollMarket();
     if ((G.day - 1) % DAYS_PER_SEASON === 0) setTimeout(() => toast(SEASONS[season()].hello, `${SEASONS[season()].en} is here!`), 3600);
     const acctInterest = G.acct >= 30 ? Math.floor(G.acct * ACCT_RATE) : 0;
-    if (acctInterest > 0) { G.acct += acctInterest; addLedger('은행 이자', acctInterest); }
+    if (acctInterest > 0) { G.acct += acctInterest; addLedger('은행 이자', acctInterest, 'interest'); }
     const interest = Math.floor(G.bank * BANK_RATE);
     if (interest > 0) {
-      G.bank += interest; addLedger(`저금통 이자`, interest);
+      G.bank += interest; addLedger(`저금통 이자`, interest, 'interest');
       toast(`${G.day}일째 아침이에요. 저금통에 이자 ${interest}코인이 붙었어요!`, `Day ${G.day}. You earned ${interest} coins of interest!`);
     } else {
       toast(`${G.day}일째 아침이에요. 오늘의 시세가 새로 정해졌어요.`, `Day ${G.day}. New prices today!`);
@@ -1573,7 +1722,7 @@
   let decoTab = 'furn';
   function buy(price, label) {
     if (G.coins < price) return false;
-    G.coins -= price; addLedger(`${label} 구입`, -price); sfx.coin();
+    G.coins -= price; addLedger(`${label} 구입`, -price, 'home'); sfx.coin();
     return true;
   }
   function renderDeco() {
@@ -1862,7 +2011,7 @@
       buyBtn.textContent = G.coins >= f.price ? '사기' : `${f.price - G.coins} 모자라요`; buyBtn.disabled = G.coins < f.price;
       buyBtn.addEventListener('click', () => {
         if (G.coins < f.price) return;
-        G.coins -= f.price; G.inv[k] = (G.inv[k] || 0) + 1; addLedger(`${f.ko} 구입`, -f.price); sfx.coin();
+        G.coins -= f.price; G.inv[k] = (G.inv[k] || 0) + 1; addLedger(`${f.ko} 구입`, -f.price, 'food'); sfx.coin();
         if (haggled(storeId) === 'dum') { G.inv[k]++; setHaggle(storeId, 'used'); toast(`덤으로 ${f.ko} 하나를 더 넣어줬어요!`, 'A little extra, on the house!'); }
         else toast(`${eul(f.ko)} 샀어요. 가방에서 먹을 수 있어요.`, 'Bought! Eat it from your bag.');
         persist(); renderStore();
@@ -1899,8 +2048,8 @@
     const ex = 100;
     $('acctCompare').textContent = `저금통은 하루 5%, 은행은 하루 8%예요. ${ex}코인을 하루 맡기면 저금통은 ${Math.floor(ex * BANK_RATE)}코인, 은행은 ${Math.floor(ex * ACCT_RATE)}코인이 붙어요. 대신 은행은 30코인부터 이자가 붙어요.`;
   }
-  $('acctIn').addEventListener('click', () => { const n = Math.min(10, G.coins); if (n <= 0) return; G.coins -= n; G.acct += n; addLedger(`은행에 ${n}코인 저축`, -n); sfx.coin(); renderAcct(); persist(); });
-  $('acctOut').addEventListener('click', () => { const n = G.acct; if (n <= 0) return; G.acct = 0; G.coins += n; addLedger(`은행에서 ${n}코인 찾음`, n); sfx.coin(); renderAcct(); persist(); });
+  $('acctIn').addEventListener('click', () => { const n = Math.min(10, G.coins); if (n <= 0) return; G.coins -= n; G.acct += n; addLedger(`은행에 ${n}코인 저축`, -n, 'save'); sfx.coin(); renderAcct(); persist(); });
+  $('acctOut').addEventListener('click', () => { const n = G.acct; if (n <= 0) return; G.acct = 0; G.coins += n; addLedger(`은행에서 ${n}코인 찾음`, n, 'unsave'); sfx.coin(); renderAcct(); persist(); });
   $('acctClose').addEventListener('click', closeSheet);
 
   // the part-time job: give customers the right change
@@ -1955,7 +2104,7 @@
   function finishJob() {
     const pay = 10 + job.tips;
     G.coins += pay; G.jobDay = G.day;
-    addLedger(`편의점 알바 (시급 10 + 팁 ${job.tips})`, pay);
+    addLedger(`편의점 알바 (시급 10 + 팁 ${job.tips})`, pay, 'job');
     $('jobRound').textContent = '오늘 알바 끝!';
     $('jobSay').textContent = `수고했어요! 오늘 번 돈은 ${pay}코인이에요.`;
     $('jobItems').innerHTML = '';
@@ -1991,7 +2140,7 @@
     const r = rideKey === 'subway' ? { kind: 'subway', to: subTo, from: subFrom } : ROUTES[rideKey];
     if (!walk) {
       if (G.coins < FARE) return;
-      G.coins -= FARE; addLedger(r.kind === 'bus' ? '버스 요금' : '지하철 요금', -FARE);
+      G.coins -= FARE; addLedger(r.kind === 'bus' ? '버스 요금' : '지하철 요금', -FARE, 'ride');
       sfx.card(); toast(`삑! 교통카드로 ${FARE}코인을 냈어요.`, `Beep! Paid ${FARE} coins.`);
     }
     closeSheet(); player.goal = null; player.fishing = null;
@@ -2699,7 +2848,7 @@
   const MKT_BUYS = { produce: [...Object.keys(CROPS), ...FRUIT_KEYS], fish: Object.keys(FISH) };
   function rollMarket() { G.mprices = {}; for (const k of [...MKT_BUYS.produce, ...MKT_BUYS.fish]) G.mprices[k] = Math.max(1, Math.round(ITEMS[k].base * rand(0.95, 1.55))); }
   const haggled = (id) => G.haggle && G.haggle.day === G.day ? G.haggle[id] : undefined;
-  function setHaggle(id, v) { if (!G.haggle || G.haggle.day !== G.day) G.haggle = { day: G.day }; G.haggle[id] = v; }
+  function setHaggle(id, v) { if (!G.haggle || G.haggle.day !== G.day) G.haggle = { day: G.day }; G.haggle[id] = v; learn('haggle'); }
   const mktPrice = (stall, k) => (G.mprices[k] || ITEMS[k].base) + (haggled(stall) === 'up' ? 1 : 0);
   let mktStall = null;
   function openMarketStall(id) { mktStall = id; openSheet('mktSheet'); renderMarketStall(); sfx.talk(); }
@@ -2727,7 +2876,7 @@
       const acts = document.createElement('div'); acts.className = 'acts';
       for (const [label, n] of [['1개 팔기', 1], ['모두', G.inv[k]]]) {
         const bt = document.createElement('button'); bt.type = 'button'; bt.className = 'btn small'; bt.textContent = label; bt.disabled = n < 1 || (label === '모두' && n < 2);
-        bt.addEventListener('click', () => { const amt = here * n; G.inv[k] -= n; G.coins += amt; addLedger(`시장에서 ${ITEMS[k].ko} ${n}개 판매`, amt); sfx.coin(); persist(); renderMarketStall(); });
+        bt.addEventListener('click', () => { const amt = here * n; G.inv[k] -= n; G.coins += amt; addLedger(`시장에서 ${ITEMS[k].ko} ${n}개 판매`, amt, 'sell'); if (d > 0) learn('compare'); sfx.coin(); persist(); renderMarketStall(); });
         acts.append(bt);
       }
       row.append(im, nm, pr, acts); list.append(row);
@@ -2940,7 +3089,7 @@
     if (G.inv[r.k] < r.n || r.done) return;
     G.inv[r.k] -= r.n; r.done = true;
     const reward = 2 + r.n * 2;
-    G.coins += reward; addLedger('도서관 영어 심부름', reward);
+    G.coins += reward; addLedger('도서관 영어 심부름', reward, 'errand'); G.stats.errands++;
     G.words = G.words || {};
     const fresh = !G.words[r.k];
     G.words[r.k] = true; G.words['n' + r.n] = true;
@@ -3044,6 +3193,234 @@
     }
   }
 
+  // ---------- 보호자 화면: what the child earned, spent, saved and learned ----------
+  const MONEY_IN = { sell: '팔기', job: '알바', interest: '이자', errand: '영어 심부름' };
+  const MONEY_OUT = { seed: '씨앗', food: '간식', home: '집 꾸미기', ride: '버스·지하철' };
+  const LESSONS = [
+    ['sell', '처음 팔아 보기', '키운 것을 팔아서 코인을 벌었어요.'],
+    ['profit', '이익', '씨앗을 심어 키운 작물을 팔았어요. 씨앗값을 빼고 남는 게 이익이에요.'],
+    ['trend', '시세', '값이 어제보다 오른 날 팔았어요.'],
+    ['compare', '값 비교', '시장에서 마을 가게보다 비싸게 팔았어요.'],
+    ['haggle', '흥정', '시장에서 값을 흥정해 봤어요.'],
+    ['job', '일해서 벌기', '편의점 알바로 거스름돈을 계산하고 시급을 받았어요.'],
+    ['save', '저축', '저금통이나 은행에 코인을 넣었어요.'],
+    ['interest', '이자', '맡겨 둔 코인에 이자가 붙었어요.'],
+  ];
+  const learn = (k) => { if (!G.stats.learn[k]) G.stats.learn[k] = G.day; };
+  function track(cat, amount) {
+    const S = G.stats, a = Math.abs(amount);
+    const d = S.days[G.day] || (S.days[G.day] = { in: {}, out: {}, save: 0 });
+    if (cat === 'save' || cat === 'unsave') {
+      const v = cat === 'save' ? a : -a;
+      d.save += v; S.total.save += v;
+      if (cat === 'save') learn('save');
+    } else if (amount > 0) {
+      d.in[cat] = (d.in[cat] || 0) + a; S.total.in[cat] = (S.total.in[cat] || 0) + a;
+      if (cat === 'sell' || cat === 'job' || cat === 'interest') learn(cat);
+    } else {
+      d.out[cat] = (d.out[cat] || 0) + a; S.total.out[cat] = (S.total.out[cat] || 0) + a;
+    }
+    for (const k of Object.keys(S.days)) if (+k < G.day - 13) delete S.days[k]; // the chart only needs a week
+  }
+
+  // real (not in-game) play time, per calendar day
+  const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+  const playedMin = () => Math.floor((G.stats.play[today()] || 0) / 60);
+  const moreMin = () => (G.stats.more && G.stats.more.date === today() ? G.stats.more.min : 0);
+  function tickPlay(dt) {
+    const P = G.stats.play, k = today();
+    if (!(k in P)) { P[k] = 0; const ks = Object.keys(P).sort(); while (ks.length > 14) delete P[ks.shift()]; }
+    P[k] += Math.min(dt, 1);
+    if (!resting && G.stats.limit && P[k] >= (G.stats.limit + moreMin()) * 60) openRest();
+  }
+  const fmtMin = (m) => (m >= 60 ? `${Math.floor(m / 60)}시간${m % 60 ? ` ${m % 60}분` : ''}` : `${m}분`);
+
+  // break time: the village pauses until a grown-up gives more time
+  function openRest() {
+    resting = true; player.goal = null; keys.clear();
+    $('restPic').src = `assets/dongle/base-${G.look}.png`;
+    $('restSay').textContent = `오늘 ${fmtMin(playedMin())} 놀았어요. 동글이도 기지개를 켜고 싶대요.`;
+    openSheet('restSheet'); sfx.soft();
+  }
+  $('restMore').addEventListener('click', () => askGrownup(() => {
+    G.stats.more = { date: today(), min: playedMin() - G.stats.limit + 10 };
+    resting = false; closeSheet(); persist();
+    toast('10분 더 놀 수 있어요. 시간이 되면 다시 알려줄게요.');
+  }));
+
+  // grown-up check: a times table a small child can't guess
+  let gate = null;
+  function askGrownup(next) {
+    const a = 6 + Math.floor(Math.random() * 4), b = 6 + Math.floor(Math.random() * 4);
+    gate = { a, b, typed: '', next };
+    $('gateQ').textContent = `${a} × ${b} = ?`;
+    $('gateMsg').textContent = '아이와 함께라면 어른이 풀어 주세요.';
+    renderGate(); openSheet('gateSheet');
+  }
+  function renderGate() {
+    if (!gate) return;
+    $('gateA').textContent = gate.typed || ' ';
+    $('gateA').classList.toggle('empty', !gate.typed);
+  }
+  const keypad = $('gateKeys');
+  ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'del', '0', 'ok'].forEach((k) => {
+    const b = document.createElement('button'); b.type = 'button';
+    b.textContent = k === 'del' ? '지우기' : k === 'ok' ? '확인' : k;
+    if (k === 'del' || k === 'ok') b.className = 'fn';
+    b.addEventListener('click', () => {
+      if (!gate) return;
+      if (k === 'ok') { if (gate.typed) checkGate(); return; }
+      if (k === 'del') gate.typed = gate.typed.slice(0, -1);
+      else if (gate.typed.length < 2) { gate.typed += k; tone(600 + +k * 20, 0.05); }
+      renderGate();
+      if (k !== 'del' && gate.typed.length === 2) setTimeout(() => { if (gate && gate.typed.length === 2) checkGate(); }, 160);
+    });
+    keypad.append(b);
+  });
+  function checkGate() {
+    if (+gate.typed === gate.a * gate.b) { const next = gate.next; gate = null; next(); return; }
+    sfx.soft();
+    const a = 6 + Math.floor(Math.random() * 4), b = 6 + Math.floor(Math.random() * 4);
+    Object.assign(gate, { a, b, typed: '' });
+    $('gateQ').textContent = `${a} × ${b} = ?`;
+    $('gateMsg').textContent = '아쉬워요. 새 문제로 다시 해 볼까요?';
+    renderGate();
+    $('gateA').classList.remove('nudge'); void $('gateA').offsetWidth; $('gateA').classList.add('nudge');
+  }
+  $('gateCancel').addEventListener('click', () => { gate = null; if (resting) openSheet('restSheet'); else leaveParent(); });
+  const leaveParent = () => { if (G.started) closeSheet(); else openSheet('startSheet'); };
+
+  $('parentBtn').addEventListener('click', () => { if (!resting) askGrownup(openParent); });
+  $('parentClose').addEventListener('click', leaveParent);
+  function openParent() { pDay = G.day; openSheet('parentSheet'); renderParent(); }
+
+  // ---------- 보호자 화면: drawing it ----------
+  let pDay = 1, pTable = false;
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  const total = (o) => Object.values(o).reduce((a, b) => a + b, 0);
+  function niceMax(v) { if (v <= 10) return 10; const p = 10 ** Math.floor(Math.log10(v)); for (const m of [1, 2, 2.5, 5, 10]) if (m * p >= v) return m * p; return 10 * p; }
+
+  function renderParent() {
+    const S = G.stats, T = S.total;
+    const earned = total(T.in), spent = total(T.out), kept = G.bank + G.acct;
+    $('pSub').textContent = `동글마을 ${G.day}일째 · 오늘 ${fmtMin(playedMin())} 놀았어요`;
+
+    // headline numbers
+    const kpi = $('pKpi'); kpi.innerHTML = '';
+    for (const [label, v, note] of [['번 돈', earned, '지금까지'], ['쓴 돈', spent, '지금까지'], ['모아 둔 돈', kept, '저금통 + 은행']]) {
+      const t = el('div', 'tile'); t.append(el('span', 'tile-l', label), el('b', 'tile-v', `${v}코인`), el('span', 'tile-n', note)); kpi.append(t);
+    }
+
+    // how much of what came in was put away
+    const rate = earned ? Math.max(0, Math.min(100, Math.round((Math.max(0, T.save) / earned) * 100))) : 0;
+    $('pSaveTxt').textContent = earned ? `번 돈 ${earned}코인 중 ${Math.max(0, T.save)}코인(${rate}%)을 저금통·은행에 넣었어요.` : '아직 번 돈이 없어요. 밭에서 키운 걸 팔면 여기에 쌓여요.';
+    $('pSaveFill').style.width = rate + '%';
+    $('pSaveMeter').setAttribute('aria-valuenow', String(rate));
+
+    renderChart();
+    breakdown($('pIn'), MONEY_IN, T.in, 'in');
+    breakdown($('pOut'), MONEY_OUT, T.out, 'out');
+
+    // money ideas the child has met
+    const done = LESSONS.filter(([k]) => S.learn[k]).length;
+    $('pLearnN').textContent = `${done} / ${LESSONS.length}`;
+    const ll = $('pLearn'); ll.innerHTML = '';
+    for (const [k, title, desc] of LESSONS) {
+      const r = el('div', 'lesson' + (S.learn[k] ? ' done' : ''));
+      const mark = el('span', 'tick'); mark.setAttribute('aria-hidden', 'true');
+      const tx = el('div', 'lesson-t'); tx.append(el('b', null, title), el('span', 'muted', S.learn[k] ? `${desc} (${S.learn[k]}일째)` : '아직 안 해 봤어요'));
+      r.setAttribute('aria-label', `${title}: ${S.learn[k] ? '해 봤어요' : '아직'}`);
+      r.append(mark, tx); ll.append(r);
+    }
+
+    // English
+    const words = Object.keys(G.words || {}).filter((k) => ENG[k]);
+    const nums = [1, 2, 3].filter((n) => G.words && G.words['n' + n]);
+    $('pEngTxt').textContent = words.length ? `모은 단어 ${words.length + nums.length}개 · 끝낸 심부름 ${S.errands}번` : '동글시내 도서관에서 영어 심부름을 하면 단어가 모여요.';
+    const wl = $('pWords'); wl.innerHTML = '';
+    for (const w of [...words.map((k) => ENG[k][0]), ...nums.map((n) => NUM[n])]) {
+      const c = el('button', 'num-chip', w); c.type = 'button'; c.lang = 'en'; c.setAttribute('aria-label', `${w} 듣기`);
+      c.addEventListener('click', () => speak(w)); wl.append(c);
+    }
+
+    // something to talk about tonight
+    const tips = [];
+    if (!S.learn.save) tips.push('“저금통에 10코인을 넣으면 내일은 몇 코인이 될까?”');
+    else if (!S.learn.interest) tips.push('“저금통에 넣고 하룻밤 자면 무슨 일이 생길까?”');
+    if (S.learn.compare) tips.push('“왜 시장에서 팔았어? 마을 가게랑 뭐가 달랐어?”');
+    else tips.push('“같은 당근인데 시장이랑 마을 가게 값이 왜 다를까?”');
+    const topOut = Object.entries(T.out).sort((a, b) => b[1] - a[1])[0];
+    if (topOut && topOut[1] > 0) tips.push(`“${MONEY_OUT[topOut[0]]}에 코인을 제일 많이 썼네. 다음엔 뭘 사고 싶어?”`);
+    if (words.length) tips.push(`“‘${ENG[words[words.length - 1]][0]}’, 무슨 뜻이었지? 같이 소리 내서 말해 볼까?”`);
+    const tl = $('pTips'); tl.innerHTML = '';
+    tips.slice(0, 3).forEach((t) => tl.append(el('div', 'job-bubble', t)));
+
+    // play time and the break reminder
+    const keys7 = Object.keys(S.play).sort().slice(-7);
+    const week = Math.floor(keys7.reduce((a, k) => a + S.play[k], 0) / 60);
+    $('pPlayTxt').textContent = `오늘 ${fmtMin(playedMin())} · 최근 7일 ${fmtMin(week)}`;
+    const seg = $('pLimit'); seg.innerHTML = '';
+    for (const m of [0, 20, 30, 45, 60]) {
+      const b = el('button', null, m ? `${m}분` : '끔'); b.type = 'button'; b.setAttribute('role', 'radio');
+      b.setAttribute('aria-checked', String(S.limit === m));
+      b.addEventListener('click', () => {
+        S.limit = m; S.more = null;
+        if (m && playedMin() >= m) S.more = { date: today(), min: playedMin() - m + 10 };
+        persist(); renderParent();
+      });
+      seg.append(b);
+    }
+    const left = S.limit ? S.limit + moreMin() - playedMin() : 0;
+    $('pLimitTxt').textContent = !S.limit ? '정한 시간이 되면 동글이가 쉬어 가자고 말해요. 더 하려면 보호자 확인이 필요해요.'
+      : moreMin() ? `오늘은 벌써 ${fmtMin(playedMin())} 놀아서, ${fmtMin(Math.max(1, left))} 뒤에 쉬어 가자고 알려줄게요.`
+      : `하루 ${S.limit}분이 되면 쉬어 가자고 알려줄게요. 오늘은 ${fmtMin(Math.max(0, left))} 남았어요.`;
+  }
+
+  function breakdown(box, names, vals, cls) {
+    box.innerHTML = '';
+    const rows = Object.keys(names).map((k) => [names[k], vals[k] || 0]).sort((a, b) => b[1] - a[1]);
+    const max = Math.max(1, ...rows.map((r) => r[1]));
+    for (const [name, v] of rows) {
+      const r = el('div', 'hbar');
+      const tr = el('span', 'hbar-track'); const f = el('i', cls); f.style.width = v ? `max(3px, ${(v / max) * 100}%)` : '0'; tr.append(f);
+      r.append(el('span', 'hbar-l', name), tr, el('span', 'hbar-v', String(v)));
+      box.append(r);
+    }
+  }
+
+  // 최근 7일: coins in and out per in-game day, two columns per day
+  function renderChart() {
+    const first = Math.max(1, G.day - 6), days = [];
+    for (let d = first; d <= G.day; d++) { const x = G.stats.days[d]; days.push({ d, in: x ? total(x.in) : 0, out: x ? total(x.out) : 0 }); }
+    const top = niceMax(Math.max(...days.map((x) => Math.max(x.in, x.out))));
+    const plot = $('pPlot'); plot.innerHTML = '';
+    const grid = el('div', 'pgrid');
+    for (const v of [top, top / 2, 0]) { const g = el('div', 'gl'); g.append(el('span', null, String(v))); grid.append(g); }
+    plot.append(grid);
+    const cols = el('div', 'pcols');
+    for (const x of days) {
+      const c = el('button', 'pcol' + (x.d === pDay ? ' on' : '')); c.type = 'button';
+      c.setAttribute('aria-label', `${x.d}일째: 번 돈 ${x.in}코인, 쓴 돈 ${x.out}코인`);
+      const bars = el('span', 'pbars');
+      for (const [cls, v] of [['in', x.in], ['out', x.out]]) { const b = el('i', cls); b.style.height = v ? `max(2px, ${(v / top) * 100}%)` : '0'; bars.append(b); }
+      c.append(bars, el('span', 'px', x.d === G.day ? '오늘' : `${x.d}일`));
+      c.addEventListener('click', () => { pDay = x.d; renderChart(); });
+      cols.append(c);
+    }
+    plot.append(cols);
+    const sel = days.find((x) => x.d === pDay) || days[days.length - 1];
+    const rd = $('pRead'); rd.innerHTML = '';
+    rd.append(`${sel.d === G.day ? '오늘' : `${sel.d}일째`} · 번 돈 `, el('b', null, `${sel.in}코인`), ' · 쓴 돈 ', el('b', null, `${sel.out}코인`));
+    const tb = $('pTable'); tb.hidden = !pTable; tb.innerHTML = '';
+    $('pTableBtn').textContent = pTable ? '숫자 표 접기' : '숫자로 보기';
+    $('pTableBtn').setAttribute('aria-expanded', String(pTable));
+    if (pTable) {
+      const head = el('tr'); ['날', '번 돈', '쓴 돈'].forEach((h) => head.append(el('th', null, h))); tb.append(head);
+      for (const x of days.slice().reverse()) { const tr = el('tr'); [`${x.d}일째`, x.in, x.out].forEach((v) => tr.append(el('td', null, String(v)))); tb.append(tr); }
+    }
+  }
+  $('pTableBtn').addEventListener('click', () => { pTable = !pTable; renderChart(); });
+
   // ---------- "what can I do here": a floating action chip near things you can use ----------
   function openShop() { openSheet('shopSheet'); renderShop(); talkTo(npcs[4]); }
   let ctxT = 0, ctxKey = '', ctxRun = null;
@@ -3108,6 +3485,8 @@
   let sleepFade = 0;
   function update(dt) {
     G.t += dt;
+    if (G.started && !document.hidden) tickPlay(dt);
+    if (resting) return;
     if (G.started) {
       const before = G.time;
       G.time += dt / DAY_LEN;
