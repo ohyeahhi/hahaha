@@ -375,6 +375,36 @@
   .gate-keys button:active { background: #ebe5dc; }
   .rest-pic { width: 96px; height: 120px; object-fit: contain; }
   @media (prefers-reduced-motion: no-preference) { .gate-a.nudge { animation: nudge 0.3s; } }
+
+  /* 몽글카페 */
+  .cafe-bar { position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
+  .chat-btn { position: relative; width: 62px; height: 62px; border: 0; border-radius: 20px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; background: rgba(255, 255, 255, 0.95); color: var(--ink); font: 700 11px var(--font); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 6px 18px rgba(0, 0, 0, 0.12); }
+  .chat-btn:active { transform: scale(0.96); }
+  .chat-n { position: absolute; top: -6px; right: -6px; min-width: 22px; height: 22px; padding-inline: 6px; box-sizing: border-box; border-radius: 11px; background: var(--accent); color: #ffffff; font: 700 12px/22px var(--font); text-align: center; }
+  #chatSheet > *, #boardSheet > * { flex-shrink: 0; }
+  .phrases { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .phrase { min-height: 46px; padding: 8px 12px; border: 0; border-radius: 12px; background: var(--grouped); color: var(--ink); text-align: left; font: 600 14px var(--font); line-height: 1.35; cursor: pointer; display: flex; flex-direction: column; justify-content: center; gap: 1px; }
+  .phrase small { font-size: 11px; font-weight: 500; color: var(--sub); }
+  .card .phrase, .card .sticker, .card .free-row input { background: var(--surface); }
+  .card .btn:disabled { background: rgba(31, 27, 23, 0.07); color: #b3aca2; }
+  .phrase[aria-pressed="true"], .sticker[aria-pressed="true"] { background: #fbeee2; box-shadow: inset 0 0 0 2px var(--accent); }
+  .num-chip.emo { min-width: 50px; font-size: 18px; }
+  .free-row { display: flex; gap: 8px; align-items: center; }
+  .free-row input { flex: 1; min-width: 0; height: 44px; padding-inline: 12px; box-sizing: border-box; border: 0; border-radius: 12px; background: var(--grouped); color: var(--ink); font: 500 16px var(--font); -webkit-user-select: text; user-select: text; }
+  .free-row input:focus-visible { outline: 3px solid var(--down); outline-offset: 1px; }
+  .sticker-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .sticker { width: 46px; height: 46px; padding: 5px; box-sizing: border-box; border: 0; border-radius: 12px; cursor: pointer; }
+  .sticker img { width: 100%; height: 100%; display: block; }
+  .notes { display: flex; flex-direction: column; gap: 8px; }
+  .note { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 16px; background: var(--grouped); }
+  .note-face { width: 38px; height: 48px; object-fit: contain; flex: none; }
+  .note-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .note-top { display: flex; align-items: baseline; gap: 8px; }
+  .note-top b { font-size: 14px; }
+  .note-top .muted { font-size: 12px; }
+  .note-body p { font-size: 15px; line-height: 1.45; }
+  .note-sticker { width: 40px; height: 40px; flex: none; }
+  .note-del { flex: none; padding: 6px 2px; border: 0; background: none; color: var(--sub); font: 600 12px var(--font); cursor: pointer; }
 </style>
 </head>
 <body>
@@ -605,6 +635,12 @@
   <span class="label">오늘 이렇게 이야기해 보세요</span>
   <div class="tips" id="pTips"></div>
 
+  <span class="label">몽글카페 대화</span>
+  <div class="card">
+    <div class="seg" id="pChat" role="radiogroup" aria-label="몽글카페 대화"></div>
+    <p class="muted" id="pChatTxt"></p>
+  </div>
+
   <span class="label">놀이 시간</span>
   <div class="card">
     <p class="card-t" id="pPlayTxt"></p>
@@ -614,6 +650,43 @@
   </div>
   <p class="muted">기록은 이 기기에만 저장돼요. 어디로도 보내지 않아요.</p>
   <button class="btn soft" id="parentClose" type="button">닫기</button>
+</div>
+
+<div class="cafe-bar" id="cafeBar" hidden>
+  <button class="chat-btn" id="chatBtn" type="button" aria-label="말하기">
+    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M12 4.2c-4.7 0-8.3 2.9-8.3 6.6 0 2.1 1.2 4 3.1 5.2l-.7 3.3 3.6-2.1c.7.1 1.5.2 2.3.2 4.7 0 8.3-2.9 8.3-6.6S16.7 4.2 12 4.2z" fill="currentColor"/></svg>
+    <span id="chatLabel">말하기</span>
+    <span class="chat-n" id="cafeN" hidden>0</span>
+  </button>
+</div>
+
+<div class="sheet" id="chatSheet" hidden>
+  <div class="row-head"><h2>말 걸기</h2><span class="muted" id="chatWho"></span></div>
+  <div class="phrases" id="chatPhrases"></div>
+  <span class="label">표정</span>
+  <div class="num-row" id="chatEmotes"></div>
+  <div id="chatFree" hidden>
+    <span class="label">직접 쓰기</span>
+    <div class="free-row"><input id="chatText" type="text" maxlength="40" placeholder="40자까지 쓸 수 있어요" autocomplete="off" enterkeyhint="send" aria-label="직접 쓰기"><button class="btn small" id="chatSend" type="button">보내기</button></div>
+  </div>
+  <p class="muted" id="chatNote"></p>
+  <button class="btn soft" id="chatClose" type="button">닫기</button>
+</div>
+
+<div class="sheet" id="boardSheet" hidden>
+  <div class="row-head"><h2>몽글카페 방명록</h2><span class="muted" id="boardCount"></span></div>
+  <p class="muted" id="boardWhere"></p>
+  <div class="card">
+    <b class="card-h">한 줄 남기기</b>
+    <div class="phrases" id="boardPhrases"></div>
+    <div class="free-row" id="boardFree" hidden><input id="boardText" type="text" maxlength="40" placeholder="직접 쓰기 (40자까지)" autocomplete="off" aria-label="직접 쓰기"></div>
+    <b class="card-h">스티커 붙이기 (골라도 되고 안 골라도 돼요)</b>
+    <div class="sticker-row" id="boardStickers"></div>
+    <button class="btn" id="boardPost" type="button">방명록에 남기기</button>
+    <p class="muted" id="boardMsg" aria-live="polite"></p>
+  </div>
+  <div class="notes" id="boardList"></div>
+  <button class="btn soft" id="boardClose" type="button">닫기</button>
 </div>
 
 <div class="room-bar" id="roomBar" hidden>
@@ -847,7 +920,8 @@
     inv: Object.fromEntries([...Object.keys(ITEMS), ...FOOD_KEYS].map((k) => [k, 0])),
     acct: 0, jobDay: 0, mprices: {}, haggle: null, reqs: null, words: {},
     // for the grown-up's screen: coins in and out by kind, first times, real play time
-    stats: { days: {}, total: { in: {}, out: {}, save: 0 }, learn: {}, errands: 0, play: {}, limit: 0, more: null },
+    stats: { days: {}, total: { in: {}, out: {}, save: 0 }, learn: {}, errands: 0, play: {}, limit: 0, more: null, chat: 'safe' },
+    notes: [], // the café guestbook when it can only live on this device
     dex: {},
     home: {
       owned: {},
@@ -866,11 +940,11 @@
   rollPrices(); G.prev = { ...G.prices };
 
   function save() {
-    return { v: 2, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, stats: G.stats, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
+    return { v: 2, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, stats: G.stats, notes: G.notes, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
   }
   function load(s) {
     if (!s || s.v !== 2) return false;
-    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home, acct: s.acct || 0, jobDay: s.jobDay || 0, mprices: s.mprices || {}, haggle: s.haggle || null, reqs: s.reqs || null, words: s.words || {}, stats: { ...G.stats, ...(s.stats || {}) } });
+    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home, acct: s.acct || 0, jobDay: s.jobDay || 0, mprices: s.mprices || {}, haggle: s.haggle || null, reqs: s.reqs || null, words: s.words || {}, stats: { ...G.stats, ...(s.stats || {}) }, notes: Array.isArray(s.notes) ? s.notes : [] });
     (s.plots || []).forEach((p, i) => { if (plots[i]) Object.assign(plots[i], p); });
     (s.trees || []).forEach(([n, r], i) => { if (trees[i] && trees[i].fruit) { trees[i].n = n; trees[i].regrow = r; } });
     return true;
@@ -1043,7 +1117,7 @@
   function timeName(p) { return p < 0.22 ? ['아침', 'Morning'] : p < 0.55 ? ['낮', 'Afternoon'] : p < 0.7 ? ['저녁', 'Evening'] : p < 0.94 ? ['밤', 'Night'] : ['새벽', 'Dawn']; }
   function syncHud() {
     const tn = timeName(G.time);
-    const place = { city: ['동글시내', 'Downtown'], park: ['한강공원', 'Riverside'], market: ['동글시장', 'Market'], ride: ['이동 중', 'On the way'] }[scene];
+    const place = { city: ['동글시내', 'Downtown'], park: ['한강공원', 'Riverside'], market: ['동글시장', 'Market'], cafe: ['몽글카페', 'Café'], ride: ['이동 중', 'On the way'] }[scene];
     const se = SEASONS[season()];
     ui.clock.textContent = place ? `${G.en ? place[1] : place[0]} · ${G.en ? tn[1] : tn[0]}` : G.en ? `${se.en} · Day ${G.day} · ${tn[1]}` : `${se.ko} ${G.day}일째 · ${tn[0]}`;
     ui.coins.textContent = G.coins;
@@ -1232,7 +1306,7 @@
     closeSheet(); sleepFade = 1.6;
     setTimeout(() => { newDay(); G.time = 0.03; if (scene === 'village') { player.x = house.door.x; player.y = house.door.y + 10; } }, 700);
   });
-  $('enBtn').addEventListener('click', () => { G.en = !G.en; syncToggles(); syncHud(); if (modal === 'shopSheet') renderShop(); if (modal === 'seedSheet') renderSeeds(); persist(); });
+  $('enBtn').addEventListener('click', () => { G.en = !G.en; syncToggles(); syncHud(); if (modal === 'shopSheet') renderShop(); if (modal === 'seedSheet') renderSeeds(); syncCafeBar(); persist(); });
   $('soundBtn').addEventListener('click', () => {
     G.muted = !G.muted; syncToggles(); persist();
     toast(G.muted ? '효과음을 껐어요.' : '효과음을 켰어요.', G.muted ? 'Sound effects off.' : 'Sound effects on.');
@@ -1598,6 +1672,7 @@
     const inRoom = scene === 'room';
     $('roomBar').hidden = !inRoom || !!modal || !!placing;
     $('placeBanner').hidden = !placing;
+    syncCafeBar();
   }
   let switching = false;
   function enterRoom() {
@@ -1789,6 +1864,7 @@
     if (scene === 'city') { cityTap(w); return; }
     if (scene === 'park') { parkTap(w); return; }
     if (scene === 'market') { marketTap(w); return; }
+    if (scene === 'cafe') { cafeTap(w); return; }
 
     for (const b of bugs) if (b.flee <= 0 && b.a > 0.4 && Math.hypot(w.x - b.x, w.y - (b.y - b.alt)) < 26) { chaseBug(b); return; }
     for (const n of npcs) if (Math.hypot(w.x - n.x, w.y - (n.y - 42)) < 30) {
@@ -2181,6 +2257,7 @@
   function useBuilding(b) {
     if (b.id === 'subway') return openSubway('city');
     if (b.id === 'library') return openLibrary();
+    if (b.id === 'cafe') return enterCafe();
     if (b.id === 'bank') { openSheet('acctSheet'); renderAcct(); return; }
     openStore(b.id);
   }
@@ -3370,6 +3447,13 @@
       });
       seg.append(b);
     }
+    const chat = $('pChat'); chat.innerHTML = '';
+    for (const [v, t] of [['safe', '정해진 말만'], ['free', '자유롭게 쓰기']]) {
+      const b = el('button', null, t); b.type = 'button'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String((S.chat || 'safe') === v));
+      b.addEventListener('click', () => { S.chat = v; persist(); renderParent(); });
+      chat.append(b);
+    }
+    $('pChatTxt').textContent = S.chat === 'free' ? '직접 쓴 말도 주고받아요(40자까지). 이 게임 링크를 공유받은 사람만 볼 수 있어요.' : '인사말과 표정만 주고받아요. 다른 사람이 직접 쓴 말은 가려져서 보여요.';
     const left = S.limit ? S.limit + moreMin() - playedMin() : 0;
     $('pLimitTxt').textContent = !S.limit ? '정한 시간이 되면 동글이가 쉬어 가자고 말해요. 더 하려면 보호자 확인이 필요해요.'
       : moreMin() ? `오늘은 벌써 ${fmtMin(playedMin())} 놀아서, ${fmtMin(Math.max(1, left))} 뒤에 쉬어 가자고 알려줄게요.`
@@ -3421,6 +3505,517 @@
   }
   $('pTableBtn').addEventListener('click', () => { pTable = !pTable; renderChart(); });
 
+  // =====================================================================
+  // ---------- 몽글카페: the community café ----------
+  // Everyone who has this game open right now meets here (room presence), and notes
+  // left on the board stay for friends who come later (db). Without those, the café
+  // still works alone: two regulars, a barista, and a board kept on this device.
+  // =====================================================================
+  const CAFE = { w: 760, h: 760 };
+  const CBASE = 280;                                             // where the back wall meets the floor
+  const COUNTER = { x: 24, w: 240, spot: { x: 150, y: CBASE + 110 } };
+  const BOARD = { x: 590, y: 66, w: 150, h: 130, spot: { x: 665, y: CBASE + 44 } };
+  const CAFE_DOOR = { x: 380, y: 734, spot: { x: 380, y: 700 } };
+  const CTABLES = [{ x: 380, y: 460 }, { x: 600, y: 590 }, { x: 170, y: 600 }];
+  const SEATS = CTABLES.flatMap((t, ti) => [{ x: t.x - 66, y: t.y + 10, dir: 1, t: ti }, { x: t.x + 66, y: t.y + 10, dir: -1, t: ti }]);
+  const CPLANTS = [[40, 716], [724, 420], [570, 318]];
+  const barista = mong('', '#8d5f45', 150, CBASE + 18, { look: 5, shopkeeper: true });
+  const regulars = [[2, 1], [4, 4]].map(([look, si]) => mong('', '#a39d93', SEATS[si].x, SEATS[si].y, { look, sit: si, sip: true, chatCd: rand(5, 14) }));
+  const CAFE_LINES = [
+    ['말 안 해도 괜찮아요. 그냥 같이 있어요.', "No need to talk. Let's just be here."],
+    ['창밖 구경하기 좋은 자리예요.', 'A nice seat for watching outside.'],
+    ['방명록에 한 줄 남겨 볼래요?', 'Want to leave a note on the board?'],
+    ['핫초코가 달콤해요.', 'The hot chocolate is sweet.'],
+    ['오늘 하루 어땠어요?', 'How was your day?'],
+  ];
+  // what people can say: fixed phrases travel as keys, so each screen shows its own language
+  const PHRASES = {
+    hi: ['안녕하세요!', 'Hello!'], nice: ['반가워요', 'Nice to meet you'], sit: ['같이 앉아도 될까요?', 'May I sit with you?'],
+    day: ['오늘 하루 어땠어요?', 'How was your day?'], weather: ['오늘 날씨 좋다~', 'Lovely day today'], farm: ['오늘 뭐 심었어요?', 'What did you plant today?'],
+    fish: ['물고기 잡았어요!', 'I caught a fish!'], yum: ['여기 음료 맛있어요', 'The drinks here are good'], quiet: ['조용히 같이 있어요', "Let's just sit quietly"],
+    cheer: ['오늘도 수고했어요', 'You did great today'], thanks: ['고마워요', 'Thank you'], bye: ['또 만나요!', 'See you again!'],
+  };
+  const EMOTES = { heart: ['♥', '#e58aa0'], note: ['♪', '#5b8fd0'], flower: ['✿', '#6f9a58'], laugh: ['ㅎㅎ', '#e0954a'], sleepy: ['Zz', '#8a7bc4'], wow: ['!', '#c95b45'] };
+  const STICKERS = ['hotchoco', 'strawlatte', 'flower', 'apple', 'strawberry', 'crucian', 'butterfly', 'hotteok'];
+  const freeChat = () => G.stats.chat === 'free';
+  const cleanText = (t) => String(t || '').replace(/[\u0000-\u001f\u007f-\u009f­​-‏‪-‮⁠-⁯﻿]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
+  // a line as this screen shows it: typed words only where a grown-up allowed them
+  function lineFor(m) {
+    if (!m || typeof m !== 'object') return null;
+    if (PHRASES[m.k]) return PHRASES[m.k];
+    const t = cleanText(m.text);
+    if (!t) return null;
+    return freeChat() ? [t, t] : ['(직접 쓴 말이에요)', '(a typed message)'];
+  }
+
+  // ---------- 몽글카페: other people, live ----------
+  const net = { room: null, user: null, db: null, uid: null, owner: false, tried: false, boardOn: false };
+  const friends = new Map();                                      // peer label -> their 동글이 here
+  const names = {};                                               // id -> name as THIS viewer sees it (never stored)
+  let boardDocs = [], nameKey = '', toldOutside = false;
+  async function connect() {
+    if (net.tried || !window.claude || typeof window.claude.use !== 'function') return;
+    net.tried = true;
+    const use = (n) => Promise.resolve(window.claude.use(n)).catch(() => null);
+    const [room, user, db] = await Promise.all([use('room'), use('user'), use('db')]);
+    Object.assign(net, { room, user, db });
+    if (user) { net.uid = await user.id(); net.owner = await user.isOwner(); }
+    if (room) {
+      room.onPeers(syncFriends, () => { net.room = null; friends.clear(); syncCafeBar(); });
+      sendWhere();
+    }
+    if (scene === 'cafe') watchBoard();
+  }
+  function sendWhere() {
+    if (!net.room) return;
+    const here = scene === 'cafe';
+    net.room.presence(here ? { v: 1, where: 'cafe', look: G.look } : { v: 1, where: 'out', look: G.look, x: null, y: null, sit: null, say: null, emo: null }).catch(() => {});
+    lastSent = '';
+  }
+  function syncFriends(ch) {
+    const seen = new Set();
+    for (const p of ch.peers) {
+      if (p.sameTab || p.kind !== 'viewer') continue;
+      const pr = p.presence || {};
+      if (pr.where !== 'cafe') continue;
+      seen.add(p.peer);
+      const x = clamp(Number(pr.x) || CAFE_DOOR.spot.x, 40, CAFE.w - 40), y = clamp(Number(pr.y) || CAFE_DOOR.spot.y, CBASE + 20, CAFE.h - 20);
+      let f = friends.get(p.peer);
+      const say = pr.say && typeof pr.say === 'object' ? pr.say : null, emo = pr.emo && typeof pr.emo === 'object' ? pr.emo : null;
+      if (!f) {
+        // what they said before we arrived is not replayed
+        f = mong('', '#a39d93', x, y, { friend: true, by: p.by, tx: x, ty: y, sayAt: say && say.at, emoAt: emo && emo.at, mine: p.isMe });
+        friends.set(p.peer, f);
+        if (scene === 'cafe' && !p.isMe) setTimeout(() => toast(`${nameOf(f.by)}님이 들어왔어요. 인사해 볼까요?`, 'Someone came in. Say hello?'), 900);
+      }
+      f.tx = x; f.ty = y;
+      f.look = LOOKS.includes(pr.look) ? pr.look : 1;
+      f.sit = Number.isInteger(pr.sit) && SEATS[pr.sit] ? pr.sit : -1;
+      if (say && say.at !== f.sayAt) { f.sayAt = say.at; const line = lineFor(say); if (line) f.bubble = { ko: line[0], en: line[1], t: 5 }; }
+      if (emo && emo.at !== f.emoAt) { f.emoAt = emo.at; if (EMOTES[emo.k]) f.emo = { k: emo.k, t: 2.4 }; }
+    }
+    for (const k of [...friends.keys()]) if (!seen.has(k)) friends.delete(k);
+    if (scene !== 'cafe' && friends.size && !toldOutside && G.started) { toldOutside = true; toast('몽글카페에 친구가 와 있어요. 시내 카페로 가 볼까요?', 'A friend is at the café downtown.'); }
+    resolveNames(); syncCafeBar();
+  }
+  async function resolveNames() {
+    if (!net.user) return;
+    const ids = [...new Set([...[...friends.values()].map((f) => f.by), ...boardDocs.map((d) => d.id)].filter((id) => typeof id === 'string'))].sort();
+    const key = ids.join(',');
+    if (!ids.length || key === nameKey) return;
+    nameKey = key;
+    const ps = await net.user.profiles(ids);
+    for (const id of ids) names[id] = (ps[id] && ps[id].name) || '';
+    if (modal === 'boardSheet') renderBoard();
+  }
+  const nameOf = (id) => (id && id === net.uid ? '나' : (id && names[id]) || '이웃');
+  const friendsHere = () => [...friends.values()].filter((f) => !f.mine);
+
+  // ---------- 몽글카페: being here ----------
+  let lastSent = '', sendT = 0;
+  function enterCafe() {
+    if (switching) return;
+    switching = true;
+    transition(() => {
+      switching = false;
+      scene = 'cafe'; player.goal = null; player.fishing = null; player.sit = -1;
+      player.x = CAFE_DOOR.spot.x; player.y = CAFE_DOOR.spot.y; player.dir = 1;
+      cam.x = player.x; cam.y = player.y - 160;
+      sendWhere(); watchBoard();
+      const n = friendsHere().length;
+      if (!G.tips.cafe) { G.tips.cafe = true; toast('몽글카페예요. 같은 게임 링크를 연 친구들이 여기서 만나요. 자리에 앉거나 방명록에 한 줄 남겨 보세요.', 'Friends with this game open meet here.'); }
+      else toast(n ? `몽글카페예요. 지금 친구 ${n}명이 있어요.` : '몽글카페에 들어왔어요.', 'Welcome to the café.');
+      syncRoomUI(); sfx.talk();
+    });
+  }
+  function exitCafe() {
+    if (switching) return;
+    switching = true; closeSheet();
+    transition(() => {
+      switching = false;
+      scene = 'city'; player.sit = -1; player.goal = null;
+      const b = BUILDINGS.find((x) => x.id === 'cafe');
+      player.x = b.door.x; player.y = b.door.y + 8; cam.x = player.x; cam.y = player.y;
+      sendWhere(); syncRoomUI();
+    });
+  }
+  const seatTaken = (i) => regulars.some((r) => r.sit === i) || [...friends.values()].some((f) => f.sit === i);
+  function sitAt(i) {
+    const s = SEATS[i];
+    if (seatTaken(i)) { toast('누가 앉아 있어요. 다른 자리를 골라요.', 'That seat is taken.'); return; }
+    goTo({ x: s.x, y: s.y }, () => { player.sit = i; player.x = s.x; player.y = s.y; player.moving = false; sfx.soft(); });
+  }
+  function standUp() { player.sit = -1; player.y = Math.min(player.y + 18, CAFE.h - 30); }
+  function speakLine(m) {
+    const line = lineFor(m) || ['…', '…'];
+    say(player, line, 5); sfx.talk();
+    if (G.en && PHRASES[m.k]) speak(PHRASES[m.k][1]);
+    if (net.room) net.room.presence({ say: { ...m, at: Date.now() } }).catch(() => {});
+  }
+  function showEmote(k) {
+    player.emo = { k, t: 2.4 }; tone(700, 0.08);
+    if (net.room) net.room.presence({ emo: { k, at: Date.now() } }).catch(() => {});
+  }
+  function cafeBlocked(x, y) {
+    if (x < 30 || x > CAFE.w - 30 || y < CBASE + 22 || y > CAFE.h - 22) return true;
+    if (x < COUNTER.x + COUNTER.w + 10 && y < CBASE + 88) return true;
+    for (const t of CTABLES) if (((x - t.x) / 50) ** 2 + ((y - t.y + 2) / 20) ** 2 < 1) return true;
+    for (const [px, py] of CPLANTS) if (Math.abs(x - px) < 26 && y > py - 18 && y < py + 6) return true;
+    return false;
+  }
+  function updateCafe(dt) {
+    const p = player;
+    if (p.sit >= 0) {
+      if (keys.size || p.goal) p.sit = -1;
+      else { const s = SEATS[p.sit]; p.x = s.x; p.y = s.y; p.dir = s.dir; p.moving = false; }
+    }
+    if (p.emo) { p.emo.t -= dt; if (p.emo.t <= 0) p.emo = null; }
+    for (const r of regulars) {
+      if (r.bubble) { r.bubble.t -= dt; if (r.bubble.t <= 0) r.bubble = null; }
+      r.chatCd -= dt; if (r.chatCd <= 0) { r.chatCd = rand(14, 28); if (Math.random() < 0.5) say(r, pick(CAFE_LINES)); }
+    }
+    if (barista.bubble) { barista.bubble.t -= dt; if (barista.bubble.t <= 0) barista.bubble = null; }
+    for (const f of friends.values()) {
+      f.sip = f.sit >= 0;
+      if (f.sit >= 0) { const s = SEATS[f.sit]; f.x = s.x; f.y = s.y; f.dir = s.dir; f.moving = false; }
+      else {
+        const dx = f.tx - f.x, dy = f.ty - f.y, d = Math.hypot(dx, dy);
+        if (d > 180) { f.x = f.tx; f.y = f.ty; f.moving = false; }
+        else if (d > 1.5) { const st = Math.min(d, 150 * dt); f.x += (dx / d) * st; f.y += (dy / d) * st; f.moving = true; f.walkP += st * 0.16; if (Math.abs(dx) > 1) f.dir = dx < 0 ? -1 : 1; }
+        else f.moving = false;
+      }
+      if (f.bubble) { f.bubble.t -= dt; if (f.bubble.t <= 0) f.bubble = null; }
+      if (f.emo) { f.emo.t -= dt; if (f.emo.t <= 0) f.emo = null; }
+    }
+    // tell the others where I am: absolute state, only when it changes
+    sendT -= dt;
+    if (net.room && sendT <= 0) {
+      sendT = 0.1;
+      const st = { x: Math.round(p.x), y: Math.round(p.y), sit: p.sit >= 0 ? p.sit : -1 };
+      const key = `${st.x},${st.y},${st.sit}`;
+      if (key !== lastSent) { lastSent = key; net.room.presence(st).catch(() => {}); }
+    }
+  }
+  function cafeTap(w) {
+    for (const f of friendsHere()) if (Math.hypot(w.x - f.x, w.y - (f.y - 42)) < 32) { showEmote('heart'); toast(`${nameOf(f.by)}님에게 하트를 보냈어요.`, 'You sent a heart.'); return; }
+    for (const r of regulars) if (Math.hypot(w.x - r.x, w.y - (r.y - 42)) < 30) { say(r, pick(CAFE_LINES)); sfx.talk(); return; }
+    if (w.x < COUNTER.x + COUNTER.w && w.y < CBASE + 90) { goTo(COUNTER.spot, () => { say(barista, ['어서 오세요! 뭐 드릴까요?', 'Welcome! What would you like?']); openStore('cafe'); }); return; }
+    if (w.x > BOARD.x - 10 && w.x < BOARD.x + BOARD.w + 10 && w.y < BOARD.y + BOARD.h + 30) { goTo(BOARD.spot, openBoard); return; }
+    if (Math.abs(w.x - CAFE_DOOR.x) < 70 && w.y > CAFE_DOOR.y - 34) { goTo(CAFE_DOOR.spot, exitCafe); return; }
+    for (const t of CTABLES) if (Math.abs(w.x - t.x) < 100 && Math.abs(w.y - t.y + 20) < 50) {
+      const free = SEATS.map((s, i) => [s, i]).filter(([s, i]) => s.t === CTABLES.indexOf(t) && !seatTaken(i)).sort((a, b) => Math.abs(a[0].x - w.x) - Math.abs(b[0].x - w.x));
+      if (free.length) sitAt(free[0][1]); else toast('이 자리는 다 찼어요.', 'This table is full.');
+      return;
+    }
+    goTo(w, null, true);
+  }
+  function cafeAction() {
+    if (player.sit >= 0) return [{ x: player.x, y: player.y }, ['일어나기', 'Stand up', 'strawlatte'], standUp];
+    const opts = [
+      [COUNTER.spot, ['음료 주문하기', 'Order a drink', 'hotchoco'], () => { say(barista, ['어서 오세요! 뭐 드릴까요?', 'Welcome! What would you like?']); openStore('cafe'); }],
+      [BOARD.spot, ['방명록 보기', 'Read the guestbook', 'book'], openBoard],
+      [CAFE_DOOR.spot, ['밖으로 나가기', 'Go outside', 'train'], exitCafe],
+    ];
+    SEATS.forEach((s, i) => { if (!seatTaken(i)) opts.push([{ x: s.x, y: s.y + 6 }, ['여기 앉기', 'Sit here', 'strawlatte'], () => sitAt(i)]); });
+    return nearest(opts, 50);
+  }
+
+  // ---------- 몽글카페: the chat sheet ----------
+  function openChat() {
+    if (scene !== 'cafe') return;
+    openSheet('chatSheet');
+    const n = friendsHere().length;
+    $('chatWho').textContent = n ? `지금 카페에 친구 ${n}명` : '';
+    $('chatNote').textContent = !net.room ? '지금은 혼자 있어요. 이 게임 링크를 친구와 공유하면, 같은 시간에 들어온 친구가 여기서 보여요.'
+      : n ? '고른 말은 말풍선으로 모두에게 보여요.' : '아직 아무도 없어요. 말풍선은 친구가 들어오면 보여요.';
+    const ph = $('chatPhrases'); ph.innerHTML = '';
+    for (const k in PHRASES) {
+      const b = el('button', 'phrase'); b.type = 'button';
+      b.append(el('span', null, PHRASES[k][0])); if (G.en) b.append(el('small', null, PHRASES[k][1]));
+      b.addEventListener('click', () => { closeSheet(); speakLine({ k }); });
+      ph.append(b);
+    }
+    const em = $('chatEmotes'); em.innerHTML = '';
+    for (const k in EMOTES) {
+      const b = el('button', 'num-chip emo', EMOTES[k][0]); b.type = 'button'; b.style.color = EMOTES[k][1];
+      b.setAttribute('aria-label', { heart: '하트', note: '음표', flower: '꽃', laugh: '웃음', sleepy: '졸려요', wow: '깜짝' }[k]);
+      b.addEventListener('click', () => { closeSheet(); showEmote(k); });
+      em.append(b);
+    }
+    $('chatFree').hidden = !freeChat();
+    $('chatText').value = '';
+  }
+  function sendTyped() {
+    const t = cleanText($('chatText').value);
+    if (!t || !freeChat()) return;
+    closeSheet(); speakLine({ text: t });
+  }
+  $('chatBtn').addEventListener('click', openChat);
+  $('chatSend').addEventListener('click', sendTyped);
+  $('chatText').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendTyped(); } });
+  $('chatClose').addEventListener('click', closeSheet);
+  function syncCafeBar() {
+    $('cafeBar').hidden = scene !== 'cafe' || !!modal || !G.started;
+    const n = friendsHere().length;
+    $('cafeN').hidden = !n; $('cafeN').textContent = String(n);
+    $('chatLabel').textContent = G.en ? 'Chat' : '말하기';
+    $('chatBtn').setAttribute('aria-label', n ? `말하기 (카페에 친구 ${n}명)` : '말하기');
+  }
+
+  // ---------- 몽글카페: the guestbook ----------
+  const online = () => !!(net.db && net.uid && net.boardOn);
+  function cleanNotes(arr) {
+    if (!Array.isArray(arr)) return [];
+    return arr.slice(-3).filter((n) => n && typeof n === 'object').map((n) => ({
+      id: String(n.id || '').slice(0, 16), k: PHRASES[n.k] ? n.k : undefined, text: n.k ? undefined : cleanText(n.text),
+      s: STICKERS.includes(n.s) ? n.s : undefined, look: LOOKS.includes(n.look) ? n.look : 1, at: Number(n.at) || 0,
+    })).filter((n) => n.id && (n.k || n.text));
+  }
+  function watchBoard() {
+    if (net.boardOn || !net.db) return;
+    net.boardOn = true;
+    try {
+      net.db.collection('board').onSnapshot((snap) => {
+        boardDocs = snap.docs.filter((d) => d.exists).map((d) => ({ id: d.id, notes: cleanNotes((d.data() || {}).notes) }));
+        resolveNames();
+        if (modal === 'boardSheet') renderBoard();
+      }, () => { net.boardOn = false; });
+    } catch (e) { net.boardOn = false; }
+  }
+  const draft = { k: null, s: null };
+  let posting = false;
+  function openBoard() { openSheet('boardSheet'); draft.k = null; draft.s = null; $('boardText').value = ''; $('boardMsg').textContent = ''; renderBoard(); }
+  function allNotes() {
+    const list = online() ? boardDocs.flatMap((d) => d.notes.map((n) => ({ ...n, by: d.id }))) : (G.notes || []).map((n) => ({ ...n, by: 'me' }));
+    return list.sort((a, b) => b.at - a.at).slice(0, 30);
+  }
+  function ago(at) {
+    const m = Math.max(0, Math.floor((Date.now() - at) / 60000));
+    return m < 1 ? '방금' : m < 60 ? `${m}분 전` : m < 1440 ? `${Math.floor(m / 60)}시간 전` : `${Math.floor(m / 1440)}일 전`;
+  }
+  function renderBoard() {
+    const notes = allNotes();
+    $('boardCount').textContent = `${notes.length}개`;
+    $('boardWhere').textContent = online() ? '같은 게임 링크를 연 친구들이 함께 보는 방명록이에요. 한 사람당 최근 3개까지 남아요.' : '지금은 이 기기에만 저장돼요. 게임 링크를 친구와 공유하면 함께 보는 방명록이 돼요.';
+    const ph = $('boardPhrases'); ph.innerHTML = '';
+    for (const k of ['hi', 'nice', 'day', 'cheer', 'thanks', 'quiet', 'weather', 'bye']) {
+      const b = el('button', 'phrase'); b.type = 'button'; b.append(el('span', null, PHRASES[k][0]));
+      b.setAttribute('aria-pressed', String(draft.k === k));
+      b.addEventListener('click', () => { draft.k = draft.k === k ? null : k; $('boardText').value = ''; renderBoard(); });
+      ph.append(b);
+    }
+    $('boardFree').hidden = !freeChat();
+    const st = $('boardStickers'); st.innerHTML = '';
+    for (const k of STICKERS) {
+      const b = el('button', 'sticker'); b.type = 'button'; b.setAttribute('aria-pressed', String(draft.s === k)); b.setAttribute('aria-label', `${info(k).ko} 스티커`);
+      const im = el('img'); im.src = iconURL(k); im.alt = ''; b.append(im);
+      b.addEventListener('click', () => { draft.s = draft.s === k ? null : k; renderBoard(); });
+      st.append(b);
+    }
+    const typed = freeChat() ? cleanText($('boardText').value) : '';
+    $('boardPost').disabled = posting || !(draft.k || typed);
+    const list = $('boardList'); list.innerHTML = '';
+    if (!notes.length) list.append(el('p', 'muted', '아직 남긴 글이 없어요. 첫 번째로 남겨 볼까요?'));
+    for (const n of notes) {
+      const card = el('div', 'note');
+      const face = el('img', 'note-face'); face.src = `assets/dongle/base-${n.look}.png`; face.alt = '';
+      const body = el('div', 'note-body');
+      const top = el('div', 'note-top'); top.append(el('b', null, n.by === 'me' ? '나' : nameOf(n.by)), el('span', 'muted', ago(n.at)));
+      const line = lineFor(n);
+      body.append(top, el('p', null, line ? line[G.en ? 1 : 0] : ''));
+      card.append(face, body);
+      if (n.s) { const s = el('img', 'note-sticker'); s.src = iconURL(n.s); s.alt = `${info(n.s).ko} 스티커`; card.append(s); }
+      if (n.by === 'me' || n.by === net.uid || net.owner) {
+        const del = el('button', 'note-del', '지우기'); del.type = 'button'; del.setAttribute('aria-label', '이 글 지우기');
+        del.addEventListener('click', () => removeNote(n));
+        card.append(del);
+      }
+      list.append(card);
+    }
+  }
+  $('boardText').addEventListener('input', () => { if (cleanText($('boardText').value)) draft.k = null; renderBoardComposeOnly(); });
+  function renderBoardComposeOnly() {
+    document.querySelectorAll('#boardPhrases .phrase').forEach((b, i) => b.setAttribute('aria-pressed', 'false'));
+    $('boardPost').disabled = posting || !(draft.k || cleanText($('boardText').value));
+  }
+  async function postNote() {
+    const typed = freeChat() ? cleanText($('boardText').value) : '';
+    if (posting || !(draft.k || typed)) return;
+    const n = { id: Math.random().toString(36).slice(2, 10), look: G.look, at: Date.now() };
+    if (draft.k) n.k = draft.k; else n.text = typed;
+    if (draft.s) n.s = draft.s;
+    if (online()) {
+      posting = true; renderBoard();
+      const mine = (boardDocs.find((d) => d.id === net.uid) || { notes: [] }).notes;
+      try {
+        await net.db.doc('board/' + net.uid).set({ notes: [...mine, n].slice(-3) });
+        draft.k = null; draft.s = null; $('boardText').value = ''; $('boardMsg').textContent = '';
+        toast('방명록에 남겼어요.', 'Your note is on the board.'); sfx.coin();
+      } catch (e) {
+        $('boardMsg').textContent = e && e.code === 'quota_exceeded' ? '방명록이 가득 찼어요. 오래된 글을 지우면 다시 남길 수 있어요.' : '이 링크로는 방명록을 읽기만 할 수 있어요.';
+      }
+      posting = false;
+    } else {
+      G.notes = [...(G.notes || []), n].slice(-12); persist();
+      draft.k = null; draft.s = null; $('boardText').value = '';
+      toast('방명록에 남겼어요.', 'Your note is on the board.'); sfx.coin();
+    }
+    renderBoard();
+  }
+  async function removeNote(n) {
+    if (!online()) { G.notes = (G.notes || []).filter((x) => x.id !== n.id); persist(); renderBoard(); return; }
+    const doc = boardDocs.find((d) => d.id === n.by);
+    if (!doc) return;
+    try { await net.db.doc('board/' + n.by).set({ notes: doc.notes.filter((x) => x.id !== n.id) }); }
+    catch (e) { $('boardMsg').textContent = '지우지 못했어요. 잠시 뒤에 다시 해 볼까요?'; }
+  }
+  $('boardPost').addEventListener('click', postNote);
+  $('boardClose').addEventListener('click', closeSheet);
+
+  // ---------- drawing: 몽글카페 ----------
+  let cafeGround = null;
+  function buildCafeGround() {
+    const GS = 2, c = document.createElement('canvas'); c.width = CAFE.w * GS; c.height = CAFE.h * GS;
+    const g = c.getContext('2d'); g.scale(GS, GS);
+    // back wall: warm plaster, a little dot paper, a wooden wainscot
+    g.fillStyle = '#f3e4cf'; g.fillRect(0, 0, CAFE.w, CBASE);
+    g.fillStyle = 'rgba(200,113,79,0.09)';
+    for (let y = 18, r = 0; y < CBASE - 90; y += 28, r++) for (let x = (r % 2) * 14 + 8; x < CAFE.w; x += 28) { g.beginPath(); g.arc(x, y, 2.4, 0, 7); g.fill(); }
+    g.fillStyle = '#c99d74'; g.fillRect(0, CBASE - 82, CAFE.w, 82);
+    g.fillStyle = 'rgba(90,60,40,0.16)'; for (let x = 0; x < CAFE.w; x += 40) g.fillRect(x, CBASE - 82, 2, 82);
+    g.fillStyle = '#b5865c'; g.fillRect(0, CBASE - 86, CAFE.w, 6);
+    // floor: honey wood planks
+    g.fillStyle = '#e4c69e'; g.fillRect(0, CBASE, CAFE.w, CAFE.h - CBASE);
+    g.strokeStyle = 'rgba(140,100,60,0.22)'; g.lineWidth = 1.5;
+    for (let y = CBASE + 34; y < CAFE.h; y += 34) { g.beginPath(); g.moveTo(0, y); g.lineTo(CAFE.w, y); g.stroke(); }
+    for (let y = CBASE, r = 0; y < CAFE.h; y += 34, r++) for (let x = (r % 3) * 70; x < CAFE.w; x += 210) { g.beginPath(); g.moveTo(x, y); g.lineTo(x, y + 34); g.stroke(); }
+    g.fillStyle = 'rgba(90,60,40,0.16)'; g.fillRect(0, CBASE, CAFE.w, 8);
+    // a round rug under the middle table, and the door mat
+    g.fillStyle = '#d98c6e'; g.beginPath(); g.ellipse(380, 480, 196, 74, 0, 0, 7); g.fill();
+    g.strokeStyle = '#f6dcc4'; g.lineWidth = 4; g.beginPath(); g.ellipse(380, 480, 174, 60, 0, 0, 7); g.stroke();
+    g.fillStyle = '#8d5f45'; rr(g, CAFE_DOOR.x - 64, CAFE_DOOR.y - 20, 128, 30, 8); g.fill();
+    g.fillStyle = 'rgba(255,240,220,0.5)'; g.font = `700 12px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('WELCOME', CAFE_DOOR.x, CAFE_DOOR.y - 5);
+    // cushions under every seat
+    for (const s of SEATS) { g.fillStyle = 'rgba(90,60,40,0.18)'; g.beginPath(); g.ellipse(s.x, s.y + 2, 24, 8, 0, 0, 7); g.fill(); g.fillStyle = '#7f9b6b'; g.beginPath(); g.ellipse(s.x, s.y - 2, 21, 8, 0, 0, 7); g.fill(); }
+    return c;
+  }
+  function drawCafeWall() {
+    const night = nightAmount();
+    // two tall windows onto the street: the sky follows the time of day
+    for (const wx of [292, 432]) {
+      const sky = ctx.createLinearGradient(0, 50, 0, 200);
+      sky.addColorStop(0, mixColor('#a9d6ee', '#1f2b4a', night)); sky.addColorStop(1, mixColor('#e8f3f6', '#3a4a6e', night));
+      ctx.fillStyle = '#b5865c'; rr(ctx, wx - 6, 44, 132, 168, 60); ctx.fill();
+      ctx.fillStyle = sky; rr(ctx, wx, 50, 120, 156, 56); ctx.fill();
+      ctx.fillStyle = mixColor('#c7c0b8', '#29304a', night);
+      ctx.fillRect(wx + 8, 150, 30, 56); ctx.fillRect(wx + 44, 132, 26, 74); ctx.fillRect(wx + 76, 160, 36, 46);
+      if (night > 0.3) { ctx.fillStyle = `rgba(255,214,140,${night * 0.8})`; for (const [lx, ly] of [[14, 160], [52, 142], [52, 166], [84, 172]]) ctx.fillRect(wx + lx, ly, 6, 6); }
+      ctx.fillStyle = '#b5865c'; ctx.fillRect(wx + 58, 50, 4, 156); ctx.fillRect(wx, 128, 120, 4);
+      ctx.fillStyle = '#fbf3e6'; ctx.fillRect(wx - 12, 206, 144, 10);
+    }
+    // the menu chalkboard over the counter
+    ctx.fillStyle = '#8d5f45'; rr(ctx, 34, 34, 220, 116, 10); ctx.fill();
+    ctx.fillStyle = '#3e4a3d'; rr(ctx, 42, 42, 204, 100, 6); ctx.fill();
+    label('MENU', 144, 62, 14, '#f3e4cf');
+    ctx.font = `600 13px ${FONT}`; ctx.textAlign = 'left'; ctx.fillStyle = '#f3e4cf';
+    ctx.fillText(`핫초코 ......... ${FOODS.hotchoco.price}`, 60, 92); ctx.fillText(`딸기라떼 ...... ${FOODS.strawlatte.price}`, 60, 116);
+    // the guestbook: a cork board with one paper slip per note
+    ctx.fillStyle = '#8d5f45'; rr(ctx, BOARD.x - 6, BOARD.y - 6, BOARD.w + 12, BOARD.h + 12, 10); ctx.fill();
+    ctx.fillStyle = '#d4a979'; rr(ctx, BOARD.x, BOARD.y, BOARD.w, BOARD.h, 6); ctx.fill();
+    ctx.fillStyle = 'rgba(120,80,40,0.18)'; for (let i = 0; i < 40; i++) { ctx.beginPath(); ctx.arc(BOARD.x + ((i * 37) % BOARD.w), BOARD.y + ((i * 53) % BOARD.h), 1.4, 0, 7); ctx.fill(); }
+    const n = Math.min(9, allNotes().length), papers = ['#fffaf1', '#fde9c9', '#e6f0dc', '#f9dde3'];
+    for (let i = 0; i < n; i++) {
+      const px = BOARD.x + 8 + (i % 3) * 48, py = BOARD.y + 10 + Math.floor(i / 3) * 38;
+      ctx.save(); ctx.translate(px + 22, py + 16); ctx.rotate(((i * 7) % 5 - 2) * 0.05);
+      ctx.fillStyle = papers[i % 4]; ctx.fillRect(-22, -16, 44, 32);
+      ctx.fillStyle = 'rgba(74,58,46,0.25)'; ctx.fillRect(-14, -4, 28, 2.5); ctx.fillRect(-14, 3, 20, 2.5);
+      ctx.fillStyle = '#c95b45'; ctx.beginPath(); ctx.arc(0, -13, 3, 0, 7); ctx.fill();
+      ctx.restore();
+    }
+    ctx.fillStyle = '#fffaf1'; rr(ctx, BOARD.x + BOARD.w / 2 - 44, BOARD.y + BOARD.h - 6, 88, 22, 8); ctx.fill();
+    label('방명록', BOARD.x + BOARD.w / 2, BOARD.y + BOARD.h + 5, 12, '#8d5f45');
+    // hanging lamps
+    for (const lx of [210, 412, 560]) {
+      ctx.strokeStyle = '#6b5a4c'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(lx, 0); ctx.lineTo(lx, 26); ctx.stroke();
+      ctx.fillStyle = '#e2bd55'; ctx.beginPath(); ctx.moveTo(lx - 16, 40); ctx.quadraticCurveTo(lx, 18, lx + 16, 40); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = `rgba(255,236,180,${0.6 + night * 0.4})`; ctx.beginPath(); ctx.arc(lx, 41, 5, 0, 7); ctx.fill();
+    }
+  }
+  function mixColor(a, b, t) {
+    const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
+    const ch = (s) => Math.round(((pa >> s) & 255) * (1 - t) + ((pb >> s) & 255) * t);
+    return `rgb(${ch(16)},${ch(8)},${ch(0)})`;
+  }
+  function drawCounter() {
+    const x = COUNTER.x, w = COUNTER.w, y = CBASE;
+    // espresso machine, cups and a cake dome on the counter top
+    ctx.fillStyle = clayGrad(74, y - 30, 30, '#d9dde3', '#b9c0c9', '#8f98a3'); rr(ctx, 46, y - 50, 62, 48, 8); ctx.fill();
+    ctx.fillStyle = '#4a4440'; ctx.fillRect(60, y - 14, 34, 6);
+    ctx.fillStyle = '#fffaf1'; rr(ctx, 68, y - 24, 16, 12, 3); ctx.fill();
+    for (const cx of [190, 212]) { ctx.fillStyle = '#fffaf1'; rr(ctx, cx, y - 16, 16, 14, 4); ctx.fill(); ctx.fillStyle = '#c8714f'; ctx.fillRect(cx, y - 12, 16, 3); }
+    ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.beginPath(); ctx.ellipse(240, y - 22, 22, 22, 0, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = '#f2a7b8'; rr(ctx, 225, y - 20, 30, 16, 6); ctx.fill(); ctx.fillStyle = '#fffaf1'; ctx.fillRect(225, y - 20, 30, 5);
+    ctx.fillStyle = '#e8d6bb'; ctx.fillRect(x - 4, y - 4, w + 8, 4);
+    // the counter front
+    ctx.fillStyle = 'rgba(90,60,40,0.2)'; ctx.fillRect(x + 4, y + 84, w, 8);
+    ctx.fillStyle = woodGrad(x + w / 2, y + 40, w); rr(ctx, x, y, w, 86, 8); ctx.fill();
+    ctx.fillStyle = 'rgba(255,240,220,0.18)'; for (let i = 0; i < 4; i++) rr(ctx, x + 14 + i * 58, y + 18, 40, 52, 6), ctx.fill();
+    ctx.fillStyle = '#f3e4cf'; rr(ctx, x + w / 2 - 50, y + 30, 100, 26, 8); ctx.fill();
+    label('몽글카페', x + w / 2, y + 43, 13, '#8d5f45');
+  }
+  function drawCafeTable(t) {
+    ctx.fillStyle = 'rgba(90,60,40,0.18)'; ctx.beginPath(); ctx.ellipse(t.x, t.y + 2, 34, 9, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#8d5f45'; ctx.fillRect(t.x - 4, t.y - 34, 8, 36); ctx.fillRect(t.x - 18, t.y - 2, 36, 5);
+    ctx.fillStyle = clayGrad(t.x, t.y - 40, 50, '#fffaf1', '#f1e7d8', '#d9cbb5'); ctx.beginPath(); ctx.ellipse(t.x, t.y - 38, 50, 19, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = 'rgba(180,150,110,0.35)'; ctx.beginPath(); ctx.ellipse(t.x, t.y - 34, 50, 19, 0, 0, Math.PI); ctx.fill();
+    ctx.fillStyle = clayGrad(t.x, t.y - 40, 50, '#fffaf1', '#f1e7d8', '#d9cbb5'); ctx.beginPath(); ctx.ellipse(t.x, t.y - 38, 48, 17, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#c8714f'; rr(ctx, t.x - 8, t.y - 50, 14, 12, 3); ctx.fill(); ctx.fillStyle = '#fffaf1'; ctx.fillRect(t.x - 8, t.y - 50, 14, 3);
+    ctx.fillStyle = '#7f9b6b'; ctx.beginPath(); ctx.arc(t.x + 18, t.y - 46, 6, 0, 7); ctx.fill(); ctx.fillStyle = '#f2a7b8'; ctx.beginPath(); ctx.arc(t.x + 18, t.y - 49, 3, 0, 7); ctx.fill();
+  }
+  function drawCafePlant(px, py) {
+    ctx.fillStyle = 'rgba(90,60,40,0.2)'; ctx.beginPath(); ctx.ellipse(px, py + 2, 24, 7, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = clayGrad(px, py - 14, 20, '#df8e6d', '#c8714f', '#a85a3d'); rr(ctx, px - 18, py - 30, 36, 32, 8); ctx.fill();
+    for (const [dx, dy, r] of [[-12, -48, 15], [10, -52, 16], [0, -66, 15], [-4, -40, 12]]) { ctx.fillStyle = clayGrad(px + dx, py + dy, r, '#a8c98f', '#7f9b6b', '#5d7a4c'); ctx.beginPath(); ctx.arc(px + dx, py + dy, r, 0, 7); ctx.fill(); }
+  }
+  function drawEmo(c) {
+    if (!c.emo) return;
+    const e = EMOTES[c.emo.k], y = c.y - 108 - (2.4 - c.emo.t) * 8;
+    ctx.save(); ctx.globalAlpha = Math.min(1, c.emo.t * 2);
+    ctx.fillStyle = 'rgba(74,58,46,0.12)'; ctx.beginPath(); ctx.arc(c.x + 30, y + 2, 16, 0, 7); ctx.fill();
+    ctx.fillStyle = '#fffaf1'; ctx.beginPath(); ctx.arc(c.x + 30, y, 16, 0, 7); ctx.fill();
+    label(e[0], c.x + 30, y + 1, e[0].length > 1 ? 12 : 17, e[1]);
+    ctx.restore();
+  }
+  function drawTag(c) {
+    const name = nameOf(c.by);
+    ctx.font = `700 11px ${FONT}`;
+    const w = ctx.measureText(name).width + 16;
+    ctx.fillStyle = 'rgba(255,250,241,0.94)'; rr(ctx, c.x - w / 2, c.y + 6, w, 19, 9.5); ctx.fill();
+    ctx.fillStyle = '#4a3a2e'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(name, c.x, c.y + 16);
+  }
+  function drawCafe() {
+    if (!cafeGround) cafeGround = buildCafeGround();
+    const s = followCam(CAFE.w, CAFE.h, '#e4c69e');
+    ctx.drawImage(cafeGround, 0, 0, CAFE.w, CAFE.h);
+    drawCafeWall();
+    if (player.goal && player.goal.plain) { ctx.strokeStyle = 'rgba(255,250,241,0.85)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(player.goal.x, player.goal.y, 10, 4, 0, 0, 7); ctx.stroke(); }
+    drawMong(barista);
+    const list = [[CBASE + 86, drawCounter]];
+    CTABLES.forEach((t) => list.push([t.y, () => drawCafeTable(t)]));
+    CPLANTS.forEach(([px, py]) => list.push([py, () => drawCafePlant(px, py)]));
+    regulars.forEach((r) => list.push([r.y + 1, () => drawMong(r)]));
+    const fr = [...friends.values()];
+    fr.forEach((f) => list.push([f.y + 1, () => { drawMong(f); drawTag(f); }]));
+    list.push([player.y + 1, () => drawMong(player)]);
+    list.sort((a, b) => a[0] - b[0]).forEach(([, fn]) => fn());
+    for (const q of parts) { ctx.globalAlpha = clamp(q.life / q.max, 0, 1); ctx.fillStyle = q.c; ctx.beginPath(); ctx.arc(q.x, q.y, q.r, 0, 7); ctx.fill(); }
+    ctx.globalAlpha = 1;
+    overlayDusk(s, [[210, 60, 120, 'rgba(255,214,140,A)', 0.5], [412, 60, 120, 'rgba(255,214,140,A)', 0.5], [560, 60, 120, 'rgba(255,214,140,A)', 0.5], [150, CBASE, 140, 'rgba(255,200,120,A)', 0.4]]);
+    [player, barista, ...regulars, ...fr].forEach(drawBubble);
+    [player, ...fr].forEach(drawEmo);
+    fadeOver();
+  }
+
   // ---------- "what can I do here": a floating action chip near things you can use ----------
   function openShop() { openSheet('shopSheet'); renderShop(); talkTo(npcs[4]); }
   let ctxT = 0, ctxKey = '', ctxRun = null;
@@ -3429,6 +4024,7 @@
     if (scene === 'city') return cityAction();
     if (scene === 'park') return parkAction();
     if (scene === 'market') return marketAction();
+    if (scene === 'cafe') return cafeAction();
     if (scene !== 'village') return null;
     const opts = [];
     for (const pl of plots) {
@@ -3460,7 +4056,7 @@
 
   // ---------- update ----------
   const isNight = () => G.time > 0.7 && G.time < 0.94;
-  function sceneBlocked() { return scene === 'room' ? roomBlocked : scene === 'city' ? cityBlocked : scene === 'park' ? parkBlocked : scene === 'market' ? marketBlocked : villageBlocked; }
+  function sceneBlocked() { return scene === 'room' ? roomBlocked : scene === 'city' ? cityBlocked : scene === 'park' ? parkBlocked : scene === 'market' ? marketBlocked : scene === 'cafe' ? cafeBlocked : villageBlocked; }
   function moveChar(c, tx, ty, speed, dt, blocked = villageBlocked) {
     const dx = tx - c.x, dy = ty - c.y, d = Math.hypot(dx, dy);
     if (d < 2) { c.moving = false; return true; }
@@ -3590,6 +4186,7 @@
     else if (scene === 'park') updatePark(dt);
     else if (scene === 'ride') updateRide(dt);
     else if (scene === 'market') updateMarket(dt);
+    else if (scene === 'cafe') updateCafe(dt);
     for (const t of trees) {
       if (t.shake > 0) t.shake = Math.max(0, t.shake - dt);
       if (t.fruit && t.n < 3) { t.regrow += dt; if (t.regrow >= regrowTime(t.fruit)) { t.regrow = 0; t.n++; } }
@@ -3684,9 +4281,9 @@
 
   // ---------- the player's own clay figures as sprites ----------
   const SPRITE_H = 80;
-  function atMat(c) { return !c.moving && c.x > mat.x - 10 && c.x < mat.x + mat.w + 10 && c.y > mat.y - 5 && c.y < mat.y + mat.h + 30; }
+  function atMat(c) { return scene === 'village' && !c.moving && c.x > mat.x - 10 && c.x < mat.x + mat.w + 10 && c.y > mat.y - 5 && c.y < mat.y + mat.h + 30; }
   function spriteFor(c) {
-    const sip = !c.hold && !(c.player && c.fishing) && !c.shopkeeper && atMat(c) && (c.idleT || 0) > 1.5;
+    const sip = c.sip || (c.player && c.sit >= 0) || !c.hold && !(c.player && c.fishing) && !c.shopkeeper && atMat(c) && (c.idleT || 0) > 1.5;
     const im = SPR[(sip ? 'coffee-' : 'base-') + c.look];
     return spriteReady(im) ? im : null;
   }
@@ -4489,6 +5086,7 @@
     if (scene === 'park') return drawPark();
     if (scene === 'ride') return drawRide();
     if (scene === 'market') return drawMarket();
+    if (scene === 'cafe') return drawCafe();
     const tx = clamp(player.x, Math.min(vw / 2, W / 2), Math.max(W - vw / 2, W / 2));
     const ty = clamp(player.y - 30, Math.min(vh / 2, H / 2), Math.max(H - vh / 2, H / 2));
     cam.x = lerp(cam.x, tx, 0.12); cam.y = lerp(cam.y, ty, 0.12);
@@ -4563,6 +5161,7 @@
     ground = buildGround();
     cam.x = player.x; cam.y = player.y;
     openSheet('startSheet');
+    connect();
     if (document.fonts && document.fonts.load) { document.fonts.load(`700 14px ${FONT}`).catch(() => {}); document.fonts.load(`500 13px ${FONT}`).catch(() => {}); }
     requestAnimationFrame(frame);
   }
