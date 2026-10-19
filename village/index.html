@@ -99,6 +99,7 @@
     box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.12);
     display: flex; flex-direction: column; gap: 14px;
   }
+  .sheet > * { flex-shrink: 0; }
   .sheet:not(.center)::before {
     content: ""; position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
     width: 36px; height: 5px; border-radius: 3px; background: rgba(31, 27, 23, 0.15);
@@ -330,10 +331,10 @@
   .legend i.out, .pbars i.out, .hbar i.out { background: var(--accent); }
   .readout { font-size: 14px; color: var(--sub); }
   .readout b { color: var(--ink); font-weight: 700; }
-  .pplot { position: relative; padding-left: 26px; }
-  .pgrid { position: absolute; left: 26px; right: 0; top: 0; height: 140px; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
+  .pplot { position: relative; padding-left: 32px; }
+  .pgrid { position: absolute; left: 32px; right: 0; top: 0; height: 140px; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
   .gl { position: relative; height: 0; border-top: 1px solid rgba(31, 27, 23, 0.1); }
-  .gl span { position: absolute; left: -26px; top: -8px; width: 22px; text-align: right; font-size: 11px; color: var(--sub); font-variant-numeric: tabular-nums; }
+  .gl span { position: absolute; left: -32px; top: -8px; width: 28px; text-align: right; font-size: 11px; color: var(--sub); font-variant-numeric: tabular-nums; }
   .pcols { position: relative; display: flex; }
   .pcol { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; padding: 0; border: 0; border-radius: 10px; background: transparent; cursor: pointer; font-family: var(--font); }
   .pcol.on { background: rgba(31, 27, 23, 0.06); }
@@ -347,7 +348,7 @@
   .ptable th:first-child, .ptable td:first-child { text-align: left; }
   .ptable th { color: var(--sub); font-weight: 600; }
   .hbars { display: flex; flex-direction: column; gap: 8px; }
-  .hbar { display: grid; grid-template-columns: 78px 1fr 34px; align-items: center; gap: 8px; }
+  .hbar { display: grid; grid-template-columns: 78px 1fr 70px; align-items: center; gap: 8px; }
   .hbar-l { font-size: 13px; }
   .hbar-track { height: 10px; }
   .hbar i { display: block; height: 100%; border-radius: 0 4px 4px 0; }
@@ -408,12 +409,16 @@
   .tray-top b { font-size: 22px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
   .tray-coins { display: flex; flex-wrap: wrap; gap: 6px; min-height: 40px; align-items: center; }
   .coin { border: 0; border-radius: 50%; cursor: pointer; display: grid; place-items: center; font: 800 20px var(--font); color: #6b4a1f; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.12); }
-  .coin.c10 { width: 64px; height: 64px; background: radial-gradient(circle at 35% 30%, #fff3c4, #e8c45c 55%, #c99a2e); }
-  .coin.c5 { width: 56px; height: 56px; background: radial-gradient(circle at 35% 30%, #ffffff, #cfd5dc 55%, #9aa4ae); color: #4a5560; }
-  .coin.c1 { width: 48px; height: 48px; background: radial-gradient(circle at 35% 30%, #ffd9bf, #d99a6c 55%, #a8683e); color: #5a3418; font-size: 18px; }
-  .coin.mini { width: 36px; height: 36px; font-size: 14px; }
+  .coin.c5000, .coin.c1000 { width: 86px; height: 46px; border-radius: 7px; font-size: 15px; box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.45), 0 2px 4px rgba(0, 0, 0, 0.14); }
+  .coin.c5000 { background: linear-gradient(135deg, #f6c8a4, #e59a6a 60%, #d17f4e); color: #6b2f12; }
+  .coin.c1000 { background: linear-gradient(135deg, #cfe2f4, #96bde3 60%, #7aa6d3); color: #1f3f63; }
+  .coin.c500 { width: 58px; height: 58px; font-size: 18px; background: radial-gradient(circle at 35% 30%, #ffffff, #d4d9df 55%, #9ea7b0); color: #3f4a55; }
+  .coin.c100 { width: 50px; height: 50px; font-size: 17px; background: radial-gradient(circle at 35% 30%, #ffffff, #c9ced5 55%, #929ba5); color: #3f4a55; }
+  .coin.mini { font-size: 12px; }
+  .coin.mini.c5000, .coin.mini.c1000 { width: 58px; height: 32px; border-radius: 5px; }
+  .coin.mini.c500, .coin.mini.c100 { width: 36px; height: 36px; }
   .coin:active { transform: scale(0.92); }
-  .coin-pad { display: flex; justify-content: center; align-items: center; gap: 18px; }
+  .coin-pad { display: flex; justify-content: center; align-items: center; gap: 10px; }
   .job-acts { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; }
   .job-item.scan { opacity: 0; }
   .stamp-card { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 16px; background: #fff8ee; box-shadow: inset 0 0 0 1.5px #f0dcc4; text-align: left; }
@@ -518,7 +523,7 @@
 <div class="hud">
   <div class="pills">
     <span class="pill" id="clock">1일째 · 아침</span>
-    <span class="pill" title="코인"><img class="pico" data-icon="coin" alt="코인"><span id="coins">0</span></span>
+    <span class="pill" title="가진 돈"><img class="pico" data-icon="coin" alt="가진 돈"><span id="coins">0원</span></span>
     <button class="pill tap" id="bagPill" type="button" aria-label="가방 열기"><img class="pico" data-icon="bag" alt=""><span id="bagN">가방 0</span></button>
     <button class="pill tap" id="dexPill" type="button" aria-label="도감 열기"><img class="pico" data-icon="book" alt=""><span id="dexN">도감 0</span></button>
   </div>
@@ -572,7 +577,7 @@
   <div class="item has-icon">
     <img class="ico" data-icon="coin" alt="">
     <div class="name"><b>저금통 <span class="en" data-en>Piggy bank</span></b><span class="muted" id="bankInfo"></span></div>
-    <div class="price"><b id="bankAmount">0코인</b><span class="delta up">하루 이자 5%</span></div>
+    <div class="price"><b id="bankAmount">0원</b><span class="delta up">하루 이자 5%</span></div>
     <div class="acts"><button class="btn small" id="depositBtn" type="button">10 넣기</button><button class="btn small soft" id="withdrawBtn" type="button">꺼내기</button></div>
   </div>
   <p class="muted">자고 일어나면 다음 날 아침이 되고, 저금통에 이자가 붙고, 가게 시세가 새로 정해져요.</p>
@@ -634,7 +639,7 @@
   <div class="item has-icon">
     <img class="ico" data-icon="coin" alt="">
     <div class="name"><b>내 통장 <span class="en" data-en>Savings account</span></b><span class="muted" id="acctInfo"></span></div>
-    <div class="price"><b id="acctAmount">0코인</b><span class="delta up">하루 이자 8%</span></div>
+    <div class="price"><b id="acctAmount">0원</b><span class="delta up">하루 이자 8%</span></div>
     <div class="acts"><button class="btn small" id="acctIn" type="button">10 넣기</button><button class="btn small soft" id="acctOut" type="button">찾기</button></div>
   </div>
   <p class="example" id="acctCompare"></p>
@@ -648,7 +653,7 @@
     <div class="stars" id="jobStars"></div>
     <div class="job-items" id="jobItems"></div>
     <p class="job-q" id="jobQ"></p>
-    <div class="tray" id="jobTray"><div class="tray-top"><span>내가 줄 거스름돈</span><b id="traySum">0코인</b></div><div class="tray-coins" id="trayCoins"></div></div>
+    <div class="tray" id="jobTray"><div class="tray-top"><span>내가 줄 거스름돈</span><b id="traySum">0원</b></div><div class="tray-coins" id="trayCoins"></div></div>
     <div class="coin-pad" id="coinPad"></div>
     <div class="job-acts"><button class="btn soft" id="trayReset" type="button">다시 담기</button><button class="btn" id="trayGive" type="button">드리기</button></div>
     <p class="muted" id="jobFeedback" aria-live="polite"></p>
@@ -665,7 +670,7 @@
 <div class="sheet" id="rideSheet" hidden>
   <div class="ride-head"><img id="rideIcon" alt="" width="56" height="56"><div><h2 id="rideTitle"></h2><p class="muted" id="rideDesc"></p></div></div>
   <div class="dest" id="rideDest" hidden></div>
-  <div class="ride-card"><span>교통카드</span><b id="rideFare">2코인</b></div>
+  <div class="ride-card"><span>교통카드</span><b id="rideFare">1,500원</b></div>
   <button class="btn" id="rideGo" type="button">교통카드 찍고 타기</button>
   <button class="btn soft" id="rideWalk" type="button">걸어서 가기 · 무료, 오래 걸려요</button>
   <button class="btn soft" id="rideClose" type="button">안 탈래요</button>
@@ -900,6 +905,10 @@
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const lerp = (a, b, t) => a + (b - a) * t;
+  // money is Korean won: 1,500원 · 2.3만원 in tight spots
+  const won = (n) => `${Math.round(n).toLocaleString('ko-KR')}원`;
+  function wonShort(n) { if (Math.abs(n) < 10000) return won(n); const m = n / 10000; return `${(Math.abs(m) >= 10 ? Math.round(m) : Math.round(m * 10) / 10).toLocaleString('ko-KR')}만원`; }
+  const wonRound = (v) => Math.max(10, v < 1000 ? Math.round(v / 10) * 10 : Math.round(v / 100) * 100);
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 
   // ---------- palette (from the clay figures) ----------
@@ -973,62 +982,62 @@
   const DAY_LEN = 240;     // seconds per in-game day
   // seed = fixed seed price, base = average selling price, grow = seconds per stage once watered
   const CROPS = {
-    carrot:     { ko: '당근', en: 'Carrot', seed: 2, base: 6, grow: 7, color: '#e8873a' },
-    flower:     { ko: '꽃', en: 'Flower', seed: 3, base: 9, grow: 10, color: '#e58aa0' },
-    tomato:     { ko: '토마토', en: 'Tomato', seed: 5, base: 15, grow: 14, color: '#d9503f' },
-    strawberry: { ko: '딸기', en: 'Strawberry', seed: 8, base: 24, grow: 18, color: '#e04a5f' },
+    carrot:     { ko: '당근', en: 'Carrot', seed: 300, base: 1000, grow: 7, color: '#e8873a' },
+    flower:     { ko: '꽃', en: 'Flower', seed: 600, base: 2000, grow: 10, color: '#e58aa0' },
+    tomato:     { ko: '토마토', en: 'Tomato', seed: 800, base: 2800, grow: 14, color: '#d9503f' },
+    strawberry: { ko: '딸기', en: 'Strawberry', seed: 2000, base: 6000, grow: 18, color: '#e04a5f' },
   };
   // size in cm; weight = how often it bites; zone = width of the green catch zone; speed = marker speed
   const FISH = {
-    minnow:   { ko: '송사리', en: 'Minnow', base: 4, color: '#9cc7d3', size: [3, 6], weight: 40, zone: 0.34, speed: 0.8 },
-    crucian:  { ko: '붕어', en: 'Crucian carp', base: 10, color: '#7fb3c4', size: [12, 30], weight: 30, zone: 0.27, speed: 1.0 },
-    carp:     { ko: '잉어', en: 'Carp', base: 18, color: '#e2a35a', size: [30, 70], weight: 14, zone: 0.21, speed: 1.25 },
-    catfish:  { ko: '메기', en: 'Catfish', base: 22, color: '#8d927c', size: [30, 80], weight: 16, zone: 0.21, speed: 1.2, night: true },
-    goldfish: { ko: '금붕어', en: 'Goldfish', base: 30, color: '#f08a3c', size: [5, 12], weight: 7, zone: 0.16, speed: 1.45 },
-    koi:      { ko: '비단잉어', en: 'Koi', base: 45, color: '#f6efe4', spots: '#e05a47', size: [40, 80], weight: 3, zone: 0.13, speed: 1.6 },
+    minnow:   { ko: '송사리', en: 'Minnow', base: 300, color: '#9cc7d3', size: [3, 6], weight: 40, zone: 0.34, speed: 0.8 },
+    crucian:  { ko: '붕어', en: 'Crucian carp', base: 5000, color: '#7fb3c4', size: [12, 30], weight: 30, zone: 0.27, speed: 1.0 },
+    carp:     { ko: '잉어', en: 'Carp', base: 15000, color: '#e2a35a', size: [30, 70], weight: 14, zone: 0.21, speed: 1.25 },
+    catfish:  { ko: '메기', en: 'Catfish', base: 12000, color: '#8d927c', size: [30, 80], weight: 16, zone: 0.21, speed: 1.2, night: true },
+    goldfish: { ko: '금붕어', en: 'Goldfish', base: 3000, color: '#f08a3c', size: [5, 12], weight: 7, zone: 0.16, speed: 1.45 },
+    koi:      { ko: '비단잉어', en: 'Koi', base: 50000, color: '#f6efe4', spots: '#e05a47', size: [40, 80], weight: 3, zone: 0.13, speed: 1.6 },
     // only in the river at 한강공원
-    mandarin: { ko: '쏘가리', en: 'Mandarin fish', base: 28, color: '#c9a35a', spots: '#6b4f34', size: [20, 50], weight: 12, zone: 0.18, speed: 1.35, river: true },
-    turtle:   { ko: '자라', en: 'Soft-shell turtle', base: 40, color: '#8a9a6a', size: [15, 30], weight: 4, zone: 0.14, speed: 1.5, river: true },
+    mandarin: { ko: '쏘가리', en: 'Mandarin fish', base: 30000, color: '#c9a35a', spots: '#6b4f34', size: [20, 50], weight: 12, zone: 0.18, speed: 1.35, river: true },
+    turtle:   { ko: '자라', en: 'Soft-shell turtle', base: 40000, color: '#8a9a6a', size: [15, 30], weight: 4, zone: 0.14, speed: 1.5, river: true },
   };
 
   // fruit trees: one fruit grows back every REGROW seconds, up to 3 per tree
   const FRUITS = {
-    apple:  { ko: '사과', en: 'Apple', base: 12, color: '#e0473b', taste: '아삭아삭 달콤해요' },
-    peach:  { ko: '복숭아', en: 'Peach', base: 16, color: '#f6a487', taste: '말랑말랑 향긋해요' },
-    orange: { ko: '귤', en: 'Tangerine', base: 10, color: '#f39a2e', taste: '새콤달콤 상큼해요' },
-    pear:   { ko: '배', en: 'Pear', base: 14, color: '#e3cc68', taste: '시원하고 촉촉해요' },
-    cherry: { ko: '체리', en: 'Cherry', base: 20, color: '#c0283a', taste: '톡 터지는 맛이에요' },
+    apple:  { ko: '사과', en: 'Apple', base: 2500, color: '#e0473b', taste: '아삭아삭 달콤해요' },
+    peach:  { ko: '복숭아', en: 'Peach', base: 3000, color: '#f6a487', taste: '말랑말랑 향긋해요' },
+    orange: { ko: '귤', en: 'Tangerine', base: 500, color: '#f39a2e', taste: '새콤달콤 상큼해요' },
+    pear:   { ko: '배', en: 'Pear', base: 4000, color: '#e3cc68', taste: '시원하고 촉촉해요' },
+    cherry: { ko: '체리', en: 'Cherry', base: 5000, color: '#c0283a', taste: '톡 터지는 맛이에요' },
   };
   const REGROW = 45;
   // bugs: where and when they appear, how they move, how easy they are to net
   const BUGS = {
-    butterfly:   { ko: '나비', en: 'Butterfly', base: 6, size: [4, 8], unit: 'cm', time: 'day', where: 'flower', move: 'fly', weight: 30, catch: 0.85, color: '#f6c7d3' },
-    bee:         { ko: '꿀벌', en: 'Honeybee', base: 8, size: [12, 16], unit: 'mm', time: 'day', where: 'garden', move: 'fly', weight: 22, catch: 0.8, color: '#f2c14e' },
-    ladybug:     { ko: '무당벌레', en: 'Ladybug', base: 5, size: [5, 8], unit: 'mm', time: 'day', where: 'grass', move: 'crawl', weight: 24, catch: 0.95, color: '#d9483b' },
-    grasshopper: { ko: '메뚜기', en: 'Grasshopper', base: 7, size: [3, 6], unit: 'cm', time: 'day', where: 'grass', move: 'hop', weight: 20, catch: 0.75, color: '#8cbf5a' },
-    dragonfly:   { ko: '잠자리', en: 'Dragonfly', base: 12, size: [5, 9], unit: 'cm', time: 'day', where: 'pond', move: 'dart', weight: 12, catch: 0.65, color: '#5b9bd5' },
-    cicada:      { ko: '매미', en: 'Cicada', base: 14, size: [3, 6], unit: 'cm', time: 'day', where: 'tree', move: 'perch', weight: 10, catch: 0.7, color: '#8a6a48' },
-    firefly:     { ko: '반딧불이', en: 'Firefly', base: 15, size: [10, 18], unit: 'mm', time: 'night', where: 'pond', move: 'fly', weight: 30, catch: 0.8, color: '#d8e85a' },
-    beetle:      { ko: '장수풍뎅이', en: 'Rhino beetle', base: 35, size: [4, 8], unit: 'cm', time: 'night', where: 'tree', move: 'perch', weight: 6, catch: 0.55, color: '#4a3326' },
+    butterfly:   { ko: '나비', en: 'Butterfly', base: 1000, size: [4, 8], unit: 'cm', time: 'day', where: 'flower', move: 'fly', weight: 30, catch: 0.85, color: '#f6c7d3' },
+    bee:         { ko: '꿀벌', en: 'Honeybee', base: 500, size: [12, 16], unit: 'mm', time: 'day', where: 'garden', move: 'fly', weight: 22, catch: 0.8, color: '#f2c14e' },
+    ladybug:     { ko: '무당벌레', en: 'Ladybug', base: 500, size: [5, 8], unit: 'mm', time: 'day', where: 'grass', move: 'crawl', weight: 24, catch: 0.95, color: '#d9483b' },
+    grasshopper: { ko: '메뚜기', en: 'Grasshopper', base: 500, size: [3, 6], unit: 'cm', time: 'day', where: 'grass', move: 'hop', weight: 20, catch: 0.75, color: '#8cbf5a' },
+    dragonfly:   { ko: '잠자리', en: 'Dragonfly', base: 1000, size: [5, 9], unit: 'cm', time: 'day', where: 'pond', move: 'dart', weight: 12, catch: 0.65, color: '#5b9bd5' },
+    cicada:      { ko: '매미', en: 'Cicada', base: 1000, size: [3, 6], unit: 'cm', time: 'day', where: 'tree', move: 'perch', weight: 10, catch: 0.7, color: '#8a6a48' },
+    firefly:     { ko: '반딧불이', en: 'Firefly', base: 2000, size: [10, 18], unit: 'mm', time: 'night', where: 'pond', move: 'fly', weight: 30, catch: 0.8, color: '#d8e85a' },
+    beetle:      { ko: '장수풍뎅이', en: 'Rhino beetle', base: 8000, size: [4, 8], unit: 'cm', time: 'night', where: 'tree', move: 'perch', weight: 6, catch: 0.55, color: '#4a3326' },
   };
   const TASTE = { carrot: '아삭하고 달큰해요', tomato: '새콤하고 즙이 많아요', strawberry: '달콤하고 향긋해요' };
   // city food: bought, eaten, remembered in the book
   const FOODS = {
-    tteokbokki:   { ko: '떡볶이', en: 'Tteokbokki', price: 5, color: '#e2553f', taste: '매콤달콤 쫀득해요' },
-    kimbap:       { ko: '김밥', en: 'Kimbap', price: 4, color: '#3d5a3a', taste: '고소하고 든든해요' },
-    eomuk:        { ko: '어묵', en: 'Fish cake skewer', price: 2, color: '#e8c48a', taste: '따끈한 국물이 최고예요' },
-    samgak:       { ko: '삼각김밥', en: 'Triangle kimbap', price: 3, color: '#f4f1ea', taste: '김이 바삭바삭해요' },
-    bananamilk:   { ko: '바나나우유', en: 'Banana milk', price: 2, color: '#f6dc6a', taste: '달콤하고 부드러워요' },
-    cupramen:     { ko: '컵라면', en: 'Cup ramen', price: 4, color: '#d9483b', taste: '뜨끈하고 얼큰해요' },
-    bungeoppang:  { ko: '붕어빵', en: 'Fish-shaped bun', price: 2, color: '#c98a45', taste: '겉은 바삭, 속은 팥이 달콤해요' },
-    hotchoco:     { ko: '핫초코', en: 'Hot chocolate', price: 3, color: '#7a4c33', taste: '달콤하고 따뜻해요' },
-    strawlatte:   { ko: '딸기라떼', en: 'Strawberry latte', price: 4, color: '#f2a7b8', taste: '새콤달콤 부드러워요' },
-    hotteok:      { ko: '호떡', en: 'Hotteok', price: 3, color: '#d9a04e', taste: '설탕이 녹아서 달콤 쫀득해요' },
-    kkultteok:    { ko: '꿀떡', en: 'Honey rice cake', price: 3, color: '#f6a8c0', taste: '한 입에 쏙, 꿀이 톡 터져요' },
-    sikhye:       { ko: '식혜', en: 'Sikhye', price: 2, color: '#f2e6c6', taste: '시원하고 달큰해요' },
-    misu:         { ko: '미숫가루', en: 'Misugaru', price: 3, color: '#cfae7c', taste: '고소하고 든든해요' },
-    bingsu:       { ko: '빙수', en: 'Bingsu', price: 4, color: '#8d4a3a', taste: '사르르 녹는 시원한 맛이에요' },
-    hangangramen: { ko: '한강라면', en: 'Riverside ramen', price: 4, color: '#e0703f', taste: '강바람 맞으며 먹으니 더 맛있어요' },
+    tteokbokki:   { ko: '떡볶이', en: 'Tteokbokki', price: 5000, color: '#e2553f', taste: '매콤달콤 쫀득해요' },
+    kimbap:       { ko: '김밥', en: 'Kimbap', price: 4000, color: '#3d5a3a', taste: '고소하고 든든해요' },
+    eomuk:        { ko: '어묵', en: 'Fish cake skewer', price: 1000, color: '#e8c48a', taste: '따끈한 국물이 최고예요' },
+    samgak:       { ko: '삼각김밥', en: 'Triangle kimbap', price: 1500, color: '#f4f1ea', taste: '김이 바삭바삭해요' },
+    bananamilk:   { ko: '바나나우유', en: 'Banana milk', price: 1700, color: '#f6dc6a', taste: '달콤하고 부드러워요' },
+    cupramen:     { ko: '컵라면', en: 'Cup ramen', price: 1500, color: '#d9483b', taste: '뜨끈하고 얼큰해요' },
+    bungeoppang:  { ko: '붕어빵', en: 'Fish-shaped bun', price: 1000, color: '#c98a45', taste: '겉은 바삭, 속은 팥이 달콤해요' },
+    hotchoco:     { ko: '핫초코', en: 'Hot chocolate', price: 4500, color: '#7a4c33', taste: '달콤하고 따뜻해요' },
+    strawlatte:   { ko: '딸기라떼', en: 'Strawberry latte', price: 5500, color: '#f2a7b8', taste: '새콤달콤 부드러워요' },
+    hotteok:      { ko: '호떡', en: 'Hotteok', price: 2000, color: '#d9a04e', taste: '설탕이 녹아서 달콤 쫀득해요' },
+    kkultteok:    { ko: '꿀떡', en: 'Honey rice cake', price: 3000, color: '#f6a8c0', taste: '한 입에 쏙, 꿀이 톡 터져요' },
+    sikhye:       { ko: '식혜', en: 'Sikhye', price: 2000, color: '#f2e6c6', taste: '시원하고 달큰해요' },
+    misu:         { ko: '미숫가루', en: 'Misugaru', price: 4000, color: '#cfae7c', taste: '고소하고 든든해요' },
+    bingsu:       { ko: '빙수', en: 'Bingsu', price: 9000, color: '#8d4a3a', taste: '사르르 녹는 시원한 맛이에요' },
+    hangangramen: { ko: '한강라면', en: 'Riverside ramen', price: 4000, color: '#e0703f', taste: '강바람 맞으며 먹으니 더 맛있어요' },
   };
   const FOOD_KEYS = Object.keys(FOODS);
   const edible = (k) => !!FRUITS[k] || !!TASTE[k] || !!FOODS[k];
@@ -1037,32 +1046,32 @@
   // ---------- house ----------
   // w,h = floor tiles; rise = how tall it stands; walk = can be walked over (rugs, cushions)
   const FURN = {
-    bed:     { ko: '포근한 침대', en: 'Cozy bed', price: 40, w: 2, h: 3, rise: 26 },
-    rug:     { ko: '동그란 러그', en: 'Round rug', price: 12, w: 2, h: 2, rise: 0, walk: true, flat: true },
-    table:   { ko: '둥근 탁자', en: 'Round table', price: 20, w: 2, h: 2, rise: 30 },
-    stool:   { ko: '나무 의자', en: 'Wooden stool', price: 8, w: 1, h: 1, rise: 18 },
-    sofa:    { ko: '말랑 소파', en: 'Squishy sofa', price: 35, w: 3, h: 1, rise: 30 },
-    plant:   { ko: '몬스테라 화분', en: 'Potted plant', price: 10, w: 1, h: 1, rise: 52 },
-    lamp:    { ko: '버섯 스탠드', en: 'Mushroom lamp', price: 14, w: 1, h: 1, rise: 50 },
-    shelf:   { ko: '책장', en: 'Bookshelf', price: 28, w: 2, h: 1, rise: 86 },
-    cushion: { ko: '방석', en: 'Floor cushion', price: 5, w: 1, h: 1, rise: 6, walk: true },
+    bed:     { ko: '포근한 침대', en: 'Cozy bed', price: 150000, w: 2, h: 3, rise: 26 },
+    rug:     { ko: '동그란 러그', en: 'Round rug', price: 25000, w: 2, h: 2, rise: 0, walk: true, flat: true },
+    table:   { ko: '둥근 탁자', en: 'Round table', price: 40000, w: 2, h: 2, rise: 30 },
+    stool:   { ko: '나무 의자', en: 'Wooden stool', price: 15000, w: 1, h: 1, rise: 18 },
+    sofa:    { ko: '말랑 소파', en: 'Squishy sofa', price: 120000, w: 3, h: 1, rise: 30 },
+    plant:   { ko: '몬스테라 화분', en: 'Potted plant', price: 20000, w: 1, h: 1, rise: 52 },
+    lamp:    { ko: '버섯 스탠드', en: 'Mushroom lamp', price: 25000, w: 1, h: 1, rise: 50 },
+    shelf:   { ko: '책장', en: 'Bookshelf', price: 60000, w: 2, h: 1, rise: 86 },
+    cushion: { ko: '방석', en: 'Floor cushion', price: 8000, w: 1, h: 1, rise: 6, walk: true },
   };
   const DECOR = {
-    window:  { ko: '창문', en: 'Window', price: 22 },
-    frame:   { ko: '꽃 그림 액자', en: 'Flower painting', price: 10 },
-    clock:   { ko: '동그란 시계', en: 'Round clock', price: 15 },
-    garland: { ko: '가랜드', en: 'Garland', price: 8 },
+    window:  { ko: '창문', en: 'Window', price: 40000 },
+    frame:   { ko: '꽃 그림 액자', en: 'Flower painting', price: 15000 },
+    clock:   { ko: '동그란 시계', en: 'Round clock', price: 20000 },
+    garland: { ko: '가랜드', en: 'Garland', price: 8000 },
   };
   const PAPERS = {
     cream: { ko: '크림 벽지', price: 0, c: '#f4e6cf', s: '#eedcbf' },
-    mint:  { ko: '민트 벽지', price: 10, c: '#dcebdb', s: '#cde0cc' },
-    peach: { ko: '복숭아 벽지', price: 10, c: '#f6dccd', s: '#efcbb8' },
-    sky:   { ko: '하늘 벽지', price: 10, c: '#dbe6f0', s: '#cbd9e8' },
+    mint:  { ko: '민트 벽지', price: 30000, c: '#dcebdb', s: '#cde0cc' },
+    peach: { ko: '복숭아 벽지', price: 30000, c: '#f6dccd', s: '#efcbb8' },
+    sky:   { ko: '하늘 벽지', price: 30000, c: '#dbe6f0', s: '#cbd9e8' },
   };
   const FLOORS = {
     wood:    { ko: '나무 바닥', price: 0, c: '#d9b68c', s: '#c9a276' },
-    checker: { ko: '체크 타일', price: 12, c: '#efe5d3', s: '#d9c7a8' },
-    moss:    { ko: '이끼 카펫', price: 12, c: '#b9cf98', s: '#a8c186' },
+    checker: { ko: '체크 타일', price: 40000, c: '#efe5d3', s: '#d9c7a8' },
+    moss:    { ko: '이끼 카펫', price: 40000, c: '#b9cf98', s: '#a8c186' },
   };
   const WALL_SLOTS = 5;
   const ITEMS = { ...CROPS, ...FRUITS, ...FISH, ...BUGS };
@@ -1072,6 +1081,7 @@
   const found = (k) => { const r = G.dex[k]; return !!r && (r.n > 0 || !!r.ate); };
   const villageBlocked = (x, y) => blocked(x, y);
   const BANK_RATE = 0.05;
+  const interestOn = (n, rate) => Math.floor((n * rate) / 10) * 10; // in 10원 steps
   // Korean object particle: 당근을 / 토마토를
   const topic = (w) => { const c = w.charCodeAt(w.length - 1) - 0xac00; return w + (c >= 0 && c < 11172 && c % 28 ? '은' : '는'); };
   const eul = (w) => { const c = w.charCodeAt(w.length - 1) - 0xac00; return w + (c >= 0 && c < 11172 && c % 28 ? '을' : '를'); };
@@ -1079,7 +1089,7 @@
 
   const G = {
     started: false, t: 0, day: 1, time: 0.05,
-    coins: 20, bank: 0,
+    coins: 20000, bank: 0, // 원
     seeds: { carrot: 3, flower: 2, tomato: 0, strawberry: 0 },
     inv: Object.fromEntries([...Object.keys(ITEMS), ...FOOD_KEYS].map((k) => [k, 0])),
     acct: 0, jobDay: 0, mprices: {}, haggle: null, reqs: null, words: {},
@@ -1100,15 +1110,23 @@
   };
   function rollPrices() {
     G.prev = { ...G.prices };
-    for (const k in ITEMS) G.prices[k] = Math.max(1, Math.round(ITEMS[k].base * rand(0.7, 1.4)));
+    for (const k in ITEMS) G.prices[k] = wonRound(ITEMS[k].base * rand(0.7, 1.4));
   }
   rollPrices(); G.prev = { ...G.prices };
 
   function save() {
-    return { v: 2, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, stats: G.stats, notes: G.notes, track: G.track, stamps: G.stamps, quizDay: G.quizDay, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
+    return { v: 2, won: 1, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, stats: G.stats, notes: G.notes, track: G.track, stamps: G.stamps, quizDay: G.quizDay, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
   }
   function load(s) {
     if (!s || s.v !== 2) return false;
+    if (!s.won) {
+      // a save from the coin days: one coin becomes 1,000원, and today's prices are rolled again in won
+      const W = 1000, sc = (o) => { for (const x in o || {}) o[x] *= W; };
+      s.coins = (s.coins || 0) * W; s.bank = (s.bank || 0) * W; s.acct = (s.acct || 0) * W;
+      s.ledger = (s.ledger || []).map((e) => ({ ...e, amount: e.amount * W }));
+      if (s.stats && s.stats.total) { sc(s.stats.total.in); sc(s.stats.total.out); s.stats.total.save = (s.stats.total.save || 0) * W; for (const d of Object.values(s.stats.days || {})) { sc(d.in); sc(d.out); d.save = (d.save || 0) * W; } }
+      s.prices = {}; s.prev = {}; s.mprices = {};
+    }
     Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home, acct: s.acct || 0, jobDay: s.jobDay || 0, mprices: s.mprices || {}, haggle: s.haggle || null, reqs: s.reqs || null, words: s.words || {}, stats: { ...G.stats, ...(s.stats || {}) }, notes: Array.isArray(s.notes) ? s.notes : [], track: s.track || 'musicbox', stamps: s.stamps || 0, quizDay: s.quizDay || 0 });
     (s.plots || []).forEach((p, i) => { if (plots[i]) Object.assign(plots[i], p); });
     (s.trees || []).forEach(([n, r], i) => { if (trees[i] && trees[i].fruit) { trees[i].n = n; trees[i].regrow = r; } });
@@ -1427,7 +1445,7 @@
     const place = { city: ['동글시내', 'Downtown'], park: ['한강공원', 'Riverside'], market: ['동글시장', 'Market'], cafe: ['몽글카페', 'Café'], ride: ['이동 중', 'On the way'] }[scene];
     const se = SEASONS[season()];
     ui.clock.textContent = place ? `${G.en ? place[1] : place[0]} · ${G.en ? tn[1] : tn[0]}` : G.en ? `${se.en} · Day ${G.day} · ${tn[1]}` : `${se.ko} ${G.day}일째 · ${tn[0]}`;
-    ui.coins.textContent = G.coins;
+    ui.coins.textContent = wonShort(G.coins);
     ui.bagN.textContent = `${G.en ? 'Bag' : '가방'} ${sum(G.inv, BAG_KEYS)}`;
     ui.dexN.textContent = `${G.en ? 'Book' : '도감'} ${DEX_ALL.filter(found).length}/${DEX_ALL.length}`;
   }
@@ -1479,12 +1497,12 @@
       n.querySelector('b').textContent = nameKo + (G.en ? ` · ${nameEn}` : '');
       n.querySelector('span').textContent = have;
       const p = document.createElement('div'); p.className = 'price';
-      p.innerHTML = `<b>${price}코인</b>`;
+      p.innerHTML = `<b>${won(price)}</b>`;
       if (prev !== null) {
         const d = price - prev;
         const ds = document.createElement('span');
         ds.className = 'delta ' + (d > 0 ? 'up' : d < 0 ? 'down' : '');
-        ds.textContent = d === 0 ? '어제와 같음' : `어제보다 ${d > 0 ? '▲' : '▼'}${Math.abs(d)}`;
+        ds.textContent = d === 0 ? '어제와 같음' : `어제보다 ${d > 0 ? '▲' : '▼'}${won(Math.abs(d))}`;
         p.append(ds);
       }
       const a = document.createElement('div'); a.className = 'acts';
@@ -1496,7 +1514,7 @@
     for (const k in ITEMS) {
       const it = ITEMS[k], have = G.inv[k];
       if (!have && !CROPS[k]) continue; // fruit, fish and bugs appear once you have some
-      row(it.ko, it.en, `가지고 있음 ${have}개`, G.prices[k], G.prev[k] ?? null, [
+      row(it.ko, it.en, `${have}개`, G.prices[k], G.prev[k] ?? null, [
         ['1개 팔기', () => sell(k, 1), have > 0],
         ['모두', () => sell(k, have), have > 1],
       ], k);
@@ -1509,13 +1527,13 @@
         ['3개', () => buySeeds(k, 3), G.coins >= c.seed * 3],
       ], k);
     }
-    $('coinsNow').textContent = `지금 ${G.coins}코인`;
+    $('coinsNow').textContent = `지금 ${won(G.coins)}`;
     const l = $('ledger'); l.innerHTML = '';
     if (!G.ledger.length) { const d = document.createElement('div'); d.innerHTML = '<span class="muted">아직 기록이 없어요. 물건을 팔거나 사면 여기에 적혀요.</span>'; l.append(d); }
     G.ledger.forEach((e) => {
       const d = document.createElement('div');
       const a = document.createElement('span'); a.textContent = `${e.day}일 · ${e.text}`;
-      const b = document.createElement('span'); b.textContent = (e.amount > 0 ? '+' : '') + e.amount; b.style.color = e.amount > 0 ? 'var(--income)' : 'var(--ink)';
+      const b = document.createElement('span'); b.textContent = (e.amount > 0 ? '+' : '−') + won(Math.abs(e.amount)); b.style.color = e.amount > 0 ? 'var(--income)' : 'var(--ink)';
       d.append(a, b); l.append(d);
     });
   }
@@ -1551,16 +1569,16 @@
       const left = G.prices[k] - c.seed;
       const card = document.createElement('button');
       card.type = 'button'; card.className = 'seed-card'; card.disabled = have <= 0;
-      card.setAttribute('aria-label', `${c.ko}. ${left}코인 남아요. ${speedWord(k)}. 씨앗 ${have}개 있어요.`);
-      card.innerHTML = `<img alt="" width="68" height="68"><span class="nm"></span><span class="earn"><img alt="" width="22" height="22"><span class="n"></span><small>코인</small></span><span class="speed"></span><span class="own"></span>`;
+      card.setAttribute('aria-label', `${c.ko}. ${won(left)} 남아요. ${speedWord(k)}. 씨앗 ${have}개 있어요.`);
+      card.innerHTML = `<img alt="" width="68" height="68"><span class="nm"></span><span class="earn"><img alt="" width="22" height="22"><span class="n"></span></span><span class="speed"></span><span class="own"></span>`;
       const [pic, coin] = card.querySelectorAll('img');
       pic.src = iconURL(k); coin.src = iconURL('coin');
       card.querySelector('.nm').textContent = c.ko + (G.en ? ` ${c.en}` : '');
-      card.querySelector('.n').textContent = `${left >= 0 ? '+' : ''}${left}`;
+      card.querySelector('.n').textContent = `${left >= 0 ? '+' : '−'}${won(Math.abs(left))}`;
       card.querySelector('.speed').textContent = `${speedWord(k)} · ${secs}초`;
       const own = card.querySelector('.own');
       if (have) own.textContent = `씨앗 ${have}개 있어요`;
-      else { own.textContent = `가게에서 ${c.seed}코인`; own.classList.add('none'); }
+      else { own.textContent = `가게에서 ${won(c.seed)}`; own.classList.add('none'); }
       card.addEventListener('click', () => plant(k));
       list.append(card);
     }
@@ -1569,7 +1587,7 @@
     if (!ex) { note.textContent = '씨앗이 없어요. 도담이네 가게에서 살 수 있어요.'; return; }
     const c = CROPS[ex], left = G.prices[ex] - c.seed;
     const b = (t) => { const e = document.createElement('b'); e.textContent = t; return e; };
-    note.append(`${topic(c.ko)} 오늘 `, b(`${G.prices[ex]}코인`), `에 팔려요. 씨앗값 `, b(`${c.seed}코인`), `을 빼면 `, b(`${left}코인`), `이 남아요.`);
+    note.append(`${topic(c.ko)} 오늘 `, b(won(G.prices[ex])), `에 팔려요. 씨앗값 `, b(won(c.seed)), `을 빼면 `, b(won(left)), `이 남아요.`);
   }
   function plant(k) {
     const p = pendingPlot; closeSheet(); pendingPlot = null;
@@ -1583,21 +1601,21 @@
 
   // piggy bank in the house
   function renderHouse() {
-    $('bankAmount').textContent = `${G.bank}코인`;
-    const next = Math.floor(G.bank * BANK_RATE);
-    $('bankInfo').textContent = G.bank >= 20 ? `내일 아침 이자 +${next}코인` : '20코인 이상 모으면 이자가 붙어요';
+    $('bankAmount').textContent = won(G.bank);
+    const next = interestOn(G.bank, BANK_RATE);
+    $('bankInfo').textContent = next > 0 ? `내일 아침 이자 +${won(next)}` : '200원 이상 모으면 이자가 붙어요';
     $('depositBtn').disabled = G.coins <= 0;
-    $('depositBtn').textContent = G.coins >= 10 ? '10 넣기' : `${G.coins} 넣기`;
+    $('depositBtn').textContent = G.coins >= 10000 ? '1만원 넣기' : `${won(G.coins)} 넣기`;
     $('withdrawBtn').disabled = G.bank <= 0;
   }
   $('depositBtn').addEventListener('click', () => {
-    const n = Math.min(10, G.coins); if (n <= 0) return;
-    G.coins -= n; G.bank += n; addLedger(`저금통에 ${n}코인 저축`, -n, 'save');
+    const n = Math.min(10000, G.coins); if (n <= 0) return;
+    G.coins -= n; G.bank += n; addLedger(`저금통에 ${won(n)} 저축`, -n, 'save');
     sfx.coin(); renderHouse(); persist();
   });
   $('withdrawBtn').addEventListener('click', () => {
     const n = G.bank; if (n <= 0) return;
-    G.bank = 0; G.coins += n; addLedger(`저금통에서 ${n}코인 꺼냄`, n, 'unsave');
+    G.bank = 0; G.coins += n; addLedger(`저금통에서 ${won(n)} 꺼냄`, n, 'unsave');
     sfx.coin(); renderHouse(); persist();
   });
   $('seedClose').addEventListener('click', () => { pendingPlot = null; closeSheet(); });
@@ -1646,12 +1664,12 @@
   function newDay() {
     G.day++; rollPrices(); rollMarket();
     if ((G.day - 1) % DAYS_PER_SEASON === 0) setTimeout(() => toast(SEASONS[season()].hello, `${SEASONS[season()].en} is here!`), 3600);
-    const acctInterest = G.acct >= 30 ? Math.floor(G.acct * ACCT_RATE) : 0;
+    const acctInterest = G.acct >= ACCT_MIN ? interestOn(G.acct, ACCT_RATE) : 0;
     if (acctInterest > 0) { G.acct += acctInterest; addLedger('은행 이자', acctInterest, 'interest'); }
-    const interest = Math.floor(G.bank * BANK_RATE);
+    const interest = interestOn(G.bank, BANK_RATE);
     if (interest > 0) {
       G.bank += interest; addLedger(`저금통 이자`, interest, 'interest');
-      toast(`${G.day}일째 아침이에요. 저금통에 이자 ${interest}코인이 붙었어요!`, `Day ${G.day}. You earned ${interest} coins of interest!`);
+      toast(`${G.day}일째 아침이에요. 저금통에 이자 ${won(interest)}이 붙었어요!`, `Day ${G.day}. You earned ₩${interest.toLocaleString()} of interest!`);
     } else {
       toast(`${G.day}일째 아침이에요. 오늘의 시세가 새로 정해졌어요.`, `Day ${G.day}. New prices today!`);
     }
@@ -1677,7 +1695,7 @@
       const fresh = recordDex(k);
       player.hold = 'crop'; player.holdCrop = k; player.holdColor = col; player.holdT = 1.6;
       burst(p.x + p.w / 2, p.y + 6, 14, col, { up: 140 }); sfx.harvest();
-      toast(`${eul(CROPS[k].ko)} 수확했어요! ` + (fresh.isNew ? '도감에 새로 올렸어요.' : `오늘 시세는 ${G.prices[k]}코인이에요.`), `You harvested a ${CROPS[k].en.toLowerCase()}!`);
+      toast(`${eul(CROPS[k].ko)} 수확했어요! ` + (fresh.isNew ? '도감에 새로 올렸어요.' : `오늘 시세는 ${won(G.prices[k])}이에요.`), `You harvested a ${CROPS[k].en.toLowerCase()}!`);
     }
     persist();
   }
@@ -1761,7 +1779,7 @@
     $('catchName').textContent = it.ko + (G.en ? ` · ${it.en}` : '');
     $('catchSize').innerHTML = `${size}<small>${unit}</small>`;
     const night = (FISH[k] && FISH[k].night) || (BUGS[k] && BUGS[k].time === 'night');
-    $('catchNote').textContent = `오늘 가게에서 ${G.prices[k]}코인에 팔 수 있어요.` + (night ? ' 밤에만 만날 수 있어요.' : '') + (FISH[k] && FISH[k].river ? ' 한강에서만 만날 수 있어요.' : '');
+    $('catchNote').textContent = `오늘 가게에서 ${won(G.prices[k])}에 팔 수 있어요.` + (night ? ' 밤에만 만날 수 있어요.' : '') + (FISH[k] && FISH[k].river ? ' 한강에서만 만날 수 있어요.' : '');
     ui.toast.style.opacity = 0; toastT = 0;
     openSheet('catchSheet');
     persist();
@@ -1839,7 +1857,7 @@
         const im = document.createElement('img'); im.className = 'ico'; im.alt = ''; im.src = iconURL(k);
         const nm = document.createElement('div'); nm.className = 'name';
         const b = document.createElement('b'); b.textContent = seeds ? `${info(k).ko} 씨앗` : info(k).ko + (G.en ? ` · ${info(k).en}` : '');
-        const s = document.createElement('span'); s.className = 'muted'; s.textContent = `${n}개` + (seeds || FOODS[k] ? '' : ` · 오늘 ${G.prices[k]}코인`);
+        const s = document.createElement('span'); s.className = 'muted'; s.textContent = `${n}개` + (seeds || FOODS[k] ? '' : ` · 오늘 ${won(G.prices[k])}`);
         nm.append(b, s);
         const acts = document.createElement('div'); acts.className = 'acts';
         if (!seeds && edible(k)) { const e = document.createElement('button'); e.type = 'button'; e.className = 'btn small'; e.textContent = '먹기'; e.addEventListener('click', () => eat(k)); acts.append(e); }
@@ -2126,7 +2144,7 @@
   }
   function renderDeco() {
     ['furn', 'wall', 'room'].forEach((t) => $('tab-' + t).setAttribute('aria-selected', String(decoTab === t)));
-    $('decoCoins').textContent = `${G.coins}코인 있어요`;
+    $('decoCoins').textContent = `${won(G.coins)} 있어요`;
     const list = $('decoList'); list.innerHTML = '';
     const card = (pic, name, cta, cls, onClick, disabled) => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'deco-card'; b.disabled = !!disabled;
@@ -2143,8 +2161,8 @@
       for (const k in cat) {
         const it = cat[k], own = G.home.owned[k] || 0, name = it.ko;
         if (own > 0) card(img((wall ? 'd:' : 'f:') + k), name, `놓기 · ${own}개`, 'owned', () => startPlacing(k, wall));
-        else if (G.coins >= it.price) card(img((wall ? 'd:' : 'f:') + k), name, `${it.price}코인에 사기`, '', () => { if (buy(it.price, name)) { G.home.owned[k] = 1; persist(); startPlacing(k, wall); } });
-        else card(img((wall ? 'd:' : 'f:') + k), name, `${it.price - G.coins}코인 더 필요해요`, 'short', null, true);
+        else if (G.coins >= it.price) card(img((wall ? 'd:' : 'f:') + k), name, `${won(it.price)}에 사기`, '', () => { if (buy(it.price, name)) { G.home.owned[k] = 1; persist(); startPlacing(k, wall); } });
+        else card(img((wall ? 'd:' : 'f:') + k), name, `${won(it.price - G.coins)} 더 필요해요`, 'short', null, true);
       }
     } else {
       const both = [['paper', 'papers', PAPERS], ['floor', 'floors', FLOORS]];
@@ -2152,8 +2170,8 @@
         const it = cat[k];
         if (G.home[cur] === k) card(swatch(it), it.ko, '쓰는 중', 'using', null, true);
         else if (G.home[ownedKey].includes(k)) card(swatch(it), it.ko, '바꾸기', 'owned', () => { G.home[cur] = k; sfx.plant(); persist(); renderDeco(); });
-        else if (G.coins >= it.price) card(swatch(it), it.ko, `${it.price}코인에 사기`, '', () => { if (buy(it.price, it.ko)) { G.home[ownedKey].push(k); G.home[cur] = k; persist(); renderDeco(); } });
-        else card(swatch(it), it.ko, `${it.price - G.coins}코인 더 필요해요`, 'short', null, true);
+        else if (G.coins >= it.price) card(swatch(it), it.ko, `${won(it.price)}에 사기`, '', () => { if (buy(it.price, it.ko)) { G.home[ownedKey].push(k); G.home[cur] = k; persist(); renderDeco(); } });
+        else card(swatch(it), it.ko, `${won(it.price - G.coins)} 더 필요해요`, 'short', null, true);
       }
     }
     const placedN = G.home.placed.length + G.home.wall.filter(Boolean).length;
@@ -2251,6 +2269,7 @@
   // ---------- beyond the village: 동글시내 (downtown) and 한강공원 (riverside) ----------
   // =====================================================================
   const ACCT_RATE = 0.08;
+  const ACCT_MIN = 30000;
   const CITY = { w: 1600, h: 900 };
   const PARK = { w: 1400, h: 900 };
   const ROAD = { y0: 400, y1: 560, cx0: 782, cx1: 858 };        // the crosswalk spans cx0..cx1
@@ -2407,7 +2426,7 @@
     const items = storeId === 'cart' ? [warm ? 'bungeoppang' : 'bingsu'] : st.items;
     $('storeTitle').textContent = storeId === 'cart' ? (warm ? '붕어빵 노점' : '빙수 노점') : st.ko;
     $('storeDesc').textContent = storeId === 'cart' ? (warm ? '쌀쌀한 날엔 따끈한 붕어빵!' : '더운 날엔 시원한 빙수!') : st.desc;
-    $('storeCoins').textContent = `${G.coins}코인 있어요`;
+    $('storeCoins').textContent = `${won(G.coins)} 있어요`;
     const list = $('storeList'); list.innerHTML = '';
     for (const k of items) {
       const f = FOODS[k], have = G.inv[k] || 0;
@@ -2417,7 +2436,7 @@
       const b = document.createElement('b'); b.textContent = f.ko + (G.en ? ` · ${f.en}` : '');
       const s = document.createElement('span'); s.className = 'muted'; s.textContent = have ? `가방에 ${have}개` : f.taste;
       nm.append(b, s);
-      const pr = document.createElement('div'); pr.className = 'price'; pr.innerHTML = `<b>${f.price}코인</b>`;
+      const pr = document.createElement('div'); pr.className = 'price'; pr.innerHTML = `<b>${won(f.price)}</b>`;
       const acts = document.createElement('div'); acts.className = 'acts';
       const buy = () => {
         if (G.coins < f.price) return false;
@@ -2426,7 +2445,7 @@
         return true;
       };
       // 먹기: buy one and eat it right here (or eat the one in your bag); 담기: put one in your bag
-      const eatBtn = el('button', 'btn small', have ? '먹기' : G.coins >= f.price ? '사서 먹기' : `${f.price - G.coins} 모자라요`); eatBtn.type = 'button';
+      const eatBtn = el('button', 'btn small', have ? '먹기' : G.coins >= f.price ? '사서 먹기' : `${won(f.price - G.coins)} 모자라요`); eatBtn.type = 'button';
       eatBtn.disabled = !have && G.coins < f.price;
       eatBtn.addEventListener('click', () => { if (!(G.inv[k] > 0) && !buy()) return; eat(k); renderStore(); });
       acts.append(eatBtn);
@@ -2449,33 +2468,37 @@
     if (st.job) {
       const done = G.jobDay === G.day;
       const j = document.createElement('button'); j.type = 'button'; j.className = 'btn'; j.style.width = '100%';
-      j.textContent = done ? '오늘 알바는 끝났어요. 내일 또 와요' : '계산 알바하기 · 시급 10코인 + 칭찬 팁';
+      j.textContent = done ? '오늘 알바는 끝났어요. 내일 또 와요' : `계산 알바하기 · 시급 ${won(WAGE)} + 칭찬 팁`;
       j.disabled = done; j.addEventListener('click', startJob); extra.append(j);
     }
   }
   $('storeClose').addEventListener('click', closeSheet);
 
   function renderAcct() {
-    $('acctCoins').textContent = `지갑에 ${G.coins}코인`;
-    $('acctAmount').textContent = `${G.acct}코인`;
-    $('acctInfo').textContent = G.acct >= 30 ? `내일 아침 이자 +${Math.floor(G.acct * ACCT_RATE)}코인` : '30코인 이상 넣어두면 이자가 붙어요';
+    $('acctCoins').textContent = `지갑에 ${won(G.coins)}`;
+    $('acctAmount').textContent = won(G.acct);
+    $('acctInfo').textContent = G.acct >= ACCT_MIN ? `내일 아침 이자 +${won(interestOn(G.acct, ACCT_RATE))}` : '3만원 이상 넣어두면 이자가 붙어요';
     $('acctIn').disabled = G.coins <= 0;
-    $('acctIn').textContent = G.coins >= 10 ? '10 넣기' : `${G.coins} 넣기`;
+    $('acctIn').textContent = G.coins >= 10000 ? '1만원 넣기' : `${won(G.coins)} 넣기`;
     $('acctOut').disabled = G.acct <= 0;
-    const ex = 100;
-    $('acctCompare').textContent = `저금통은 하루 5%, 은행은 하루 8%예요. ${ex}코인을 하루 맡기면 저금통은 ${Math.floor(ex * BANK_RATE)}코인, 은행은 ${Math.floor(ex * ACCT_RATE)}코인이 붙어요. 대신 은행은 30코인부터 이자가 붙어요.`;
+    const ex = 100000;
+    $('acctCompare').textContent = `저금통은 하루 5%, 은행은 하루 8%예요. 10만원을 하루 맡기면 저금통은 ${won(interestOn(ex, BANK_RATE))}, 은행은 ${won(interestOn(ex, ACCT_RATE))}이 붙어요. 대신 은행은 3만원부터 이자가 붙어요.`;
   }
-  $('acctIn').addEventListener('click', () => { const n = Math.min(10, G.coins); if (n <= 0) return; G.coins -= n; G.acct += n; addLedger(`은행에 ${n}코인 저축`, -n, 'save'); sfx.coin(); renderAcct(); persist(); });
-  $('acctOut').addEventListener('click', () => { const n = G.acct; if (n <= 0) return; G.acct = 0; G.coins += n; addLedger(`은행에서 ${n}코인 찾음`, n, 'unsave'); sfx.coin(); renderAcct(); persist(); });
+  $('acctIn').addEventListener('click', () => { const n = Math.min(10000, G.coins); if (n <= 0) return; G.coins -= n; G.acct += n; addLedger(`은행에 ${won(n)} 저축`, -n, 'save'); sfx.coin(); renderAcct(); persist(); });
+  $('acctOut').addEventListener('click', () => { const n = G.acct; if (n <= 0) return; G.acct = 0; G.coins += n; addLedger(`은행에서 ${won(n)} 찾음`, n, 'unsave'); sfx.coin(); renderAcct(); persist(); });
   $('acctClose').addEventListener('click', closeSheet);
 
   // the part-time job: hand over the change coin by coin
   let job = null;
   const JOB_ITEMS = ['samgak', 'bananamilk', 'cupramen', 'eomuk'];
-  const COINS = [10, 5, 1];
+  // real Korean money to hand back: 5,000원 and 1,000원 notes, 500원 and 100원 coins
+  const MONEY = [5000, 1000, 500, 100];
+  const WAGE = 10030; // 2025 최저시급
+  const TIP = 1000;
+  const moneyLabel = (c) => (c >= 1000 ? `${c.toLocaleString('ko-KR')}원` : String(c));
   const JOB_SAY = ['이거 계산해 주세요!', '안녕하세요~ 이거 주세요.', '봉투는 괜찮아요!', '이것도 같이요.'];
   const JOB_HAPPY = ['고마워요! 꼼꼼하네요.', '와, 계산이 빨라요!', '딱 맞아요! 또 올게요~', '최고예요!'];
-  function coinCount(n) { let k = 0; for (const c of COINS) { k += Math.floor(n / c); n %= c; } return k; }
+  function coinCount(n) { let k = 0; for (const c of MONEY) { k += Math.floor(n / c); n %= c; } return k; }
   function startJob() {
     if (G.jobDay === G.day) return;
     job = { round: 0, stars: 0, rounds: 5, streak: 0 };
@@ -2489,7 +2512,8 @@
     const n = job.round >= 3 ? 2 : 1;
     job.items = Array.from({ length: n }, () => pick(JOB_ITEMS));
     job.total = job.items.reduce((a, k) => a + FOODS[k].price, 0);
-    job.paid = job.total < 5 ? 5 : job.total < 10 ? 10 : 20;
+    // customers pay with a 5,000원 or 10,000원 note, now and then a bigger one than they need
+    job.paid = job.total <= 5000 && Math.random() < 0.7 ? 5000 : 10000;
     job.answer = job.paid - job.total;
     job.tried = false; job.tray = []; job.busy = false;
     const look = 1 + Math.floor(Math.random() * 5);
@@ -2502,11 +2526,11 @@
     const items = $('jobItems'); items.innerHTML = '';
     job.items.forEach((k, i) => {
       const d = el('span', 'job-item scan'); d.style.animationDelay = `${0.15 + i * 0.35}s`;
-      const im = el('img'); im.src = iconURL(k); im.alt = ''; d.append(im, `${FOODS[k].ko} ${FOODS[k].price}코인`); items.append(d);
+      const im = el('img'); im.src = iconURL(k); im.alt = ''; d.append(im, `${FOODS[k].ko} ${won(FOODS[k].price)}`); items.append(d);
       setTimeout(() => { if (job) sfx.card(); }, 150 + i * 350);
     });
     // the first two customers show the sum; after that you add it up yourself
-    $('jobQ').innerHTML = (job.round <= 2 ? `합계 <b>${job.total}코인</b>. ` : '합계를 더해 보세요. ') + `손님이 <b>${job.paid}코인</b>을 냈어요. 거스름돈을 동전으로 주세요.`;
+    $('jobQ').innerHTML = (job.round <= 2 ? `합계 <b>${won(job.total)}</b>. ` : '합계를 더해 보세요. ') + `손님이 <b>${won(job.paid)}</b>을 냈어요. 거스름돈을 돈으로 주세요.`;
     $('jobFeedback').textContent = '';
     renderTray(); renderStars($('jobStars'), job.stars, job.rounds);
   }
@@ -2514,21 +2538,21 @@
     const box = $('trayCoins'); box.innerHTML = '';
     const sum = job ? job.tray.reduce((a, c) => a + c, 0) : 0;
     if (job) job.tray.forEach((c, i) => {
-      const b = el('button', `coin c${c} mini`, String(c)); b.type = 'button'; b.setAttribute('aria-label', `${c}코인 빼기`);
+      const b = el('button', `coin c${c} mini`, moneyLabel(c)); b.type = 'button'; b.setAttribute('aria-label', `${won(c)} 빼기`);
       b.addEventListener('click', () => { if (job && !job.busy) { job.tray.splice(i, 1); tone(420, 0.06, 'sine', 0.03); renderTray(); } });
       box.append(b);
     });
-    if (!sum) box.append(el('span', 'muted', '아래 동전을 눌러 담아요'));
-    $('traySum').textContent = `${sum}코인`;
+    if (!sum) box.append(el('span', 'muted', '아래 돈을 눌러 담아요'));
+    $('traySum').textContent = won(sum);
     $('trayGive').disabled = !sum || !job || job.busy;
     $('trayReset').disabled = !sum || !job || job.busy;
   }
-  COINS.forEach((c) => {
-    const b = el('button', `coin c${c}`, String(c)); b.type = 'button'; b.setAttribute('aria-label', `${c}코인 담기`);
+  MONEY.forEach((c) => {
+    const b = el('button', `coin c${c}`, moneyLabel(c)); b.type = 'button'; b.setAttribute('aria-label', `${won(c)} 담기`);
     b.addEventListener('click', () => {
-      if (!job || job.busy || job.tray.length >= 12) return;
+      if (!job || job.busy || job.tray.length >= 15) return;
       job.tray.push(c); job.tray.sort((a, x) => x - a);
-      tone(c === 10 ? 1046 : c === 5 ? 880 : 740, 0.07, 'square', 0.022);
+      tone({ 5000: 1175, 1000: 1046, 500: 880, 100: 740 }[c], 0.07, c >= 1000 ? 'triangle' : 'square', 0.022);
       renderTray();
     });
     $('coinPad').append(b);
@@ -2544,7 +2568,7 @@
       $('jobSay').textContent = pick(JOB_HAPPY);
       react('♥', 'happy');
       $('jobTray').classList.add('paid'); sfx.coin(); setTimeout(() => sfx.harvest(), 200);
-      const neat = job.tray.length === coinCount(job.answer) ? ' 동전도 제일 적게 썼어요!' : '';
+      const neat = job.tray.length === coinCount(job.answer) ? ' 지폐와 동전도 제일 적게 썼어요!' : '';
       $('jobFeedback').textContent = (first ? `한 번에 정답! 별 하나 +1${job.streak >= 2 ? ` · ${job.streak}번 연속!` : ''}` : '맞았어요! 감사합니다~') + neat;
       renderStars($('jobStars'), job.stars, job.rounds, first);
       renderTray();
@@ -2553,20 +2577,20 @@
       job.tried = true; job.streak = 0; sfx.soft();
       react('?', 'puzzled');
       $('jobTray').classList.remove('nudge'); void $('jobTray').offsetWidth; $('jobTray').classList.add('nudge');
-      $('jobFeedback').textContent = sum < job.answer ? `조금 모자라요! ${job.paid} − ${job.total} = ? 를 세어 봐요.` : `너무 많아요! ${sum - job.answer}코인만큼 빼 볼까요?`;
+      $('jobFeedback').textContent = sum < job.answer ? `조금 모자라요! ${won(job.paid)} − ${won(job.total)} = ? 를 세어 봐요.` : `너무 많아요! ${won(sum - job.answer)}만큼 빼 볼까요?`;
     }
   });
   function react(t, cls) { const r = $('jobReact'); r.className = 'job-react'; void r.offsetWidth; r.textContent = t; r.className = 'job-react ' + cls; }
   function finishJob() {
-    const pay = 10 + job.stars;
+    const pay = WAGE + job.stars * TIP;
     G.coins += pay; G.jobDay = G.day;
-    addLedger(`편의점 알바 (시급 10 + 칭찬 팁 ${job.stars})`, pay, 'job');
+    addLedger(`편의점 알바 (시급 ${won(WAGE)} + 칭찬 팁 ${won(job.stars * TIP)})`, pay, 'job');
     $('jobRound').textContent = '오늘 알바 끝!';
-    $('jobSay').textContent = `수고했어요! 오늘 번 돈은 ${pay}코인이에요.`;
+    $('jobSay').textContent = `수고했어요! 오늘 번 돈은 ${won(pay)}이에요.`;
     $('jobReact').textContent = '';
     $('jobPlay').hidden = true; $('jobDone').hidden = false;
     renderStars($('jobDoneStars'), job.stars, job.rounds);
-    $('jobDonePay').innerHTML = `시급 <b>10코인</b> + 별 ${job.stars}개 팁 <b>${job.stars}코인</b> = <b>${pay}코인</b>`;
+    $('jobDonePay').innerHTML = `시급 <b>${won(WAGE)}</b> + 별 ${job.stars}개 팁 <b>${won(job.stars * TIP)}</b> = <b>${won(pay)}</b>`;
     giveStamp($('jobStamp'));
     $('jobClose').textContent = '닫기';
     sfx.harvest(); job = null; persist();
@@ -2574,7 +2598,8 @@
   $('jobClose').addEventListener('click', () => { job = null; $('jobClose').textContent = '그만하기'; closeSheet(); });
 
   // ---------- buses, the subway, walking ----------
-  const FARE = 2;
+  const FARES = { bus: 1500, subway: 1550 }; // 교통카드 요금, 2025
+  const fareOf = (kind) => FARES[kind] || FARES.bus;
   const ROUTES = {
     'bus:city':      { kind: 'bus', to: 'city', title: '7번 마을버스 · 동글시내 방면', desc: '동글마을에서 시내까지 가요.', icon: 'bus' },
     'bus:village':   { kind: 'bus', to: 'village', title: '7번 마을버스 · 동글마을 방면', desc: '시내에서 마을로 돌아가요.', icon: 'bus' },
@@ -2588,17 +2613,22 @@
     $('rideIcon').src = iconURL(r.icon);
     $('rideTitle').textContent = r.title;
     $('rideDesc').textContent = r.desc;
-    $('rideFare').textContent = `${FARE}코인`;
-    $('rideGo').disabled = G.coins < FARE;
-    $('rideGo').textContent = G.coins >= FARE ? '교통카드 찍고 타기' : `코인이 ${FARE - G.coins}개 모자라요`;
+    syncFare(r.kind);
     openSheet('rideSheet');
+  }
+  function syncFare(kind) {
+    const fare = fareOf(kind);
+    $('rideFare').textContent = won(fare);
+    $('rideGo').disabled = G.coins < fare;
+    $('rideGo').textContent = G.coins >= fare ? '교통카드 찍고 타기' : `${won(fare - G.coins)} 모자라요`;
   }
   function startRide(walk) {
     const r = rideKey === 'subway' ? { kind: 'subway', to: subTo, from: subFrom } : ROUTES[rideKey];
     if (!walk) {
-      if (G.coins < FARE) return;
-      G.coins -= FARE; addLedger(r.kind === 'bus' ? '버스 요금' : '지하철 요금', -FARE, 'ride');
-      sfx.card(); toast(`삑! 교통카드로 ${FARE}코인을 냈어요.`, `Beep! Paid ${FARE} coins.`);
+      const fare = fareOf(r.kind);
+      if (G.coins < fare) return;
+      G.coins -= fare; addLedger(r.kind === 'bus' ? '버스 요금' : '지하철 요금', -fare, 'ride');
+      sfx.card(); toast(`삑! 교통카드로 ${won(fare)}을 냈어요.`, `Beep! Paid ₩${fare.toLocaleString()}.`);
     }
     closeSheet(); player.goal = null; player.fishing = null;
     transition(() => {
@@ -3241,9 +3271,7 @@
     rideKey = 'subway';
     $('rideIcon').src = iconURL('train');
     renderSubwayDest();
-    $('rideFare').textContent = `${FARE}코인`;
-    $('rideGo').disabled = G.coins < FARE;
-    $('rideGo').textContent = G.coins >= FARE ? '교통카드 찍고 타기' : `코인이 ${FARE - G.coins}개 모자라요`;
+    syncFare('subway');
     openSheet('rideSheet');
   }
   function renderSubwayDest() {
@@ -3304,18 +3332,18 @@
 
   // selling at the market: prices differ from 도담네 가게, and you can haggle once a day
   const MKT_BUYS = { produce: [...Object.keys(CROPS), ...FRUIT_KEYS], fish: Object.keys(FISH) };
-  function rollMarket() { G.mprices = {}; for (const k of [...MKT_BUYS.produce, ...MKT_BUYS.fish]) G.mprices[k] = Math.max(1, Math.round(ITEMS[k].base * rand(0.95, 1.55))); }
+  function rollMarket() { G.mprices = {}; for (const k of [...MKT_BUYS.produce, ...MKT_BUYS.fish]) G.mprices[k] = wonRound(ITEMS[k].base * rand(0.95, 1.55)); }
   const haggled = (id) => G.haggle && G.haggle.day === G.day ? G.haggle[id] : undefined;
   function setHaggle(id, v) { if (!G.haggle || G.haggle.day !== G.day) G.haggle = { day: G.day }; G.haggle[id] = v; learn('haggle'); }
-  const mktPrice = (stall, k) => (G.mprices[k] || ITEMS[k].base) + (haggled(stall) === 'up' ? 1 : 0);
+  const mktPrice = (stall, k) => wonRound((G.mprices[k] || ITEMS[k].base) * (haggled(stall) === 'up' ? 1.1 : 1));
   let mktStall = null;
   function openMarketStall(id) { mktStall = id; openSheet('mktSheet'); renderMarketStall(); sfx.talk(); }
   function renderMarketStall() {
     const st = STALLS.find((s) => s.id === mktStall), cat = mktStall === 'produce' ? 'produce' : 'fish';
     $('mktTitle').textContent = st.ko;
-    $('mktCoins').textContent = `${G.coins}코인 있어요`;
+    $('mktCoins').textContent = `${won(G.coins)} 있어요`;
     const h = haggled(mktStall);
-    $('mktSay').textContent = h === 'up' ? '단골이니까 하나에 1코인씩 더 쳐줄게요!' : h === 'no' ? '오늘은 이 값이 제일 좋아요~' : cat === 'produce' ? '어서 와요! 싱싱한 거 있으면 좋은 값에 사요.' : '어서 와요! 물고기 잡아 왔어요?';
+    $('mktSay').textContent = h === 'up' ? '단골이니까 10% 더 쳐줄게요!' : h === 'no' ? '오늘은 이 값이 제일 좋아요~' : cat === 'produce' ? '어서 와요! 싱싱한 거 있으면 좋은 값에 사요.' : '어서 와요! 물고기 잡아 왔어요?';
     $('mktHaggle').disabled = !!h;
     $('mktHaggle').textContent = h ? '오늘 흥정은 했어요' : '가위바위보로 흥정하기';
     const list = $('mktList'); list.innerHTML = '';
@@ -3330,7 +3358,7 @@
       const s = document.createElement('span'); s.className = 'muted'; s.textContent = `${G.inv[k]}개`;
       nm.append(b, s);
       const pr = document.createElement('div'); pr.className = 'price';
-      pr.innerHTML = `<b>${here}코인</b><span class="delta ${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${d === 0 ? '마을과 같아요' : `마을보다 ${d > 0 ? '▲' : '▼'}${Math.abs(d)}`}</span>`;
+      pr.innerHTML = `<b>${won(here)}</b><span class="delta ${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${d === 0 ? '마을과 같아요' : `마을보다 ${d > 0 ? '▲' : '▼'}${won(Math.abs(d))}`}</span>`;
       const acts = document.createElement('div'); acts.className = 'acts';
       for (const [label, n] of [['1개 팔기', 1], ['모두', G.inv[k]]]) {
         const bt = document.createElement('button'); bt.type = 'button'; bt.className = 'btn small'; bt.textContent = label; bt.disabled = n < 1 || (label === '모두' && n < 2);
@@ -3541,13 +3569,13 @@
   function giveRequest(r) {
     if (G.inv[r.k] < r.n || r.done) return;
     G.inv[r.k] -= r.n; r.done = true;
-    const reward = 2 + r.n * 2;
+    const reward = 1000 + r.n * 500;
     G.coins += reward; addLedger('도서관 영어 심부름', reward, 'errand'); G.stats.errands++;
     G.words = G.words || {};
     const fresh = !G.words[r.k];
     G.words[r.k] = true; G.words['n' + r.n] = true;
     sfx.harvest(); speak(`Thank you! ${NUM[r.n]} ${ENG[r.k][r.n > 1 ? 1 : 0]}!`);
-    toast(`Thank you! 심부름 완료, ${reward}코인을 받았어요.` + (fresh ? ` 단어장에 새 단어 ‘${ENG[r.k][0]}’ 추가!` : ''), `Thank you! +${reward} coins.`);
+    toast(`Thank you! 심부름 완료, ${won(reward)}을 받았어요.` + (fresh ? ` 단어장에 새 단어 ‘${ENG[r.k][0]}’ 추가!` : ''), `Thank you! +₩${reward.toLocaleString()}`);
     if (G.reqs.list.every((x) => x.done)) giveStamp($('libStamp'));
     persist(); renderLibrary();
   }
@@ -3651,14 +3679,14 @@
   const MONEY_IN = { sell: '팔기', job: '알바', interest: '이자', errand: '영어 심부름·놀이', gift: '칭찬 선물' };
   const MONEY_OUT = { seed: '씨앗', food: '간식', home: '집 꾸미기', ride: '버스·지하철' };
   const LESSONS = [
-    ['sell', '처음 팔아 보기', '키운 것을 팔아서 코인을 벌었어요.'],
+    ['sell', '처음 팔아 보기', '키운 것을 팔아서 돈을 벌었어요.'],
     ['profit', '이익', '씨앗을 심어 키운 작물을 팔았어요. 씨앗값을 빼고 남는 게 이익이에요.'],
     ['trend', '시세', '값이 어제보다 오른 날 팔았어요.'],
     ['compare', '값 비교', '시장에서 마을 가게보다 비싸게 팔았어요.'],
     ['haggle', '흥정', '시장에서 값을 흥정해 봤어요.'],
     ['job', '일해서 벌기', '편의점 알바로 거스름돈을 계산하고 시급을 받았어요.'],
-    ['save', '저축', '저금통이나 은행에 코인을 넣었어요.'],
-    ['interest', '이자', '맡겨 둔 코인에 이자가 붙었어요.'],
+    ['save', '저축', '저금통이나 은행에 돈을 넣었어요.'],
+    ['interest', '이자', '맡겨 둔 돈에 이자가 붙었어요.'],
   ];
   const learn = (k) => { if (!G.stats.learn[k]) G.stats.learn[k] = G.day; };
   function track(cat, amount) {
@@ -3761,12 +3789,12 @@
     // headline numbers
     const kpi = $('pKpi'); kpi.innerHTML = '';
     for (const [label, v, note] of [['번 돈', earned, '지금까지'], ['쓴 돈', spent, '지금까지'], ['모아 둔 돈', kept, '저금통 + 은행']]) {
-      const t = el('div', 'tile'); t.append(el('span', 'tile-l', label), el('b', 'tile-v', `${v}코인`), el('span', 'tile-n', note)); kpi.append(t);
+      const t = el('div', 'tile'); t.append(el('span', 'tile-l', label), el('b', 'tile-v', wonShort(v)), el('span', 'tile-n', note)); kpi.append(t);
     }
 
     // how much of what came in was put away
     const rate = earned ? Math.max(0, Math.min(100, Math.round((Math.max(0, T.save) / earned) * 100))) : 0;
-    $('pSaveTxt').textContent = earned ? `번 돈 ${earned}코인 중 ${Math.max(0, T.save)}코인(${rate}%)을 저금통·은행에 넣었어요.` : '아직 번 돈이 없어요. 밭에서 키운 걸 팔면 여기에 쌓여요.';
+    $('pSaveTxt').textContent = earned ? `번 돈 ${won(earned)} 중 ${won(Math.max(0, T.save))}(${rate}%)을 저금통·은행에 넣었어요.` : '아직 번 돈이 없어요. 밭에서 키운 걸 팔면 여기에 쌓여요.';
     $('pSaveFill').style.width = rate + '%';
     $('pSaveMeter').setAttribute('aria-valuenow', String(rate));
 
@@ -3798,12 +3826,12 @@
 
     // something to talk about tonight
     const tips = [];
-    if (!S.learn.save) tips.push('“저금통에 10코인을 넣으면 내일은 몇 코인이 될까?”');
+    if (!S.learn.save) tips.push('“저금통에 1만원을 넣으면 내일은 얼마가 될까?”');
     else if (!S.learn.interest) tips.push('“저금통에 넣고 하룻밤 자면 무슨 일이 생길까?”');
     if (S.learn.compare) tips.push('“왜 시장에서 팔았어? 마을 가게랑 뭐가 달랐어?”');
     else tips.push('“같은 당근인데 시장이랑 마을 가게 값이 왜 다를까?”');
     const topOut = Object.entries(T.out).sort((a, b) => b[1] - a[1])[0];
-    if (topOut && topOut[1] > 0) tips.push(`“${MONEY_OUT[topOut[0]]}에 코인을 제일 많이 썼네. 다음엔 뭘 사고 싶어?”`);
+    if (topOut && topOut[1] > 0) tips.push(`“${MONEY_OUT[topOut[0]]}에 돈을 제일 많이 썼네. 다음엔 뭘 사고 싶어?”`);
     if (words.length) tips.push(`“‘${ENG[words[words.length - 1]][0]}’, 무슨 뜻이었지? 같이 소리 내서 말해 볼까?”`);
     const tl = $('pTips'); tl.innerHTML = '';
     tips.slice(0, 3).forEach((t) => tl.append(el('div', 'job-bubble', t)));
@@ -3843,7 +3871,7 @@
     for (const [name, v] of rows) {
       const r = el('div', 'hbar');
       const tr = el('span', 'hbar-track'); const f = el('i', cls); f.style.width = v ? `max(3px, ${(v / max) * 100}%)` : '0'; tr.append(f);
-      r.append(el('span', 'hbar-l', name), tr, el('span', 'hbar-v', String(v)));
+      r.append(el('span', 'hbar-l', name), tr, el('span', 'hbar-v', wonShort(v)));
       box.append(r);
     }
   }
@@ -3855,12 +3883,12 @@
     const top = niceMax(Math.max(...days.map((x) => Math.max(x.in, x.out))));
     const plot = $('pPlot'); plot.innerHTML = '';
     const grid = el('div', 'pgrid');
-    for (const v of [top, top / 2, 0]) { const g = el('div', 'gl'); g.append(el('span', null, String(v))); grid.append(g); }
+    for (const v of [top, top / 2, 0]) { const g = el('div', 'gl'); g.append(el('span', null, v >= 10000 ? `${v / 10000}만` : v >= 1000 ? `${v / 1000}천` : String(v))); grid.append(g); }
     plot.append(grid);
     const cols = el('div', 'pcols');
     for (const x of days) {
       const c = el('button', 'pcol' + (x.d === pDay ? ' on' : '')); c.type = 'button';
-      c.setAttribute('aria-label', `${x.d}일째: 번 돈 ${x.in}코인, 쓴 돈 ${x.out}코인`);
+      c.setAttribute('aria-label', `${x.d}일째: 번 돈 ${won(x.in)}, 쓴 돈 ${won(x.out)}`);
       const bars = el('span', 'pbars');
       for (const [cls, v] of [['in', x.in], ['out', x.out]]) { const b = el('i', cls); b.style.height = v ? `max(2px, ${(v / top) * 100}%)` : '0'; bars.append(b); }
       c.append(bars, el('span', 'px', x.d === G.day ? '오늘' : `${x.d}일`));
@@ -3870,13 +3898,13 @@
     plot.append(cols);
     const sel = days.find((x) => x.d === pDay) || days[days.length - 1];
     const rd = $('pRead'); rd.innerHTML = '';
-    rd.append(`${sel.d === G.day ? '오늘' : `${sel.d}일째`} · 번 돈 `, el('b', null, `${sel.in}코인`), ' · 쓴 돈 ', el('b', null, `${sel.out}코인`));
+    rd.append(`${sel.d === G.day ? '오늘' : `${sel.d}일째`} · 번 돈 `, el('b', null, won(sel.in)), ' · 쓴 돈 ', el('b', null, won(sel.out)));
     const tb = $('pTable'); tb.hidden = !pTable; tb.innerHTML = '';
     $('pTableBtn').textContent = pTable ? '숫자 표 접기' : '숫자로 보기';
     $('pTableBtn').setAttribute('aria-expanded', String(pTable));
     if (pTable) {
       const head = el('tr'); ['날', '번 돈', '쓴 돈'].forEach((h) => head.append(el('th', null, h))); tb.append(head);
-      for (const x of days.slice().reverse()) { const tr = el('tr'); [`${x.d}일째`, x.in, x.out].forEach((v) => tr.append(el('td', null, String(v)))); tb.append(tr); }
+      for (const x of days.slice().reverse()) { const tr = el('tr'); [`${x.d}일째`, won(x.in), won(x.out)].forEach((v) => tr.append(el('td', null, v))); tb.append(tr); }
     }
   }
   $('pTableBtn').addEventListener('click', () => { pTable = !pTable; renderChart(); });
@@ -4294,7 +4322,7 @@
     ctx.fillStyle = '#3e4a3d'; rr(ctx, 42, 42, 204, 100, 6); ctx.fill();
     label('MENU', 144, 62, 14, '#f3e4cf');
     ctx.font = `600 13px ${FONT}`; ctx.textAlign = 'left'; ctx.fillStyle = '#f3e4cf';
-    ctx.fillText(`핫초코 ......... ${FOODS.hotchoco.price}`, 60, 92); ctx.fillText(`딸기라떼 ...... ${FOODS.strawlatte.price}`, 60, 116);
+    ctx.fillText(`핫초코 ...... ${won(FOODS.hotchoco.price)}`, 58, 92); ctx.fillText(`딸기라떼 .... ${won(FOODS.strawlatte.price)}`, 58, 116);
     // the guestbook: a cork board with one paper slip per note
     ctx.fillStyle = '#8d5f45'; rr(ctx, BOARD.x - 6, BOARD.y - 6, BOARD.w + 12, BOARD.h + 12, 10); ctx.fill();
     ctx.fillStyle = '#d4a979'; rr(ctx, BOARD.x, BOARD.y, BOARD.w, BOARD.h, 6); ctx.fill();
@@ -4401,7 +4429,7 @@
     for (let i = 0; i < of; i++) box.append(el('span', 'star' + (i < n ? ' on' : '') + (fresh && i === n - 1 ? ' new' : ''), i < n ? '★' : '☆'));
   }
   // 칭찬 도장판: one stamp for each game finished in a day; ten stamps open a gift box
-  const GIFT = 20;
+  const GIFT = 10000;
   function giveStamp(box) {
     G.stamps = (G.stamps || 0) + 1;
     const full = G.stamps >= 10, shown = G.stamps;
@@ -4415,7 +4443,7 @@
   function stampCard(box, count, opened) {
     box.hidden = false; box.innerHTML = '';
     const head = el('div', 'stamp-head');
-    head.append(el('b', null, '칭찬 도장판'), el('span', 'muted', opened ? `선물 상자를 열었어요! +${GIFT}코인` : `${count} / 10 · 10개 모으면 선물 상자!`));
+    head.append(el('b', null, '칭찬 도장판'), el('span', 'muted', opened ? `선물 상자를 열었어요! +${won(GIFT)}` : `${count} / 10 · 10개 모으면 선물 상자!`));
     const grid = el('div', 'stamps');
     for (let i = 0; i < 10; i++) {
       const s = el('span', 'stamp' + (i < count ? ' on' : '') + (i === count - 1 ? ' new' : ''));
@@ -4494,9 +4522,9 @@
     $('quizRound').textContent = '끝!';
     renderStars($('quizDoneStars'), quiz.stars, quiz.rounds);
     if (first) {
-      const coins = Math.max(1, quiz.stars);
+      const coins = Math.max(1, quiz.stars) * 500;
       G.coins += coins; G.quizDay = G.day; addLedger('영어 듣기 놀이', coins, 'errand');
-      $('quizDoneMsg').textContent = `별 ${quiz.stars}개! ${coins}코인을 받았어요. 들은 단어는 단어장에 모였어요.`;
+      $('quizDoneMsg').textContent = `별 ${quiz.stars}개! ${won(coins)}을 받았어요. 들은 단어는 단어장에 모였어요.`;
       giveStamp($('quizStamp'));
     } else {
       $('quizDoneMsg').textContent = `별 ${quiz.stars}개! 오늘 보상은 벌써 받았어요. 연습은 언제든 좋아요.`;
@@ -4518,7 +4546,7 @@
     rps = { kind, id, busy: false, over: false };
     const st = kind === 'stall' ? STALLS.find((s) => s.id === id) : null;
     $('rpsTitle').textContent = '가위바위보 흥정!';
-    $('rpsSay').textContent = kind === 'stall' ? `${st ? st.ko : '사장님'}: “이기면 하나에 1코인씩 더 쳐줄게요!”` : '사장님: “이기면 하나 더 얹어줄게요!”';
+    $('rpsSay').textContent = kind === 'stall' ? `${st ? st.ko : '사장님'}: “이기면 10% 더 쳐줄게요!”` : '사장님: “이기면 하나 더 얹어줄게요!”';
     $('rpsFace').src = `assets/dongle/base-${1 + (id.length % 5)}.png`;
     $('rpsMe').textContent = '?'; $('rpsThem').textContent = '?'; $('rpsResult').textContent = '';
     $('rpsResult').className = 'rps-result';
@@ -4554,7 +4582,7 @@
       }
       rps.over = true;
       setHaggle(rps.id, win ? (rps.kind === 'stall' ? 'up' : 'dum') : 'no');
-      if (win) { $('rpsResult').textContent = rps.kind === 'stall' ? '이겼어요! 오늘은 하나에 1코인씩 더 받아요.' : '이겼어요! 다음에 사면 하나 더 줘요.'; $('rpsResult').className = 'rps-result win'; sfx.harvest(); }
+      if (win) { $('rpsResult').textContent = rps.kind === 'stall' ? '이겼어요! 오늘은 10% 더 받아요.' : '이겼어요! 다음에 사면 하나 더 줘요.'; $('rpsResult').className = 'rps-result win'; sfx.harvest(); }
       else { $('rpsResult').textContent = '졌어요~ 값은 그대로예요. 그래도 재밌었죠?'; $('rpsResult').className = 'rps-result lose'; sfx.soft(); }
       $('rpsBack').textContent = '가게로 돌아가기';
       persist();
@@ -5181,11 +5209,17 @@
     ctx.fillStyle = HAIR; ctx.beginPath(); ctx.arc(8.5, -1.5, 1.3, 0, 7); ctx.fill();
     if (k === 'catfish') { ctx.strokeStyle = HAIR; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(12, 1); ctx.quadraticCurveTo(16, 3, 17, 7); ctx.moveTo(12, 2); ctx.quadraticCurveTo(15, 6, 14, 9); ctx.stroke(); }
   }
+  // money: a green 10,000원 note with a silver 500원 coin in front
   function drawCoin() {
-    ctx.fillStyle = clayGrad(0, 0, 11, '#f9e092', '#e2bd55', '#b8902f');
-    ctx.beginPath(); ctx.arc(0, 0, 11, 0, 7); ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(0, 0, 7, 0, 7); ctx.stroke();
-    ctx.fillStyle = 'rgba(150,110,30,0.55)'; ctx.font = `800 9px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('동', 0, 0.5);
+    ctx.save(); ctx.rotate(-0.22);
+    ctx.fillStyle = clayGrad(-2, -4, 16, '#cfe6c4', '#9cc78c', '#78a868'); rr(ctx, -15, -12, 26, 15, 2.5); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.65)'; ctx.lineWidth = 1.2; rr(ctx, -13, -10, 22, 11, 1.5); ctx.stroke();
+    ctx.fillStyle = 'rgba(60,110,50,0.5)'; ctx.beginPath(); ctx.arc(4, -4.5, 3, 0, 7); ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = clayGrad(3, 4, 9, '#ffffff', '#cfd5dc', '#959fa9');
+    ctx.beginPath(); ctx.arc(3, 4, 8.5, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(3, 4, 6, 0, 7); ctx.stroke();
+    ctx.fillStyle = 'rgba(70,80,92,0.7)'; ctx.font = `800 8px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('₩', 3, 4.5);
   }
   function drawSeedBag() {
     ctx.fillStyle = clayGrad(0, 3, 12, '#ead2a8', '#c9a77a', '#a4835a');
