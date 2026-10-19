@@ -376,6 +376,111 @@
   .rest-pic { width: 96px; height: 120px; object-fit: contain; }
   @media (prefers-reduced-motion: no-preference) { .gate-a.nudge { animation: nudge 0.3s; } }
 
+  /* 배경음악 고르기 */
+  .tracks { display: flex; flex-direction: column; gap: 6px; }
+  .track { display: flex; align-items: center; gap: 12px; padding: 10px 14px 10px 10px; border: 0; border-radius: 16px; background: var(--grouped); color: var(--ink); text-align: left; font-family: var(--font); cursor: pointer; }
+  .track.on { background: #fbeee2; box-shadow: inset 0 0 0 2px var(--accent); }
+  .track-ico { width: 44px; height: 44px; flex: none; border-radius: 14px; display: grid; place-items: center; color: #ffffff; font-size: 22px; font-weight: 800; }
+  .track-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .track-t b { font-size: 16px; }
+  .track-t .muted { font-size: 13px; }
+  .eq { display: flex; align-items: flex-end; gap: 3px; height: 18px; flex: none; }
+  .eq i { width: 4px; height: 6px; border-radius: 2px; background: var(--accent); }
+  @media (prefers-reduced-motion: no-preference) {
+    .eq i { animation: eq 0.9s ease-in-out infinite; }
+    .eq i:nth-child(2) { animation-delay: -0.3s; } .eq i:nth-child(3) { animation-delay: -0.6s; }
+    @keyframes eq { 50% { height: 18px; } }
+  }
+
+  /* little games: stars, coins, the stamp card */
+  #jobSheet > *, #quizSheet > *, #libSheet > * { flex-shrink: 0; }
+  .job-play, .job-done { display: flex; flex-direction: column; gap: 12px; }
+  .job-done { align-items: stretch; text-align: center; }
+  .stars { display: flex; gap: 4px; font-size: 22px; line-height: 1; color: #e0d6ca; }
+  .stars.big { justify-content: center; font-size: 38px; }
+  .star.on { color: #e2bd55; }
+  .job-face-wrap { position: relative; flex: none; }
+  .job-react { position: absolute; top: -6px; right: -10px; font: 900 22px var(--font); }
+  .job-react.happy { color: #e58aa0; }
+  .job-react.puzzled { color: var(--down); }
+  .tray { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 16px; background: #f6efe3; box-shadow: inset 0 2px 6px rgba(120, 90, 60, 0.12); }
+  .tray-top { display: flex; justify-content: space-between; align-items: baseline; font-size: 14px; font-weight: 600; color: var(--sub); }
+  .tray-top b { font-size: 22px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .tray-coins { display: flex; flex-wrap: wrap; gap: 6px; min-height: 40px; align-items: center; }
+  .coin { border: 0; border-radius: 50%; cursor: pointer; display: grid; place-items: center; font: 800 20px var(--font); color: #6b4a1f; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.12); }
+  .coin.c10 { width: 64px; height: 64px; background: radial-gradient(circle at 35% 30%, #fff3c4, #e8c45c 55%, #c99a2e); }
+  .coin.c5 { width: 56px; height: 56px; background: radial-gradient(circle at 35% 30%, #ffffff, #cfd5dc 55%, #9aa4ae); color: #4a5560; }
+  .coin.c1 { width: 48px; height: 48px; background: radial-gradient(circle at 35% 30%, #ffd9bf, #d99a6c 55%, #a8683e); color: #5a3418; font-size: 18px; }
+  .coin.mini { width: 36px; height: 36px; font-size: 14px; }
+  .coin:active { transform: scale(0.92); }
+  .coin-pad { display: flex; justify-content: center; align-items: center; gap: 18px; }
+  .job-acts { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; }
+  .job-item.scan { opacity: 0; }
+  .stamp-card { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 16px; background: #fff8ee; box-shadow: inset 0 0 0 1.5px #f0dcc4; text-align: left; }
+  .stamp-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .stamp-head b { font-size: 15px; }
+  .stamp-head .muted { font-size: 12px; }
+  .stamps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; justify-items: center; }
+  .stamp { width: 48px; height: 48px; border-radius: 50%; box-sizing: border-box; border: 2px dashed #e3d4c0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .stamp.on { border: 2.5px solid #d9534f; color: #d9534f; transform: rotate(-12deg); background: rgba(217, 83, 79, 0.06); }
+  .stamp i { font-style: normal; font-weight: 900; line-height: 1.05; }
+  .stamp i:first-child { font-size: 14px; }
+  .stamp i:last-child { font-size: 8.5px; letter-spacing: -0.04em; }
+  .gift-note { font-size: 13px; font-weight: 700; color: var(--accent); }
+  .quiz-ask { display: flex; align-items: center; gap: 14px; }
+  .quiz-speak { width: 72px; height: 72px; flex: none; border: 0; border-radius: 50%; cursor: pointer; background: var(--accent); color: #ffffff; display: grid; place-items: center; box-shadow: 0 6px 16px rgba(200, 113, 79, 0.35); }
+  .quiz-ask p { font-size: 16px; font-weight: 700; line-height: 1.45; }
+  .quiz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .quiz-card { height: 104px; border: 0; border-radius: 18px; background: var(--grouped); cursor: pointer; display: grid; place-items: center; }
+  .quiz-pics { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; max-width: 120px; }
+  .quiz-pics img { width: 56px; height: 56px; }
+  .quiz-pics.n2 img, .quiz-pics.n3 img { width: 44px; height: 44px; }
+  .quiz-card.right { background: #dff1d6; box-shadow: inset 0 0 0 3px #7fb069; }
+  .quiz-card.wrong { background: #fde7e3; }
+  .quiz-card.hint { box-shadow: inset 0 0 0 3px #e2bd55; }
+  .rps-who { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; }
+  .rps-who img { width: 56px; height: 70px; object-fit: contain; flex: none; }
+  .rps-who p { font-size: 15px; font-weight: 600; }
+  .rps-vs { display: flex; align-items: center; justify-content: center; gap: 18px; width: 100%; }
+  .rps-vs > div { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .rps-vs b { font-size: 18px; color: var(--sub); }
+  .rps-vs small { font-size: 12px; color: var(--sub); font-weight: 600; }
+  .rps-hand { width: 84px; height: 84px; border-radius: 24px; background: var(--grouped); display: grid; place-items: center; font-size: 44px; font-weight: 800; color: var(--sub); }
+  .rps-result { min-height: 24px; font-size: 16px; font-weight: 800; }
+  .rps-result.win { color: #3f7a2c; } .rps-result.lose { color: var(--sub); } .rps-result.draw { color: var(--accent); }
+  .rps-pick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
+  .rps-btn { height: 86px; border: 0; border-radius: 18px; background: #fbeee2; color: var(--ink); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font: 700 14px var(--font); }
+  .rps-btn:disabled { opacity: 0.45; cursor: default; }
+  .rps-hand-ico { font-size: 34px; line-height: 1.1; }
+  @media (prefers-reduced-motion: no-preference) {
+    .job-face.hop { animation: hop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1); }
+    @keyframes hop { from { transform: translateY(18px) scale(0.85); opacity: 0; } }
+    .job-item.scan { animation: scan 0.35s cubic-bezier(0.3, 1.5, 0.5, 1) forwards; }
+    @keyframes scan { from { opacity: 0; transform: translateX(30px) scale(0.8); } to { opacity: 1; transform: none; } }
+    .job-react { animation: react 0.9s ease-out; }
+    @keyframes react { from { transform: translateY(10px) scale(0.4); opacity: 0; } 30% { transform: scale(1.3); opacity: 1; } }
+    .tray.paid .tray-coins .coin { animation: fly 0.7s ease-in forwards; }
+    @keyframes fly { to { transform: translateY(-160px) scale(0.5); opacity: 0; } }
+    .tray.nudge { animation: nudge 0.3s; }
+    .star.new { animation: starpop 0.6s cubic-bezier(0.3, 1.8, 0.5, 1); }
+    @keyframes starpop { from { transform: scale(2.4) rotate(-30deg); opacity: 0; } }
+    .stamp.new.on { animation: stampin 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) 0.2s backwards; }
+    @keyframes stampin { from { transform: scale(2.2) rotate(-40deg); opacity: 0; } }
+    .quiz-speak.ring { animation: ring 0.8s ease-out; }
+    @keyframes ring { 0% { box-shadow: 0 0 0 0 rgba(200, 113, 79, 0.55); } 100% { box-shadow: 0 0 0 22px rgba(200, 113, 79, 0); } }
+    .quiz-card.wrong { animation: nudge 0.3s; }
+    .quiz-card.right { animation: starpop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1); }
+    .quiz-card.hint { animation: glow 1s ease-in-out infinite; }
+    @keyframes glow { 50% { box-shadow: inset 0 0 0 3px #e2bd55, 0 0 0 6px rgba(226, 189, 85, 0.35); } }
+  }
+
+  /* eating up close */
+  .eat { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: rgba(31, 27, 23, 0.5); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); cursor: pointer; }
+  #eatCanvas { width: min(86vw, 380px); height: min(86vw, 380px); border-radius: 50%; box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.85), 0 18px 50px rgba(0, 0, 0, 0.3); }
+  .eat-say { margin: 6px 0 0; color: #ffffff; font: 800 22px var(--font); letter-spacing: -0.02em; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); }
+  .eat-skip { margin: 0; color: rgba(255, 255, 255, 0.7); font-size: 13px; }
+  @media (prefers-reduced-motion: no-preference) { #eatCanvas { animation: popin 0.3s cubic-bezier(0.3, 1.5, 0.5, 1); } @keyframes popin { from { transform: scale(0.6); opacity: 0; } } }
+
   /* 몽글카페 */
   .cafe-bar { position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
   .chat-btn { position: relative; width: 62px; height: 62px; border: 0; border-radius: 20px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; background: rgba(255, 255, 255, 0.95); color: var(--ink); font: 700 11px var(--font); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 6px 18px rgba(0, 0, 0, 0.12); }
@@ -420,7 +525,7 @@
   <div class="tools">
    <div class="tool-row">
     <button class="round" id="enBtn" type="button" aria-pressed="false" aria-label="영어 같이 보기">EN</button>
-    <button class="round" id="musicBtn" type="button" aria-pressed="true" aria-label="배경음악">
+    <button class="round" id="musicBtn" type="button" aria-pressed="true" aria-label="배경음악 고르기">
       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 17.5V6.2l10-2v11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.6" cy="17.6" r="2.6" fill="currentColor"/><circle cx="16.6" cy="15.3" r="2.6" fill="currentColor"/></svg>
     </button>
     <button class="round" id="soundBtn" type="button" aria-pressed="true" aria-label="효과음">
@@ -538,11 +643,22 @@
 
 <div class="sheet" id="jobSheet" hidden>
   <div class="row-head"><h2>편의점 알바</h2><span class="muted" id="jobRound"></span></div>
-  <div class="job-customer"><img id="jobFace" alt="" width="64" height="80"><div class="job-bubble" id="jobSay"></div></div>
-  <div class="job-items" id="jobItems"></div>
-  <p class="job-q" id="jobQ"></p>
-  <div class="job-choices" id="jobChoices"></div>
-  <p class="muted" id="jobFeedback"></p>
+  <div class="job-customer"><div class="job-face-wrap"><img id="jobFace" class="job-face" alt="" width="64" height="80"><span class="job-react" id="jobReact" aria-hidden="true"></span></div><div class="job-bubble" id="jobSay"></div></div>
+  <div class="job-play" id="jobPlay">
+    <div class="stars" id="jobStars"></div>
+    <div class="job-items" id="jobItems"></div>
+    <p class="job-q" id="jobQ"></p>
+    <div class="tray" id="jobTray"><div class="tray-top"><span>내가 줄 거스름돈</span><b id="traySum">0코인</b></div><div class="tray-coins" id="trayCoins"></div></div>
+    <div class="coin-pad" id="coinPad"></div>
+    <div class="job-acts"><button class="btn soft" id="trayReset" type="button">다시 담기</button><button class="btn" id="trayGive" type="button">드리기</button></div>
+    <p class="muted" id="jobFeedback" aria-live="polite"></p>
+  </div>
+  <div class="job-done" id="jobDone" hidden>
+    <div class="stars big" id="jobDoneStars"></div>
+    <p class="job-q" id="jobDonePay"></p>
+    <div class="stamp-card" id="jobStamp" hidden></div>
+    <p class="muted">용돈기입장에 적어뒀어요. 알바는 하루에 한 번 할 수 있어요.</p>
+  </div>
   <button class="btn soft" id="jobClose" type="button">그만하기</button>
 </div>
 
@@ -558,7 +674,7 @@
 <div class="sheet" id="mktSheet" hidden>
   <div class="row-head"><h2 id="mktTitle">시장</h2><span class="muted" id="mktCoins"></span></div>
   <div class="job-bubble" id="mktSay"></div>
-  <button class="btn soft" id="mktHaggle" type="button">조금만 더 주세요 (흥정하기)</button>
+  <button class="btn soft" id="mktHaggle" type="button">가위바위보로 흥정하기</button>
   <div class="market" id="mktList"></div>
   <p class="example" id="mktNote"></p>
   <button class="btn soft" id="mktClose" type="button">나가기</button>
@@ -569,6 +685,8 @@
   <div class="job-customer"><img id="libFace" src="assets/dongle/coffee-5.png" alt="" width="64" height="80"><div class="job-bubble" id="libSay" lang="en"></div></div>
   <span class="label">오늘의 영어 심부름</span>
   <div class="market" id="libReqs"></div>
+  <div class="stamp-card" id="libStamp" hidden></div>
+  <button class="btn" id="libQuiz" type="button">듣고 고르기 놀이 · 영어 퀴즈</button>
   <button class="btn soft" id="libBook" type="button">영어 단어장 보기</button>
   <button class="btn soft" id="libClose" type="button">나가기</button>
 </div>
@@ -689,6 +807,51 @@
   <button class="btn soft" id="boardClose" type="button">닫기</button>
 </div>
 
+<div class="sheet" id="musicSheet" hidden>
+  <div class="row-head"><h2>배경음악</h2><span class="muted" id="musicNow"></span></div>
+  <div class="tracks" id="trackList" role="radiogroup" aria-label="배경음악 고르기"></div>
+  <button class="btn soft" id="musicClose" type="button">닫기</button>
+</div>
+
+<div class="sheet" id="quizSheet" hidden>
+  <div class="row-head"><h2>듣고 고르기</h2><span class="muted" id="quizRound"></span></div>
+  <div class="job-play" id="quizPlay">
+    <div class="stars" id="quizStars"></div>
+    <div class="quiz-ask">
+      <button class="quiz-speak" id="quizSpeak" type="button" aria-label="영어로 다시 듣기"><svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M4 9.2v5.6h3.8L13 19V5L7.8 9.2H4z" fill="currentColor"/><path d="M16.2 8.6a5 5 0 0 1 0 6.8M18.8 6a8.6 8.6 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+      <p id="quizHint"></p>
+    </div>
+    <div class="quiz-grid" id="quizGrid"></div>
+    <p class="muted" id="quizFeedback" aria-live="polite"></p>
+  </div>
+  <div class="job-done" id="quizDone" hidden>
+    <div class="stars big" id="quizDoneStars"></div>
+    <p class="job-q" id="quizDoneMsg"></p>
+    <div class="stamp-card" id="quizStamp" hidden></div>
+    <button class="btn" id="quizAgain" type="button">한 번 더 하기</button>
+  </div>
+  <button class="btn soft" id="quizClose" type="button">그만하기</button>
+</div>
+
+<div class="sheet center" id="rpsSheet" hidden>
+  <h2 id="rpsTitle">가위바위보 흥정!</h2>
+  <div class="rps-who"><img id="rpsFace" alt="" width="56" height="70"><p id="rpsSay"></p></div>
+  <div class="rps-vs">
+    <div><span class="rps-hand" id="rpsMe">?</span><small>나</small></div>
+    <b>VS</b>
+    <div><span class="rps-hand" id="rpsThem">?</span><small>사장님</small></div>
+  </div>
+  <p class="rps-result" id="rpsResult" aria-live="polite"></p>
+  <div class="rps-pick" id="rpsPick"></div>
+  <button class="btn soft" id="rpsBack" type="button">그만할래요</button>
+</div>
+
+<div class="eat" id="eatStage" hidden>
+  <canvas id="eatCanvas" width="600" height="600" aria-hidden="true"></canvas>
+  <p class="eat-say" id="eatSay" aria-live="polite"></p>
+  <p class="eat-skip">화면을 누르면 넘어가요</p>
+</div>
+
 <div class="room-bar" id="roomBar" hidden>
   <button class="btn" id="decoBtn" type="button">꾸미기</button>
   <button class="btn soft" id="bankBtn" type="button">저금통</button>
@@ -737,6 +900,7 @@
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const lerp = (a, b, t) => a + (b - a) * t;
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 
   // ---------- palette (from the clay figures) ----------
   const SHIRTS = [
@@ -930,7 +1094,8 @@
       paper: 'cream', floor: 'wood', papers: ['cream'], floors: ['wood'],
     },
     prices: {}, prev: {}, ledger: [],
-    shirt: 'yellow', look: 1, en: false, muted: false, music: true,
+    shirt: 'yellow', look: 1, en: false, muted: false, music: true, track: 'musicbox',
+    stamps: 0, quizDay: 0,
     tips: { planted: false, fished: false, room: false },
   };
   function rollPrices() {
@@ -940,11 +1105,11 @@
   rollPrices(); G.prev = { ...G.prices };
 
   function save() {
-    return { v: 2, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, stats: G.stats, notes: G.notes, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
+    return { v: 2, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, stats: G.stats, notes: G.notes, track: G.track, stamps: G.stamps, quizDay: G.quizDay, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
   }
   function load(s) {
     if (!s || s.v !== 2) return false;
-    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home, acct: s.acct || 0, jobDay: s.jobDay || 0, mprices: s.mprices || {}, haggle: s.haggle || null, reqs: s.reqs || null, words: s.words || {}, stats: { ...G.stats, ...(s.stats || {}) }, notes: Array.isArray(s.notes) ? s.notes : [] });
+    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home, acct: s.acct || 0, jobDay: s.jobDay || 0, mprices: s.mprices || {}, haggle: s.haggle || null, reqs: s.reqs || null, words: s.words || {}, stats: { ...G.stats, ...(s.stats || {}) }, notes: Array.isArray(s.notes) ? s.notes : [], track: s.track || 'musicbox', stamps: s.stamps || 0, quizDay: s.quizDay || 0 });
     (s.plots || []).forEach((p, i) => { if (plots[i]) Object.assign(plots[i], p); });
     (s.trees || []).forEach(([n, r], i) => { if (trees[i] && trees[i].fruit) { trees[i].n = n; trees[i].regrow = r; } });
     return true;
@@ -1037,71 +1202,213 @@
     return ac;
   }
 
-  // ---------- background music: a slow music-box loop, played live ----------
+  // ---------- background music: six little songs, played live from notes ----------
   const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
-  const PROG = [[53, 57, 60, 64], [52, 55, 59, 62], [50, 53, 57, 60], [48, 52, 55, 59]]; // Fmaj7 Em7 Dm7 Cmaj7
-  const PENTA = [72, 74, 76, 79, 81, 84, 86, 88];                                           // C major pentatonic
-  const EIGHTH = 60 / 70 / 2;                                                               // 70 bpm
-  const M = { bus: null, nodes: [], timer: null, next: 0, step: 0, last: 76 };
+  const M = { bus: null, nodes: [], srcs: [], timer: null, next: 0, step: 0, last: 76, track: null };
+  let noiseBuf = null;
+  function noise() {
+    if (!noiseBuf) { noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+    const s = ac.createBufferSource(); s.buffer = noiseBuf; return s;
+  }
+  // instruments: each one note, scheduled at time t into the music bus
   function voice(f, t, d, type, v, attack = 0.008) {
     const o = ac.createOscillator(), g = ac.createGain();
     o.type = type; o.frequency.setValueAtTime(f, t);
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + attack); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
     o.connect(g).connect(M.bus); o.start(t); o.stop(t + d + 0.05);
   }
+  function piano(m, t, d, v) {
+    const f = mtof(m);
+    voice(f, t, d, 'sine', v, 0.006);
+    voice(f * 2, t, d * 0.45, 'sine', v * 0.22, 0.004);
+    voice(f * 3, t, d * 0.2, 'triangle', v * 0.06, 0.003);
+  }
+  function pluck(m, t, d, v, bright = 2600, bend = 0) {
+    const o = ac.createOscillator(), lp = ac.createBiquadFilter(), g = ac.createGain(), f = mtof(m);
+    o.type = 'sawtooth'; o.frequency.setValueAtTime(f, t);
+    if (bend) { o.frequency.setValueAtTime(f, t + d * 0.35); o.frequency.linearRampToValueAtTime(f * (1 + bend), t + d * 0.55); o.frequency.linearRampToValueAtTime(f, t + d * 0.8); }
+    lp.type = 'lowpass'; lp.Q.value = 1.5; lp.frequency.setValueAtTime(bright, t); lp.frequency.exponentialRampToValueAtTime(380, t + d * 0.7);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(lp).connect(g).connect(M.bus); o.start(t); o.stop(t + d + 0.05);
+  }
+  function whistle(m, t, d, v) {
+    const o = ac.createOscillator(), lfo = ac.createOscillator(), lg = ac.createGain(), g = ac.createGain(), f = mtof(m);
+    o.type = 'sine'; o.frequency.setValueAtTime(f, t);
+    lfo.frequency.value = 5.5; lg.gain.value = f * 0.008; lfo.connect(lg).connect(o.frequency);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.03); g.gain.setValueAtTime(v, t + d * 0.6); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(g).connect(M.bus); o.start(t); lfo.start(t); o.stop(t + d + 0.05); lfo.stop(t + d + 0.05);
+  }
+  function hit(t, v, type, f, d, q = 1) {
+    const s = noise(), fl = ac.createBiquadFilter(), g = ac.createGain();
+    fl.type = type; fl.frequency.value = f; fl.Q.value = q;
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    s.connect(fl).connect(g).connect(M.bus); s.start(t, Math.random() * 0.5); s.stop(t + d + 0.02);
+  }
+  function kick(t, v, f0 = 120, f1 = 45, d = 0.28) {
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + 0.12);
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(g).connect(M.bus); o.start(t); o.stop(t + d + 0.02);
+  }
+  // a seeded coin per step, so a song repeats the same way each time around
+  const roll = (s, salt = 0) => mulberry32(s * 977 + salt * 131)();
+  const near = (scale, m) => scale.reduce((a, b) => (Math.abs(b - m) < Math.abs(a - m) ? b : a));
+  function walk(scale, from, r) { const i = Math.max(0, scale.indexOf(near(scale, from))); return scale[clamp(i + (r < 0.3 ? -1 : r < 0.55 ? 1 : r < 0.68 ? 2 : r < 0.8 ? -2 : 0), 0, scale.length - 1)]; }
+
+  const TRACKS = {
+    musicbox: {
+      ko: '오르골 산책', en: 'Music box stroll', desc: '느릿느릿 반짝이는 오르골', glyph: '♪', color: '#e2bd55',
+      step: 60 / 70 / 2, fx: { lp: 2600, echo: 3, fb: 0.28, wet: 0.3 },
+      play(t, s, soft) {
+        const PROG = [[53, 57, 60, 64], [52, 55, 59, 62], [50, 53, 57, 60], [48, 52, 55, 59]], PENTA = [72, 74, 76, 79, 81, 84, 86, 88];
+        const bar = Math.floor(s / 8) % 4, beat = s % 8, chord = PROG[bar];
+        if (beat === 0) { voice(mtof(chord[0] - 12), t, this.step * 8, 'sine', 0.07 * soft, 0.04); chord.forEach((m, i) => voice(mtof(m), t + i * 0.04, this.step * 7.6, 'sine', 0.012 * soft, 0.7)); }
+        const r = roll(s), strong = beat === 0 || beat === 4;
+        if (strong || r < (soft < 1 ? 0.22 : 0.42)) {
+          let m;
+          if (strong) { m = chord[beat === 0 ? bar : (bar + 2) % 4] + 24; while (m > 88) m -= 12; }
+          else { const i = Math.max(0, PENTA.indexOf(M.last)); m = PENTA[clamp(i + (r < 0.21 ? -1 : r < 0.32 ? 1 : r < 0.37 ? 2 : -2), 0, PENTA.length - 1)]; }
+          M.last = near(PENTA, m);
+          voice(mtof(m), t, 1.5, 'triangle', 0.04 * soft);
+          voice(mtof(m + 12), t, 0.45, 'sine', 0.008 * soft);
+        }
+      },
+    },
+    piano: {
+      ko: '창가의 피아노', en: 'Piano by the window', desc: '잔잔한 오후의 피아노', glyph: '♩', color: '#7f9b6b',
+      step: 60 / 72 / 2, fx: { lp: 3200, echo: 4, fb: 0.22, wet: 0.22 },
+      play(t, s, soft) {
+        const PROG = [[41, 45, 48, 52], [43, 47, 50, 55], [40, 43, 47, 50], [45, 48, 52, 55]]; // Fmaj7 G Em7 Am7
+        const SCALE = [64, 65, 67, 69, 71, 72, 74, 76, 77, 79];
+        const ARP = [0, 1, 2, 3, 2, 1, 2, 3];
+        const bar = Math.floor(s / 8) % 4, beat = s % 8, chord = PROG[bar];
+        if (beat === 0) piano(chord[0] - 12, t, 2.6, 0.06 * soft);
+        piano(chord[ARP[beat]] + 12, t + (beat % 2 ? 0.015 : 0), 1.3, (beat % 2 ? 0.014 : 0.02) * soft);
+        const r = roll(s, 2);
+        if (beat === 0 || beat === 3 || (beat === 6 && r < 0.6)) {
+          const target = beat === 0 ? chord[(bar + 1) % 4] + 24 : walk(SCALE, M.last, r);
+          const m = near(SCALE, target); M.last = m;
+          piano(m, t, 2, 0.034 * soft);
+        }
+      },
+    },
+    uke: {
+      ko: '우쿨렐레 소풍', en: 'Ukulele picnic', desc: '통통 튀는 신나는 소풍길', glyph: '☀', color: '#c8714f',
+      step: 60 / 100 / 4, fx: { lp: 4200, echo: 6, fb: 0.15, wet: 0.14 },
+      play(t, s, soft) {
+        const PROG = [[55, 59, 62, 67], [50, 54, 57, 62], [52, 55, 59, 64], [48, 52, 55, 60]]; // G D Em C
+        const SCALE = [67, 69, 71, 74, 76, 79, 81];
+        const bar = Math.floor(s / 16) % 4, st = s % 16, chord = PROG[bar];
+        // island strum: down, down-up, up-down-up
+        const strum = { 0: 1, 4: 1, 6: -1, 10: -1, 12: 1, 14: -1 }[st];
+        if (strum) { const notes = strum > 0 ? chord : [...chord].reverse(); notes.forEach((m, i) => pluck(m, t + i * 0.012, 0.55, (strum > 0 ? 0.02 : 0.013) * soft, 3400)); }
+        if (st === 0 || st === 8) voice(mtof(chord[0] - 12), t, 0.5, 'sine', 0.06 * soft, 0.01);
+        if (st % 2 === 0) hit(t, (st % 4 === 2 ? 0.02 : 0.009) * soft, 'bandpass', 6000, 0.05, 2);
+        const r = roll(s, 3);
+        if (st % 4 === 0 && (st === 0 || r < 0.62)) {
+          const m = st === 0 ? near(SCALE, chord[3] + 12) : walk(SCALE, M.last, r);
+          M.last = m; whistle(m, t, this.step * (r < 0.3 ? 6 : 3.5), 0.032 * soft);
+        }
+      },
+    },
+    lofi: {
+      ko: '빗소리 로파이', en: 'Rainy lo-fi', desc: '빗소리와 느긋한 비트', glyph: '☂', color: '#5b8fd0',
+      step: 60 / 74 / 4, fx: { lp: 1900, echo: 6, fb: 0.25, wet: 0.2, rain: true },
+      play(t, s, soft) {
+        const PROG = [[50, 57, 60, 64], [43, 53, 59, 62], [48, 55, 59, 64], [45, 55, 60, 64]]; // Dm9 G7 Cmaj7 Am7
+        const bar = Math.floor(s / 16) % 4, st = s % 16, chord = PROG[bar];
+        const tt = t + (st % 2 ? this.step * 0.18 : 0); // a lazy swing
+        if (st === 0 || st === 10) chord.forEach((m, i) => piano(m, tt + i * 0.02, st === 0 ? 2.4 : 1.2, (st === 0 ? 0.013 : 0.009) * soft));
+        if (st === 0 || st === 10) voice(mtof(chord[0] - 12), tt, 0.7, 'sine', 0.065 * soft, 0.01);
+        if (st === 0 || st === 7 || st === 10) kick(tt, (st === 0 ? 0.12 : 0.08) * soft);
+        if (st === 4 || st === 12) hit(tt, 0.035 * soft, 'bandpass', 1700, 0.16, 0.8);
+        if (st % 2 === 0) hit(tt, (st % 4 === 2 ? 0.012 : 0.007) * soft, 'highpass', 7500, 0.04);
+        if (roll(s, 4) < 0.08) hit(t, 0.012, 'highpass', 3000, 0.01); // vinyl crackle
+        const r = roll(s, 5);
+        if ((st === 2 || st === 6 || st === 14) && r < 0.45) piano(near([72, 74, 76, 77, 79, 81], chord[(st >> 2) % 4] + 12), tt, 1.2, 0.02 * soft);
+      },
+    },
+    lullaby: {
+      ko: '별밤 자장가', en: 'Starry lullaby', desc: '세 박자로 흔들흔들', glyph: '☾', color: '#8a7bc4',
+      step: 60 / 66 / 2, fx: { lp: 3000, echo: 3, fb: 0.32, wet: 0.32 },
+      play(t, s, soft) {
+        const PROG = [[41, 53, 57, 60], [40, 52, 55, 60], [38, 50, 53, 57], [34, 50, 53, 58], [41, 53, 57, 60], [36, 52, 55, 60], [34, 50, 53, 58], [41, 53, 57, 60]];
+        const MEL = [[69, 0, 72, 0, 69, 0], [67, 0, 0, 0, 64, 0], [65, 0, 69, 0, 74, 0], [72, 0, 0, 0, 0, 0], [69, 0, 72, 0, 77, 0], [76, 0, 74, 0, 72, 0], [74, 0, 72, 0, 69, 0], [65, 0, 0, 0, 0, 0]];
+        const bar = Math.floor(s / 6) % 8, st = s % 6, chord = PROG[bar];
+        if (st === 0) voice(mtof(chord[0]), t, this.step * 6, 'sine', 0.06 * soft, 0.05);
+        if (st === 2 || st === 4) chord.slice(1).forEach((m, i) => voice(mtof(m), t + i * 0.03, this.step * 2, 'sine', 0.011 * soft, 0.06));
+        const m = MEL[bar][st];
+        if (m) { voice(mtof(m + 12), t, 2.2, 'sine', 0.04 * soft, 0.005); voice(mtof(m + 24), t, 0.6, 'sine', 0.008 * soft, 0.003); }
+      },
+    },
+    janggu: {
+      ko: '장터 가락', en: 'Market tune', desc: '가야금과 장구의 흥겨운 가락', glyph: '♬', color: '#c95b7a',
+      step: 0.25, fx: { lp: 3600, echo: 3, fb: 0.18, wet: 0.16 },
+      play(t, s, soft) {
+        const SCALE = [62, 64, 67, 69, 71, 74, 76, 79];            // G 평조, around the gayageum's middle
+        const bar = Math.floor(s / 12) % 4, st = s % 12;
+        // 굿거리 장단: 덩 기덕 쿵 더러러러 쿵 기덕 쿵 따
+        if (st === 0) { kick(t, 0.09 * soft, 150, 70, 0.4); hit(t, 0.03 * soft, 'bandpass', 2600, 0.08, 3); }
+        if (st === 3 || st === 6 || st === 9) kick(t, 0.07 * soft, 140, 70, 0.3);
+        if (st === 2 || st === 5 || st === 8 || st === 11) hit(t, (st === 11 ? 0.032 : 0.02) * soft, 'bandpass', 2600, 0.06, 3);
+        if (st === 0) pluck(bar % 2 ? 50 : 43, t, 1.6, 0.05 * soft, 1400);
+        const r = roll(s, 6);
+        if (st % 3 === 0 || (st % 3 === 2 && r < 0.35)) {
+          const m = st === 0 ? (bar % 2 ? 74 : 67) : walk(SCALE, M.last, r);
+          M.last = m; pluck(m, t, st % 3 === 0 ? 1.1 : 0.5, 0.045 * soft, 2800, st % 3 === 0 && r < 0.5 ? 0.025 : 0);
+        }
+      },
+    },
+  };
+  const TRACK_KEYS = Object.keys(TRACKS);
+  const curTrack = () => (TRACKS[G.track] ? G.track : 'musicbox');
   function startMusic() {
     if (!G.music || M.timer) return;
     try {
       ensureAudio();
-      const now = ac.currentTime;
+      const tr = TRACKS[curTrack()], now = ac.currentTime;
       const bus = ac.createGain();
       bus.gain.setValueAtTime(0.0001, now); bus.gain.exponentialRampToValueAtTime(0.8, now + 2.5);
-      const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2600;
-      const echo = ac.createDelay(1); echo.delayTime.value = EIGHTH * 3;
-      const fb = ac.createGain(); fb.gain.value = 0.28;
-      const wet = ac.createGain(); wet.gain.value = 0.3;
+      const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = tr.fx.lp;
+      const echo = ac.createDelay(1); echo.delayTime.value = Math.min(0.95, tr.step * tr.fx.echo);
+      const fb = ac.createGain(); fb.gain.value = tr.fx.fb;
+      const wet = ac.createGain(); wet.gain.value = tr.fx.wet;
       bus.connect(lp); lp.connect(ac.destination);
       lp.connect(echo); echo.connect(fb); fb.connect(echo); echo.connect(wet); wet.connect(ac.destination);
-      M.bus = bus; M.nodes = [bus, lp, echo, fb, wet];
-      M.next = now + 0.2; M.step = 0;
+      M.bus = bus; M.nodes = [bus, lp, echo, fb, wet]; M.srcs = [];
+      if (tr.fx.rain) {
+        // rain on the window: soft filtered noise under the beat
+        const rn = noise(), bp = ac.createBiquadFilter(), rg = ac.createGain();
+        rn.loop = true; bp.type = 'bandpass'; bp.frequency.value = 1300; bp.Q.value = 0.5; rg.gain.value = 0.045;
+        rn.connect(bp).connect(rg).connect(bus); rn.start(now);
+        M.srcs.push(rn); M.nodes.push(bp, rg);
+      }
+      M.track = curTrack(); M.next = now + 0.2; M.step = 0; M.last = 76;
       M.timer = setInterval(scheduleMusic, 100);
     } catch (e) {}
   }
   function stopMusic() {
     if (!M.timer) return;
     clearInterval(M.timer); M.timer = null;
-    const nodes = M.nodes, bus = M.bus;
+    const nodes = M.nodes, bus = M.bus, srcs = M.srcs;
     try {
       const now = ac.currentTime;
       bus.gain.cancelScheduledValues(now); bus.gain.setValueAtTime(Math.max(0.0001, bus.gain.value), now); bus.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
     } catch (e) {}
-    setTimeout(() => nodes.forEach((n) => { try { n.disconnect(); } catch (e) {} }), 1500);
+    setTimeout(() => { srcs.forEach((n) => { try { n.stop(); } catch (e) {} }); nodes.forEach((n) => { try { n.disconnect(); } catch (e) {} }); }, 1500);
   }
   function scheduleMusic() {
     if (!ac || ac.state !== 'running' || !M.bus) return;
+    const tr = TRACKS[M.track];
     while (M.next < ac.currentTime + 0.4) {
-      const t = M.next, s = M.step, bar = Math.floor(s / 8) % 4, beat = s % 8;
-      const chord = PROG[bar], soft = isNight() ? 0.6 : 1;
-      if (beat === 0) {
-        voice(mtof(chord[0] - 12), t, EIGHTH * 8, 'sine', 0.07 * soft, 0.04);                       // bass
-        chord.forEach((m, i) => voice(mtof(m), t + i * 0.04, EIGHTH * 7.6, 'sine', 0.012 * soft, 0.7)); // pad
-      }
-      // music box: chord tones on the strong beats, gentle pentatonic steps in between
-      const r = mulberry32(Math.floor(s / 32) * 977 + s)();
-      const strong = beat === 0 || beat === 4;
-      if (strong || r < (isNight() ? 0.22 : 0.42)) {
-        let m;
-        if (strong) { m = chord[beat === 0 ? bar : (bar + 2) % 4] + 24; while (m > 88) m -= 12; }
-        else {
-          const i = Math.max(0, PENTA.indexOf(M.last));
-          m = PENTA[clamp(i + (r < 0.21 ? -1 : r < 0.32 ? 1 : r < 0.37 ? 2 : -2), 0, PENTA.length - 1)];
-        }
-        M.last = PENTA.reduce((a, b) => (Math.abs(b - m) < Math.abs(a - m) ? b : a));
-        voice(mtof(m), t, 1.5, 'triangle', 0.04 * soft);
-        voice(mtof(m + 12), t, 0.45, 'sine', 0.008 * soft);                                         // bell shimmer
-      }
-      M.next += EIGHTH; M.step++;
+      tr.play(M.next, M.step, isNight() ? 0.65 : 1);
+      M.next += tr.step; M.step++;
     }
+  }
+  function playTrack(id) {
+    G.track = id; G.music = true;
+    stopMusic(); startMusic();
+    syncToggles(); persist();
   }
 
   // ---------- UI ----------
@@ -1312,11 +1619,25 @@
     toast(G.muted ? '효과음을 껐어요.' : '효과음을 켰어요.', G.muted ? 'Sound effects off.' : 'Sound effects on.');
     if (!G.muted) tone(660, 0.15);
   });
-  $('musicBtn').addEventListener('click', () => {
-    G.music = !G.music; syncToggles(); persist();
-    if (G.music) startMusic(); else stopMusic();
-    toast(G.music ? '배경음악을 켰어요.' : '배경음악을 껐어요.', G.music ? 'Music on.' : 'Music off.');
-  });
+  // the music picker: choose a song, or turn it off
+  function renderMusic() {
+    const list = $('trackList'); list.innerHTML = '';
+    const cur = curTrack();
+    $('musicNow').textContent = G.music ? `지금: ${TRACKS[cur].ko}` : '음악 꺼짐';
+    const row = (on, glyph, color, name, desc, fn) => {
+      const b = el('button', 'track' + (on ? ' on' : '')); b.type = 'button'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(on));
+      const ico = el('span', 'track-ico', glyph); ico.style.background = color;
+      const tx = el('span', 'track-t'); tx.append(el('b', null, name), el('span', 'muted', desc));
+      b.append(ico, tx);
+      if (on && G.music) { const eq = el('span', 'eq'); eq.setAttribute('aria-hidden', 'true'); eq.append(el('i'), el('i'), el('i')); b.append(eq); }
+      b.addEventListener('click', () => { fn(); renderMusic(); });
+      list.append(b);
+    };
+    for (const id of TRACK_KEYS) { const t = TRACKS[id]; row(G.music && cur === id, t.glyph, t.color, t.ko + (G.en ? ` · ${t.en}` : ''), t.desc, () => playTrack(id)); }
+    row(!G.music, '–', '#c4beb6', '음악 끄기' + (G.en ? ' · Off' : ''), '조용히 놀고 싶을 때', () => { G.music = false; stopMusic(); syncToggles(); persist(); });
+  }
+  $('musicBtn').addEventListener('click', () => { openSheet('musicSheet'); renderMusic(); });
+  $('musicClose').addEventListener('click', () => (G.started ? closeSheet() : openSheet('startSheet')));
   document.addEventListener('visibilitychange', () => {
     if (!ac) return;
     try { if (document.hidden) ac.suspend(); else ac.resume(); } catch (e) {}
@@ -1532,11 +1853,14 @@
     if (!edible(k) || G.inv[k] <= 0) return;
     G.inv[k]--; boost = 30;
     const rec = G.dex[k] || { n: 0, best: 0 }; rec.n = Math.max(rec.n, 1); rec.ate = true; G.dex[k] = rec;
-    player.emote = { t: 1.4 };
-    burst(player.x, player.y - 40, 12, info(k).color, { up: 90 }); sfx.harvest();
+    persist();
+    if (modal === 'bagSheet') renderBag();
     const taste = FRUITS[k] ? FRUITS[k].taste : FOODS[k] ? FOODS[k].taste : TASTE[k];
-    toast(`냠냠! ${info(k).ko}, ${taste}. 30초 동안 신나게 걸어요.`, 'Yum! You feel bouncy for 30 seconds.');
-    persist(); renderBag();
+    closeupEat(k, () => {
+      player.emote = { t: 1.4 };
+      burst(player.x, player.y - 40, 12, info(k).color, { up: 90 }); sfx.harvest();
+      toast(`${info(k).ko}, ${taste}. 30초 동안 신나게 걸어요.`, 'Yum! You feel bouncy for 30 seconds.');
+    });
   }
   $('bagPill').addEventListener('click', () => { if (!G.started) return; openSheet('bagSheet'); renderBag(); });
   $('bagClose').addEventListener('click', closeSheet);
@@ -1852,11 +2176,23 @@
   let cam = { x: player.x, y: player.y }, zoom = 1, dpr = 1, vw = 0, vh = 0;
   function toWorld(cx, cy) { return { x: cam.x - vw / 2 + cx / zoom, y: cam.y - vh / 2 + cy / zoom }; }
 
+  // a finger held on the ground keeps walking toward it; lifting it stops
+  let press = null;
+  canvas.addEventListener('pointermove', (e) => { if (press && e.pointerId === press.id) { const r = canvas.getBoundingClientRect(); press.x = e.clientX - r.left; press.y = e.clientY - r.top; } });
+  const release = (e) => {
+    if (!press || e.pointerId !== press.id) return;
+    if (press.walking && player.goal && player.goal.hold) { player.goal = null; player.moving = false; }
+    press = null;
+  };
+  canvas.addEventListener('pointerup', release);
+  canvas.addEventListener('pointercancel', release);
   canvas.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     if (!G.started || modal) return;
     if (ac && ac.state === 'suspended') ac.resume();
     const r = canvas.getBoundingClientRect();
+    press = { id: e.pointerId, x: e.clientX - r.left, y: e.clientY - r.top, t: 0, ground: null, walking: false };
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
     if (scene === 'room') { roomTap(e.clientX - r.left, e.clientY - r.top); return; }
     if (scene === 'ride') { if (ride && ride.t > 1.2) arrive(); return; }
     const w = toWorld(e.clientX - r.left, e.clientY - r.top);
@@ -2083,26 +2419,31 @@
       nm.append(b, s);
       const pr = document.createElement('div'); pr.className = 'price'; pr.innerHTML = `<b>${f.price}코인</b>`;
       const acts = document.createElement('div'); acts.className = 'acts';
-      const buyBtn = document.createElement('button'); buyBtn.type = 'button'; buyBtn.className = 'btn small';
-      buyBtn.textContent = G.coins >= f.price ? '사기' : `${f.price - G.coins} 모자라요`; buyBtn.disabled = G.coins < f.price;
-      buyBtn.addEventListener('click', () => {
-        if (G.coins < f.price) return;
+      const buy = () => {
+        if (G.coins < f.price) return false;
         G.coins -= f.price; G.inv[k] = (G.inv[k] || 0) + 1; addLedger(`${f.ko} 구입`, -f.price, 'food'); sfx.coin();
         if (haggled(storeId) === 'dum') { G.inv[k]++; setHaggle(storeId, 'used'); toast(`덤으로 ${f.ko} 하나를 더 넣어줬어요!`, 'A little extra, on the house!'); }
-        else toast(`${eul(f.ko)} 샀어요. 가방에서 먹을 수 있어요.`, 'Bought! Eat it from your bag.');
-        persist(); renderStore();
-      });
-      acts.append(buyBtn);
-      if (have) { const e = document.createElement('button'); e.type = 'button'; e.className = 'btn small soft'; e.textContent = '먹기'; e.addEventListener('click', () => { eat(k); renderStore(); }); acts.append(e); }
+        return true;
+      };
+      // 먹기: buy one and eat it right here (or eat the one in your bag); 담기: put one in your bag
+      const eatBtn = el('button', 'btn small', have ? '먹기' : G.coins >= f.price ? '사서 먹기' : `${f.price - G.coins} 모자라요`); eatBtn.type = 'button';
+      eatBtn.disabled = !have && G.coins < f.price;
+      eatBtn.addEventListener('click', () => { if (!(G.inv[k] > 0) && !buy()) return; eat(k); renderStore(); });
+      acts.append(eatBtn);
+      if (G.coins >= f.price) {
+        const bagBtn = el('button', 'btn small soft', '담기'); bagBtn.type = 'button';
+        bagBtn.addEventListener('click', () => { if (buy()) toast(`${eul(f.ko)} 가방에 담았어요.`, 'Into your bag!'); persist(); renderStore(); });
+        acts.append(bagBtn);
+      }
       row.append(im, nm, pr, acts); list.append(row);
     }
     const extra = $('storeExtra'); extra.innerHTML = '';
     if (st.market) {
       const h = haggled(storeId);
       const hb = document.createElement('button'); hb.type = 'button'; hb.className = 'btn soft'; hb.style.width = '100%';
-      hb.textContent = h === 'dum' ? '흥정 성공! 다음에 사면 덤을 줘요' : h ? '오늘 흥정은 했어요' : '깎아주세요 (흥정하기)';
+      hb.textContent = h === 'dum' ? '흥정 성공! 다음에 사면 덤을 줘요' : h ? '오늘 흥정은 했어요' : '가위바위보로 덤 받기';
       hb.disabled = !!h;
-      hb.addEventListener('click', () => { const ok = Math.random() < 0.55; setHaggle(storeId, ok ? 'dum' : 'no'); ok ? sfx.coin() : sfx.soft(); toast(ok ? '“아이고, 귀여워라. 하나 더 얹어줄게!”' : '“우리 집은 원래 싸요~”', ok ? 'They will add a little extra!' : 'Our prices are already low!'); persist(); renderStore(); });
+      hb.addEventListener('click', () => openRps('food', storeId));
       extra.append(hb);
     }
     if (st.job) {
@@ -2128,12 +2469,18 @@
   $('acctOut').addEventListener('click', () => { const n = G.acct; if (n <= 0) return; G.acct = 0; G.coins += n; addLedger(`은행에서 ${n}코인 찾음`, n, 'unsave'); sfx.coin(); renderAcct(); persist(); });
   $('acctClose').addEventListener('click', closeSheet);
 
-  // the part-time job: give customers the right change
+  // the part-time job: hand over the change coin by coin
   let job = null;
   const JOB_ITEMS = ['samgak', 'bananamilk', 'cupramen', 'eomuk'];
+  const COINS = [10, 5, 1];
+  const JOB_SAY = ['이거 계산해 주세요!', '안녕하세요~ 이거 주세요.', '봉투는 괜찮아요!', '이것도 같이요.'];
+  const JOB_HAPPY = ['고마워요! 꼼꼼하네요.', '와, 계산이 빨라요!', '딱 맞아요! 또 올게요~', '최고예요!'];
+  function coinCount(n) { let k = 0; for (const c of COINS) { k += Math.floor(n / c); n %= c; } return k; }
   function startJob() {
     if (G.jobDay === G.day) return;
-    job = { round: 0, tips: 0, rounds: 5 };
+    job = { round: 0, stars: 0, rounds: 5, streak: 0 };
+    $('jobClose').textContent = '그만하기';
+    $('jobPlay').hidden = false; $('jobDone').hidden = true;
     openSheet('jobSheet'); nextCustomer();
   }
   function nextCustomer() {
@@ -2144,49 +2491,83 @@
     job.total = job.items.reduce((a, k) => a + FOODS[k].price, 0);
     job.paid = job.total < 5 ? 5 : job.total < 10 ? 10 : 20;
     job.answer = job.paid - job.total;
-    job.tried = false;
-    const opts = new Set([job.answer]);
-    while (opts.size < 3) { const d = job.answer + pick([-2, -1, 1, 2, 3]); if (d >= 0) opts.add(d); }
-    job.choices = [...opts].sort(() => Math.random() - 0.5);
+    job.tried = false; job.tray = []; job.busy = false;
     const look = 1 + Math.floor(Math.random() * 5);
     $('jobFace').src = `assets/dongle/base-${look}.png`;
+    $('jobFace').classList.remove('hop'); void $('jobFace').offsetWidth; $('jobFace').classList.add('hop');
     $('jobRound').textContent = `손님 ${job.round} / ${job.rounds}`;
-    $('jobSay').textContent = pick(['이거 계산해 주세요!', '안녕하세요~ 이거 주세요.', '봉투는 괜찮아요!', '이것도 같이요.']);
+    $('jobSay').textContent = pick(JOB_SAY);
+    $('jobReact').textContent = '';
+    // the items come over the scanner one by one: 삑, 삑
     const items = $('jobItems'); items.innerHTML = '';
-    for (const k of job.items) { const d = document.createElement('span'); d.className = 'job-item'; const im = document.createElement('img'); im.src = iconURL(k); im.alt = ''; d.append(im, `${FOODS[k].ko} ${FOODS[k].price}코인`); items.append(d); }
+    job.items.forEach((k, i) => {
+      const d = el('span', 'job-item scan'); d.style.animationDelay = `${0.15 + i * 0.35}s`;
+      const im = el('img'); im.src = iconURL(k); im.alt = ''; d.append(im, `${FOODS[k].ko} ${FOODS[k].price}코인`); items.append(d);
+      setTimeout(() => { if (job) sfx.card(); }, 150 + i * 350);
+    });
     // the first two customers show the sum; after that you add it up yourself
-    $('jobQ').innerHTML = (job.round <= 2 ? `합계 <b>${job.total}코인</b>. ` : '합계를 더해 보세요. ') + `손님이 <b>${job.paid}코인</b>을 냈어요. 거스름돈은 얼마일까요?`;
+    $('jobQ').innerHTML = (job.round <= 2 ? `합계 <b>${job.total}코인</b>. ` : '합계를 더해 보세요. ') + `손님이 <b>${job.paid}코인</b>을 냈어요. 거스름돈을 동전으로 주세요.`;
     $('jobFeedback').textContent = '';
-    const ch = $('jobChoices'); ch.innerHTML = '';
-    for (const c of job.choices) {
-      const b = document.createElement('button'); b.type = 'button'; b.textContent = c;
-      b.setAttribute('aria-label', `${c}코인`);
-      b.addEventListener('click', () => answerJob(c, b));
-      ch.append(b);
-    }
+    renderTray(); renderStars($('jobStars'), job.stars, job.rounds);
   }
-  function answerJob(c, btn) {
-    if (!job || btn.classList.contains('right')) return;
-    if (c === job.answer) {
-      btn.classList.add('right'); sfx.coin();
-      if (!job.tried) job.tips++;
-      $('jobFeedback').textContent = job.tried ? '맞았어요! 감사합니다~' : '한 번에 정답! 손님이 칭찬해줬어요. 팁 +1';
-      setTimeout(() => { if (job) nextCustomer(); }, 900);
+  function renderTray() {
+    const box = $('trayCoins'); box.innerHTML = '';
+    const sum = job ? job.tray.reduce((a, c) => a + c, 0) : 0;
+    if (job) job.tray.forEach((c, i) => {
+      const b = el('button', `coin c${c} mini`, String(c)); b.type = 'button'; b.setAttribute('aria-label', `${c}코인 빼기`);
+      b.addEventListener('click', () => { if (job && !job.busy) { job.tray.splice(i, 1); tone(420, 0.06, 'sine', 0.03); renderTray(); } });
+      box.append(b);
+    });
+    if (!sum) box.append(el('span', 'muted', '아래 동전을 눌러 담아요'));
+    $('traySum').textContent = `${sum}코인`;
+    $('trayGive').disabled = !sum || !job || job.busy;
+    $('trayReset').disabled = !sum || !job || job.busy;
+  }
+  COINS.forEach((c) => {
+    const b = el('button', `coin c${c}`, String(c)); b.type = 'button'; b.setAttribute('aria-label', `${c}코인 담기`);
+    b.addEventListener('click', () => {
+      if (!job || job.busy || job.tray.length >= 12) return;
+      job.tray.push(c); job.tray.sort((a, x) => x - a);
+      tone(c === 10 ? 1046 : c === 5 ? 880 : 740, 0.07, 'square', 0.022);
+      renderTray();
+    });
+    $('coinPad').append(b);
+  });
+  $('trayReset').addEventListener('click', () => { if (job && !job.busy) { job.tray = []; renderTray(); } });
+  $('trayGive').addEventListener('click', () => {
+    if (!job || job.busy) return;
+    const sum = job.tray.reduce((a, c) => a + c, 0);
+    if (sum === job.answer) {
+      job.busy = true;
+      const first = !job.tried;
+      if (first) { job.stars++; job.streak++; } else job.streak = 0;
+      $('jobSay').textContent = pick(JOB_HAPPY);
+      react('♥', 'happy');
+      $('jobTray').classList.add('paid'); sfx.coin(); setTimeout(() => sfx.harvest(), 200);
+      const neat = job.tray.length === coinCount(job.answer) ? ' 동전도 제일 적게 썼어요!' : '';
+      $('jobFeedback').textContent = (first ? `한 번에 정답! 별 하나 +1${job.streak >= 2 ? ` · ${job.streak}번 연속!` : ''}` : '맞았어요! 감사합니다~') + neat;
+      renderStars($('jobStars'), job.stars, job.rounds, first);
+      renderTray();
+      setTimeout(() => { $('jobTray').classList.remove('paid'); if (job) nextCustomer(); }, 1400);
     } else {
-      btn.classList.add('wrong'); sfx.soft(); job.tried = true;
-      $('jobFeedback').textContent = `다시 세어볼까요? ${job.paid} − ${job.total} = ?`;
+      job.tried = true; job.streak = 0; sfx.soft();
+      react('?', 'puzzled');
+      $('jobTray').classList.remove('nudge'); void $('jobTray').offsetWidth; $('jobTray').classList.add('nudge');
+      $('jobFeedback').textContent = sum < job.answer ? `조금 모자라요! ${job.paid} − ${job.total} = ? 를 세어 봐요.` : `너무 많아요! ${sum - job.answer}코인만큼 빼 볼까요?`;
     }
-  }
+  });
+  function react(t, cls) { const r = $('jobReact'); r.className = 'job-react'; void r.offsetWidth; r.textContent = t; r.className = 'job-react ' + cls; }
   function finishJob() {
-    const pay = 10 + job.tips;
+    const pay = 10 + job.stars;
     G.coins += pay; G.jobDay = G.day;
-    addLedger(`편의점 알바 (시급 10 + 팁 ${job.tips})`, pay, 'job');
+    addLedger(`편의점 알바 (시급 10 + 칭찬 팁 ${job.stars})`, pay, 'job');
     $('jobRound').textContent = '오늘 알바 끝!';
     $('jobSay').textContent = `수고했어요! 오늘 번 돈은 ${pay}코인이에요.`;
-    $('jobItems').innerHTML = '';
-    $('jobQ').innerHTML = `시급 <b>10코인</b> + 칭찬 팁 <b>${job.tips}코인</b> = <b>${pay}코인</b>`;
-    $('jobChoices').innerHTML = '';
-    $('jobFeedback').textContent = '용돈기입장에 적어뒀어요. 알바는 하루에 한 번 할 수 있어요.';
+    $('jobReact').textContent = '';
+    $('jobPlay').hidden = true; $('jobDone').hidden = false;
+    renderStars($('jobDoneStars'), job.stars, job.rounds);
+    $('jobDonePay').innerHTML = `시급 <b>10코인</b> + 별 ${job.stars}개 팁 <b>${job.stars}코인</b> = <b>${pay}코인</b>`;
+    giveStamp($('jobStamp'));
     $('jobClose').textContent = '닫기';
     sfx.harvest(); job = null; persist();
   }
@@ -2936,7 +3317,7 @@
     const h = haggled(mktStall);
     $('mktSay').textContent = h === 'up' ? '단골이니까 하나에 1코인씩 더 쳐줄게요!' : h === 'no' ? '오늘은 이 값이 제일 좋아요~' : cat === 'produce' ? '어서 와요! 싱싱한 거 있으면 좋은 값에 사요.' : '어서 와요! 물고기 잡아 왔어요?';
     $('mktHaggle').disabled = !!h;
-    $('mktHaggle').textContent = h ? '오늘 흥정은 했어요' : '조금만 더 주세요 (흥정하기)';
+    $('mktHaggle').textContent = h ? '오늘 흥정은 했어요' : '가위바위보로 흥정하기';
     const list = $('mktList'); list.innerHTML = '';
     const have = MKT_BUYS[cat].filter((k) => G.inv[k] > 0);
     if (!have.length) { const p = document.createElement('p'); p.className = 'muted'; p.textContent = cat === 'produce' ? '팔 채소나 과일이 없어요. 밭과 과일나무에서 모아 와요.' : '팔 물고기가 없어요. 연못이나 한강에서 낚아 와요.'; list.append(p); }
@@ -2960,13 +3341,7 @@
     }
     $('mktNote').textContent = '같은 물건도 파는 곳마다 값이 달라요. 마을 가게와 비교해서 더 좋은 곳에 팔아 보세요.';
   }
-  $('mktHaggle').addEventListener('click', () => {
-    if (haggled(mktStall)) return;
-    const ok = Math.random() < 0.55;
-    setHaggle(mktStall, ok ? 'up' : 'no');
-    ok ? sfx.coin() : sfx.soft();
-    persist(); renderMarketStall();
-  });
+  $('mktHaggle').addEventListener('click', () => { if (!haggled(mktStall)) openRps('stall', mktStall); });
   $('mktClose').addEventListener('click', closeSheet);
 
   function useStall(st) {
@@ -3128,6 +3503,7 @@
   const reqKo = (r) => `${info(r.k).ko} ${r.n}개를 가져다줄래요?`;
   function openLibrary() {
     if (!G.reqs || G.reqs.day !== G.day) makeRequests();
+    $('libStamp').hidden = true;
     openSheet('libSheet'); renderLibrary(); sfx.talk();
     speak('Hello! Welcome to the library.');
   }
@@ -3172,6 +3548,7 @@
     G.words[r.k] = true; G.words['n' + r.n] = true;
     sfx.harvest(); speak(`Thank you! ${NUM[r.n]} ${ENG[r.k][r.n > 1 ? 1 : 0]}!`);
     toast(`Thank you! 심부름 완료, ${reward}코인을 받았어요.` + (fresh ? ` 단어장에 새 단어 ‘${ENG[r.k][0]}’ 추가!` : ''), `Thank you! +${reward} coins.`);
+    if (G.reqs.list.every((x) => x.done)) giveStamp($('libStamp'));
     persist(); renderLibrary();
   }
   function renderWords() {
@@ -3271,7 +3648,7 @@
   }
 
   // ---------- 보호자 화면: what the child earned, spent, saved and learned ----------
-  const MONEY_IN = { sell: '팔기', job: '알바', interest: '이자', errand: '영어 심부름' };
+  const MONEY_IN = { sell: '팔기', job: '알바', interest: '이자', errand: '영어 심부름·놀이', gift: '칭찬 선물' };
   const MONEY_OUT = { seed: '씨앗', food: '간식', home: '집 꾸미기', ride: '버스·지하철' };
   const LESSONS = [
     ['sell', '처음 팔아 보기', '키운 것을 팔아서 코인을 벌었어요.'],
@@ -3373,7 +3750,6 @@
 
   // ---------- 보호자 화면: drawing it ----------
   let pDay = 1, pTable = false;
-  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
   const total = (o) => Object.values(o).reduce((a, b) => a + b, 0);
   function niceMax(v) { if (v <= 10) return 10; const p = 10 ** Math.floor(Math.log10(v)); for (const m of [1, 2, 2.5, 5, 10]) if (m * p >= v) return m * p; return 10 * p; }
 
@@ -4016,6 +4392,300 @@
     fadeOver();
   }
 
+  // =====================================================================
+  // ---------- little games for kids: stars, a stamp card, listening, 가위바위보 ----------
+  // =====================================================================
+  function renderStars(box, n, of, fresh) {
+    box.innerHTML = '';
+    box.setAttribute('aria-label', `별 ${n}개 / ${of}개`);
+    for (let i = 0; i < of; i++) box.append(el('span', 'star' + (i < n ? ' on' : '') + (fresh && i === n - 1 ? ' new' : ''), i < n ? '★' : '☆'));
+  }
+  // 칭찬 도장판: one stamp for each game finished in a day; ten stamps open a gift box
+  const GIFT = 20;
+  function giveStamp(box) {
+    G.stamps = (G.stamps || 0) + 1;
+    const full = G.stamps >= 10, shown = G.stamps;
+    if (full) {
+      G.stamps = 0; G.coins += GIFT; addLedger('칭찬 도장 10개 선물 상자', GIFT, 'gift');
+      setTimeout(() => { sfx.chime(); burst(player.x, player.y - 60, 24, '#e2bd55', { up: 140 }); }, 600);
+    }
+    stampCard(box, shown, full);
+    persist();
+  }
+  function stampCard(box, count, opened) {
+    box.hidden = false; box.innerHTML = '';
+    const head = el('div', 'stamp-head');
+    head.append(el('b', null, '칭찬 도장판'), el('span', 'muted', opened ? `선물 상자를 열었어요! +${GIFT}코인` : `${count} / 10 · 10개 모으면 선물 상자!`));
+    const grid = el('div', 'stamps');
+    for (let i = 0; i < 10; i++) {
+      const s = el('span', 'stamp' + (i < count ? ' on' : '') + (i === count - 1 ? ' new' : ''));
+      if (i < count) s.append(el('i', null, '참'), el('i', null, '잘했어요'));
+      grid.append(s);
+    }
+    box.append(head, grid);
+    if (opened) box.append(el('p', 'gift-note', '🎁 다음 도장판이 새로 시작돼요.'));
+  }
+
+  // ---------- 도서관: listen and pick, an English game ----------
+  let quiz = null;
+  const shuffled = (a) => a.map((v) => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map((x) => x[1]);
+  const aAn = (w) => (/^[aeiou]/.test(w) ? 'an ' : 'a ') + w;
+  const quizSay = (q) => (q.n === 1 ? aAn(ENG[q.k][0]) : `${NUM[q.n]} ${ENG[q.k][1]}`);
+  function openQuiz() {
+    quiz = { round: 0, rounds: 5, stars: 0, used: [] };
+    $('quizClose').textContent = '그만하기';
+    $('quizPlay').hidden = false; $('quizDone').hidden = true;
+    openSheet('quizSheet'); nextQuiz();
+  }
+  function nextQuiz() {
+    if (quiz.round >= quiz.rounds) return finishQuiz();
+    quiz.round++;
+    const all = Object.keys(ENG);
+    const k = pick(all.filter((x) => !quiz.used.includes(x)));
+    quiz.used.push(k);
+    const counting = quiz.round >= 3;
+    const n = counting ? 1 + Math.floor(Math.random() * 3) : 1;
+    const other = shuffled(all.filter((x) => x !== k));
+    quiz.opts = counting ? shuffled([{ k, n: 1 }, { k, n: 2 }, { k, n: 3 }, { k: other[0], n }]) : shuffled([{ k, n: 1 }, ...other.slice(0, 3).map((x) => ({ k: x, n: 1 }))]);
+    quiz.q = { k, n, misses: 0, done: false };
+    $('quizRound').textContent = `${quiz.round} / ${quiz.rounds}`;
+    $('quizHint').textContent = counting ? '몇 개인지도 잘 들어 봐요!' : '소리를 듣고 맞는 그림을 눌러요.';
+    $('quizFeedback').textContent = '';
+    renderStars($('quizStars'), quiz.stars, quiz.rounds);
+    const grid = $('quizGrid'); grid.innerHTML = '';
+    for (const o of quiz.opts) {
+      const b = el('button', 'quiz-card'); b.type = 'button'; b.setAttribute('aria-label', `${info(o.k).ko} ${o.n}개`);
+      const pics = el('span', 'quiz-pics n' + o.n);
+      for (let i = 0; i < o.n; i++) { const im = el('img'); im.src = iconURL(o.k); im.alt = ''; pics.append(im); }
+      b.append(pics);
+      b.addEventListener('click', () => pickQuiz(o, b));
+      grid.append(b);
+    }
+    setTimeout(playQuiz, 400);
+  }
+  function playQuiz() {
+    if (!quiz || !quiz.q) return;
+    $('quizSpeak').classList.remove('ring'); void $('quizSpeak').offsetWidth; $('quizSpeak').classList.add('ring');
+    speak(quizSay(quiz.q));
+  }
+  function pickQuiz(o, btn) {
+    const q = quiz && quiz.q; if (!q || q.done) return;
+    if (o.k === q.k && o.n === q.n) {
+      q.done = true; btn.classList.add('right'); sfx.coin();
+      if (!q.misses) quiz.stars++;
+      G.words = G.words || {}; G.words[q.k] = true; G.words['n' + q.n] = true;
+      speak(`${pick(['Great job!', 'Yes!', 'Well done!', 'Perfect!'])} ${quizSay(q)}!`);
+      $('quizFeedback').textContent = `${quizSay(q)} = ${info(q.k).ko} ${q.n}개` + (q.misses ? '' : ' · 한 번에 정답! 별 +1');
+      renderStars($('quizStars'), quiz.stars, quiz.rounds, !q.misses);
+      setTimeout(() => { if (quiz) nextQuiz(); }, 1700);
+    } else {
+      q.misses++; btn.classList.remove('wrong'); void btn.offsetWidth; btn.classList.add('wrong'); sfx.soft();
+      if (q.misses >= 2) {
+        const i = quiz.opts.findIndex((x) => x.k === q.k && x.n === q.n);
+        $('quizGrid').children[i].classList.add('hint');
+        $('quizFeedback').textContent = '반짝이는 그림이 정답이에요. 눌러 볼까요?';
+      } else $('quizFeedback').textContent = '다시 한 번 들어 볼까요?';
+      setTimeout(playQuiz, 600);
+    }
+  }
+  function finishQuiz() {
+    const first = G.quizDay !== G.day;
+    $('quizPlay').hidden = true; $('quizDone').hidden = false;
+    $('quizRound').textContent = '끝!';
+    renderStars($('quizDoneStars'), quiz.stars, quiz.rounds);
+    if (first) {
+      const coins = Math.max(1, quiz.stars);
+      G.coins += coins; G.quizDay = G.day; addLedger('영어 듣기 놀이', coins, 'errand');
+      $('quizDoneMsg').textContent = `별 ${quiz.stars}개! ${coins}코인을 받았어요. 들은 단어는 단어장에 모였어요.`;
+      giveStamp($('quizStamp'));
+    } else {
+      $('quizDoneMsg').textContent = `별 ${quiz.stars}개! 오늘 보상은 벌써 받았어요. 연습은 언제든 좋아요.`;
+      $('quizStamp').hidden = true;
+    }
+    speak('Great job today!'); sfx.harvest();
+    $('quizClose').textContent = '닫기';
+    quiz.q = null; persist();
+  }
+  $('quizSpeak').addEventListener('click', playQuiz);
+  $('quizAgain').addEventListener('click', openQuiz);
+  $('quizClose').addEventListener('click', () => { quiz = null; openSheet('libSheet'); renderLibrary(); });
+  $('libQuiz').addEventListener('click', openQuiz);
+
+  // ---------- 가위바위보 흥정: win the game, win a better deal ----------
+  const HANDS = [['✊', '바위'], ['✌️', '가위'], ['✋', '보']];   // each beats the next one round
+  let rps = null;
+  function openRps(kind, id) {
+    rps = { kind, id, busy: false, over: false };
+    const st = kind === 'stall' ? STALLS.find((s) => s.id === id) : null;
+    $('rpsTitle').textContent = '가위바위보 흥정!';
+    $('rpsSay').textContent = kind === 'stall' ? `${st ? st.ko : '사장님'}: “이기면 하나에 1코인씩 더 쳐줄게요!”` : '사장님: “이기면 하나 더 얹어줄게요!”';
+    $('rpsFace').src = `assets/dongle/base-${1 + (id.length % 5)}.png`;
+    $('rpsMe').textContent = '?'; $('rpsThem').textContent = '?'; $('rpsResult').textContent = '';
+    $('rpsResult').className = 'rps-result';
+    document.querySelectorAll('#rpsPick button').forEach((b) => { b.disabled = false; });
+    $('rpsBack').textContent = '그만할래요';
+    openSheet('rpsSheet');
+  }
+  HANDS.forEach(([hand, word], i) => {
+    const b = el('button', 'rps-btn'); b.type = 'button'; b.setAttribute('aria-label', word);
+    b.append(el('span', 'rps-hand-ico', hand), el('span', null, word));
+    b.addEventListener('click', () => playRps(i));
+    $('rpsPick').append(b);
+  });
+  function playRps(i) {
+    if (!rps || rps.busy || rps.over) return;
+    rps.busy = true;
+    document.querySelectorAll('#rpsPick button').forEach((b) => { b.disabled = true; });
+    $('rpsMe').textContent = HANDS[i][0]; $('rpsResult').textContent = '가위, 바위, 보!'; $('rpsResult').className = 'rps-result';
+    let c = 0;
+    const spin = setInterval(() => { $('rpsThem').textContent = HANDS[c++ % 3][0]; tone(480 + (c % 3) * 90, 0.05, 'sine', 0.03); }, 90);
+    setTimeout(() => {
+      clearInterval(spin);
+      if (!rps) return;
+      const j = Math.floor(Math.random() * 3);
+      $('rpsThem').textContent = HANDS[j][0];
+      const win = j === (i + 1) % 3, draw = i === j;
+      rps.busy = false;
+      if (draw) {
+        $('rpsResult').textContent = '비겼어요! 한 번 더!'; $('rpsResult').className = 'rps-result draw';
+        document.querySelectorAll('#rpsPick button').forEach((b) => { b.disabled = false; });
+        tone(660, 0.12, 'triangle', 0.04);
+        return;
+      }
+      rps.over = true;
+      setHaggle(rps.id, win ? (rps.kind === 'stall' ? 'up' : 'dum') : 'no');
+      if (win) { $('rpsResult').textContent = rps.kind === 'stall' ? '이겼어요! 오늘은 하나에 1코인씩 더 받아요.' : '이겼어요! 다음에 사면 하나 더 줘요.'; $('rpsResult').className = 'rps-result win'; sfx.harvest(); }
+      else { $('rpsResult').textContent = '졌어요~ 값은 그대로예요. 그래도 재밌었죠?'; $('rpsResult').className = 'rps-result lose'; sfx.soft(); }
+      $('rpsBack').textContent = '가게로 돌아가기';
+      persist();
+    }, 900);
+  }
+  $('rpsBack').addEventListener('click', () => {
+    const r = rps; rps = null;
+    if (!r) return closeSheet();
+    if (r.kind === 'stall') openMarketStall(r.id); else openStore(r.id);
+  });
+
+  // =====================================================================
+  // ---------- eating up close: 와구와구 ----------
+  // =====================================================================
+  const DRINKS = new Set(['hotchoco', 'strawlatte', 'bananamilk', 'sikhye', 'misu']);
+  const SLURP = new Set(['cupramen', 'hangangramen', 'eomuk']);
+  const BITES = [0.55, 0.95, 1.35, 1.75];
+  let munch = null;
+  function closeupEat(k, after) {
+    const img = new Image();
+    img.onload = () => startMunch(k, img, after);
+    img.onerror = () => after && after();
+    img.src = iconURL(k, 256);
+  }
+  function startMunch(k, foodImg, after) {
+    if (munch) endMunch();
+    const food = document.createElement('canvas'); food.width = food.height = 256;
+    food.getContext('2d').drawImage(foodImg, 0, 0, 256, 256);
+    const kind = DRINKS.has(k) ? 'drink' : SLURP.has(k) ? 'slurp' : 'chomp';
+    const words = kind === 'drink' ? ['꿀꺽', '꿀꺽', '꿀꺽', '캬~'] : kind === 'slurp' ? ['후루룩', '후룩', '후루룩', '쩝쩝'] : ['와구', '와구와구', '냠냠', '와구와구'];
+    munch = { k, kind, words, food, t: 0, bites: 0, parts: [], pops: [], after, last: performance.now() };
+    $('eatSay').textContent = `${info(k).ko} ${kind === 'drink' ? '꿀꺽꿀꺽' : kind === 'slurp' ? '후루룩' : '와구와구'}!`;
+    $('eatStage').hidden = false;
+    requestAnimationFrame(munchFrame);
+  }
+  function munchFrame(now) {
+    const m = munch; if (!m) return;
+    const dt = Math.min(0.05, (now - m.last) / 1000); m.last = now; m.t += dt;
+    while (m.bites < BITES.length && m.t >= BITES[m.bites]) takeBite(m);
+    drawMunch(m, dt);
+    if (m.t >= 2.8) { endMunch(); return; }
+    requestAnimationFrame(munchFrame);
+  }
+  function takeBite(m) {
+    m.bites++;
+    const g = m.food.getContext('2d'), W = $('eatCanvas').width;
+    if (m.kind !== 'drink') {
+      g.globalCompositeOperation = 'destination-out';
+      if (m.bites >= BITES.length) g.clearRect(0, 0, 256, 256);
+      else { const y = 20 + m.bites * 48, x = 128 + rand(-24, 24); g.fillRect(0, 0, 256, Math.max(0, y - 34)); for (const [dx, dy, r] of [[-50, 6, 40], [0, -6, 46], [50, 6, 40]]) { g.beginPath(); g.arc(x + dx, y + dy, r, 0, 7); g.fill(); } }
+      g.globalCompositeOperation = 'source-over';
+    }
+    const col = info(m.k).color || '#e2bd55';
+    for (let i = 0; i < (m.kind === 'drink' ? 6 : 12); i++) {
+      m.parts.push({ x: W * 0.5 + rand(-30, 30), y: W * 0.56, vx: rand(-280, 280), vy: rand(-360, -80), r: rand(5, 11), c: m.kind === 'drink' ? 'rgba(255,255,255,0.9)' : i % 3 ? col : '#fff6e6', life: rand(0.5, 0.9), max: 0.9 });
+    }
+    const side = m.bites % 2 ? -1 : 1;
+    m.pops.push({ text: m.words[m.bites - 1], x: W * 0.5 + side * W * 0.3, y: W * 0.3 + rand(-20, 20), t: 0, rot: side * rand(0.08, 0.2) });
+    if (m.kind === 'drink') { tone(320, 0.12, 'sine', 0.06, -140); tone(260, 0.1, 'sine', 0.04, -100, 0.08); }
+    else { tone(rand(170, 230), 0.07, 'square', 0.03, -90); tone(rand(120, 160), 0.08, 'triangle', 0.04, -40, 0.05); }
+  }
+  function drawMunch(m, dt) {
+    const cv = $('eatCanvas'), g = cv.getContext('2d'), W = cv.width;
+    // a warm, round little stage with slow rays
+    const bg = g.createRadialGradient(W / 2, W * 0.45, 20, W / 2, W / 2, W * 0.72);
+    bg.addColorStop(0, '#fff7e8'); bg.addColorStop(1, '#f2d4ad');
+    g.fillStyle = bg; g.fillRect(0, 0, W, W);
+    g.save(); g.translate(W / 2, W * 0.45); g.rotate(m.t * 0.25); g.fillStyle = 'rgba(255,255,255,0.32)';
+    for (let i = 0; i < 12; i++) { g.rotate(Math.PI / 6); g.beginPath(); g.moveTo(0, 0); g.lineTo(W, -46); g.lineTo(W, 46); g.closePath(); g.fill(); }
+    g.restore();
+    const ease = 1 - Math.pow(1 - Math.min(1, m.t / 0.3), 3);
+    // the 동글이, close up and chewing
+    const im = SPR['base-' + G.look];
+    const chewing = m.t > 0.5 && m.t < 2.1;
+    const chew = chewing ? Math.abs(Math.sin(m.t * 13)) : 0;
+    const SH = W * 1.15, SW = spriteReady(im) ? SH * im.naturalWidth / im.naturalHeight : SH * 0.75;
+    const top = W * 0.56 - SH * 0.385 + (1 - ease) * W * 0.25;
+    g.save(); g.translate(W / 2, top + SH * 0.62); g.scale(1 + chew * 0.03, 1 - chew * 0.04); g.rotate(Math.sin(m.t * 6) * 0.025);
+    if (spriteReady(im)) g.drawImage(im, -SW / 2, -SH * 0.62, SW, SH);
+    // cheeks puff with every chew
+    g.fillStyle = `rgba(238,140,128,${0.16 + chew * 0.22 + (m.t > 2.1 ? 0.12 : 0)})`;
+    for (const sx of [-1, 1]) { g.beginPath(); g.ellipse(sx * SW * 0.21, SH * (0.37 - 0.62), SW * 0.075 * (1 + chew * 0.35), SW * 0.048 * (1 + chew * 0.35), 0, 0, 7); g.fill(); }
+    g.restore();
+    // the food, held up to the mouth; bites come out of the top
+    const lift = 1 - Math.pow(1 - Math.min(1, m.t / 0.45), 3);
+    const fs = W * 0.42;
+    // as bites come off the top, lift what is left so it stays at the mouth
+    const eaten = m.kind === 'drink' ? 0 : Math.min(m.bites, BITES.length - 1) * fs * 0.19;
+    const fy = W * 1.1 + (W * 0.76 - W * 1.1) * lift - eaten - (chewing ? Math.max(0, Math.sin(m.t * 13)) * 12 : 0);
+    const tilt = m.kind === 'drink' ? -0.2 - Math.min(0.35, m.bites * 0.09) : Math.sin(m.t * 13) * 0.04;
+    const fa = m.kind === 'drink' && m.t > 1.8 ? Math.max(0, 1 - (m.t - 1.8) / 0.3) : 1;
+    g.save(); g.globalAlpha = fa; g.translate(W / 2 + W * 0.05, fy); g.rotate(tilt); g.drawImage(m.food, -fs / 2, -fs / 2, fs, fs); g.restore();
+    // crumbs (or bubbles) fly and fall
+    for (const p of m.parts) { p.vy += 900 * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt; }
+    m.parts = m.parts.filter((p) => p.life > 0);
+    for (const p of m.parts) { g.globalAlpha = clamp(p.life / p.max, 0, 1); g.fillStyle = p.c; g.beginPath(); g.arc(p.x, p.y, p.r, 0, 7); g.fill(); }
+    g.globalAlpha = 1;
+    // 와구와구 in big round letters
+    for (const p of m.pops) {
+      p.t += dt;
+      const s = p.t < 0.15 ? 0.6 + p.t / 0.15 * 0.6 : Math.max(1, 1.2 - (p.t - 0.15) * 1.2), a = clamp(1.1 - p.t * 1.1, 0, 1);
+      g.save(); g.globalAlpha = a; g.translate(p.x, p.y - p.t * 30); g.rotate(p.rot); g.scale(s, s);
+      popText(g, p.text, 0, 0, W * 0.085);
+      g.restore();
+    }
+    // all gone: hearts and 맛있다!
+    if (m.t > 2.1) {
+      const a = Math.min(1, (m.t - 2.1) / 0.2), u = m.t - 2.1;
+      g.save(); g.globalAlpha = a;
+      for (let i = 0; i < 5; i++) {
+        const hx = W * (0.2 + i * 0.15), hy = W * 0.42 - u * 120 - (i % 2) * 30, r = W * 0.03;
+        g.fillStyle = i % 2 ? '#f2a7b8' : '#e58aa0';
+        g.beginPath(); g.moveTo(hx, hy + r); g.bezierCurveTo(hx - r * 2, hy - r * 0.6, hx - r * 0.6, hy - r * 2, hx, hy - r * 0.7); g.bezierCurveTo(hx + r * 0.6, hy - r * 2, hx + r * 2, hy - r * 0.6, hx, hy + r); g.fill();
+      }
+      g.translate(W / 2, W * 0.2); g.scale(0.8 + a * 0.2, 0.8 + a * 0.2);
+      popText(g, '맛있다!', 0, 0, W * 0.11);
+      g.restore();
+    }
+  }
+  function popText(g, text, x, y, size) {
+    g.font = `900 ${size}px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.lineJoin = 'round'; g.lineWidth = size * 0.28; g.strokeStyle = '#ffffff'; g.strokeText(text, x, y);
+    g.fillStyle = '#c8714f'; g.fillText(text, x, y);
+  }
+  function endMunch() {
+    const m = munch; if (!m) return;
+    munch = null; $('eatStage').hidden = true;
+    if (m.after) m.after();
+  }
+  $('eatStage').addEventListener('pointerdown', (e) => { e.preventDefault(); if (munch && munch.t > 0.4) endMunch(); });
+
   // ---------- "what can I do here": a floating action chip near things you can use ----------
   function openShop() { openSheet('shopSheet'); renderShop(); talkTo(npcs[4]); }
   let ctxT = 0, ctxKey = '', ctxRun = null;
@@ -4092,6 +4762,14 @@
 
     // player
     const p = player;
+    if (press) {
+      press.t += dt;
+      if (press.ground === null) press.ground = !!(p.goal && p.goal.plain);
+      if (press.ground && press.t > 0.18 && !modal && !p.fishing && !keys.size && (!p.goal || p.goal.plain) && ['village', 'city', 'park', 'market', 'cafe'].includes(scene)) {
+        const w = toWorld(press.x, press.y);
+        p.goal = { x: w.x, y: w.y, plain: true, hold: true }; press.walking = true;
+      }
+    }
     let kx = 0, ky = 0;
     if (keys.has('ArrowLeft') || keys.has('KeyA')) kx--;
     if (keys.has('ArrowRight') || keys.has('KeyD')) kx++;
