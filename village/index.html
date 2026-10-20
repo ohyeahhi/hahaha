@@ -47,6 +47,12 @@
   }
   #world { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
   #world3d { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .look3d-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .look3d { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 6px 10px; border: 0; border-radius: 16px; background: var(--grouped); color: var(--ink); font-family: var(--font); cursor: pointer; }
+  .look3d img { width: 112px; height: 112px; }
+  .look3d b { font-size: 15px; }
+  .look3d .muted { font-size: 12px; }
+  .look3d[aria-checked="true"] { background: #fbeee2; box-shadow: inset 0 0 0 2px var(--accent); }
   .pill.view3d { min-width: 44px; justify-content: center; font-weight: 800; }
   .pill.view3d[aria-pressed="true"] { background: var(--accent); color: #fff; }
 
@@ -1172,6 +1178,17 @@
   <button class="btn soft" id="petClose" type="button">닫기</button>
 </div>
 
+<div class="sheet" id="look3dSheet" hidden>
+  <div class="row-head"><h2>3D 동글이 고르기</h2><span class="muted">마을 모두에게 적용돼요</span></div>
+  <div class="look3d-grid" id="look3dLooks" role="radiogroup" aria-label="모습"></div>
+  <span class="label">눈</span>
+  <div class="seg" id="look3dEyes" role="radiogroup" aria-label="눈"></div>
+  <span class="label">보는 각도</span>
+  <div class="seg" id="look3dCam" role="radiogroup" aria-label="보는 각도"></div>
+  <p class="muted">3D 마을에서 내 동글이를 누르면 언제든 다시 바꿀 수 있어요.</p>
+  <button class="btn" id="look3dDone" type="button">이걸로 할게요</button>
+</div>
+
 <div class="sheet" id="wishSheet" hidden>
   <div class="row-head"><h2>보름달 소원</h2><span class="muted">추석 밤</span></div>
   <div class="wish-sky" id="wishSky"><div class="wish-moon"></div><p class="wish-fly" id="wishFly" hidden></p></div>
@@ -1514,7 +1531,7 @@
     give: 0, goal: null, goalsDone: 0, // 나눔 통, and what the 저금통 is saving up for
     fund: null, // 마을 모금: what is being raised, and what has been built
     pet: null, // 반려동물: { k, name, day, food, love, fedDay, patDay, playDay, mealDay }
-    view3d: false, // 3D 마을 시험판으로 보기
+    view3d: false, look3d: null, // 3D 마을 시험판으로 보기, and how everyone looks there
     tips: { planted: false, fished: false, room: false },
   };
   function rollPrices() {
@@ -1524,7 +1541,7 @@
   rollPrices(); G.prev = { ...G.prices };
 
   function save() {
-    return { v: 2, won: 1, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, stats: G.stats, notes: G.notes, track: G.track, stamps: G.stamps, quizDay: G.quizDay, plan: G.plan, stocks: G.stocks, stall: G.stall, holi: G.holi, wishes: G.wishes, give: G.give, goal: G.goal, goalsDone: G.goalsDone, fund: G.fund, pet: G.pet, view3d: G.view3d, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
+    return { v: 2, won: 1, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, stats: G.stats, notes: G.notes, track: G.track, stamps: G.stamps, quizDay: G.quizDay, plan: G.plan, stocks: G.stocks, stall: G.stall, holi: G.holi, wishes: G.wishes, give: G.give, goal: G.goal, goalsDone: G.goalsDone, fund: G.fund, pet: G.pet, view3d: G.view3d, look3d: G.look3d, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
   }
   function load(s) {
     if (!s || s.v !== 2) return false;
@@ -1536,7 +1553,7 @@
       if (s.stats && s.stats.total) { sc(s.stats.total.in); sc(s.stats.total.out); s.stats.total.save = (s.stats.total.save || 0) * W; for (const d of Object.values(s.stats.days || {})) { sc(d.in); sc(d.out); d.save = (d.save || 0) * W; } }
       s.prices = {}; s.prev = {}; s.mprices = {};
     }
-    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home, acct: s.acct || 0, jobDay: s.jobDay || 0, mprices: s.mprices || {}, haggle: s.haggle || null, reqs: s.reqs || null, words: s.words || {}, stats: { ...G.stats, ...(s.stats || {}) }, notes: Array.isArray(s.notes) ? s.notes : [], track: s.track || 'musicbox', stamps: s.stamps || 0, quizDay: s.quizDay || 0, plan: s.plan || null, stocks: s.stocks && s.stocks.hist ? s.stocks : null, stall: s.stall || null, holi: s.holi || null, wishes: Array.isArray(s.wishes) ? s.wishes : [], give: s.give || 0, goal: s.goal || null, goalsDone: s.goalsDone || 0, fund: s.fund && s.fund.built ? s.fund : null, pet: s.pet && PETS[s.pet.k] ? s.pet : null, view3d: !!s.view3d });
+    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home, acct: s.acct || 0, jobDay: s.jobDay || 0, mprices: s.mprices || {}, haggle: s.haggle || null, reqs: s.reqs || null, words: s.words || {}, stats: { ...G.stats, ...(s.stats || {}) }, notes: Array.isArray(s.notes) ? s.notes : [], track: s.track || 'musicbox', stamps: s.stamps || 0, quizDay: s.quizDay || 0, plan: s.plan || null, stocks: s.stocks && s.stocks.hist ? s.stocks : null, stall: s.stall || null, holi: s.holi || null, wishes: Array.isArray(s.wishes) ? s.wishes : [], give: s.give || 0, goal: s.goal || null, goalsDone: s.goalsDone || 0, fund: s.fund && s.fund.built ? s.fund : null, pet: s.pet && PETS[s.pet.k] ? s.pet : null, view3d: !!s.view3d, look3d: s.look3d || null });
     (s.plots || []).forEach((p, i) => { if (plots[i]) Object.assign(plots[i], p); });
     (s.trees || []).forEach(([n, r], i) => { if (trees[i] && trees[i].fruit) { trees[i].n = n; trees[i].regrow = r; } });
     return true;
@@ -2743,6 +2760,7 @@
     if (scene === 'room') { roomTap(e.clientX - r.left, e.clientY - r.top); return; }
     if (scene === 'ride') { if (ride && ride.t > 1.2) arrive(); return; }
     if (scene === 'village' && !player.fishing && moonHit(e.clientX - r.left, e.clientY - r.top)) { openWish(); return; }
+    if (use3d() && !player.fishing && hitSelf3d(e.clientX - r.left, e.clientY - r.top)) { openLook3d(); return; }
     const w = toWorld(e.clientX - r.left, e.clientY - r.top);
     if (player.fishing) { reel(); return; }
     if (scene === 'city') { cityTap(w); return; }
@@ -6639,6 +6657,15 @@
   const U = 1 / 40;
   let three = null, v3 = null;
   const use3d = () => !!(G.view3d && v3 && scene === 'village');
+  const LOOKS3D = {
+    orig: { ko: '원본 동글이', desc: '사진 속 그 모습 그대로' },
+    mochi: { ko: '찹쌀떡', desc: '말랑한 한 덩어리' },
+    bear: { ko: '곰돌이 모자', desc: '동그란 귀가 달린 모자' },
+    beanie: { ko: '방울 털모자', desc: '포근한 니트 모자' },
+  };
+  const EYES3D = { smile: '웃는 눈 ^^', dot: '동그란 눈' };
+  const CAMS3D = { diag: { ko: '대각선 앞', el: 0.6, yaw: -0.42 }, front: { ko: '정면', el: 0.6, yaw: 0 }, top: { ko: '위에서', el: 0.85, yaw: 0 } };
+  const look3d = () => ({ style: 'orig', eyes: 'smile', cam: 'diag', ...(G.look3d || {}) });
   async function load3d() {
     if (v3) return true;
     try { three = three || (await import(THREE_URL)); v3 = build3d(); return true; }
@@ -6656,22 +6683,26 @@
     if (!v3) toast('3D 마을을 불러오는 중이에요…', 'Loading the 3D village…');
     const ok = await load3d(); b.disabled = false;
     if (!ok) { toast('3D 마을을 불러오지 못했어요. 인터넷 연결을 확인해 주세요.', 'Could not load 3D.'); return; }
-    G.view3d = true; sync3d(); persist();
-    toast('3D 마을이에요! 손가락으로 땅을 눌러 걸어 봐요. 2D를 누르면 돌아가요.', 'The 3D village! Tap 2D to go back.');
+    G.view3d = true; sync3d();
+    const first = !G.look3d; if (first) G.look3d = look3d();
+    persist();
+    if (first) setTimeout(openLook3d, 300);
+    else toast('3D 마을이에요! 내 동글이를 누르면 모습을 바꿀 수 있어요. 2D를 누르면 돌아가요.', 'The 3D village! Tap yourself to change your look.');
   });
 
   function build3d() {
     const X = three;
     const renderer = new X.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
-    renderer.shadowMap.enabled = true; renderer.shadowMap.type = X.PCFSoftShadowMap;
+    renderer.shadowMap.enabled = true; renderer.shadowMap.type = X.PCFShadowMap;
     const el3 = renderer.domElement; el3.id = 'world3d'; el3.setAttribute('aria-hidden', 'true'); el3.style.visibility = 'hidden';
     canvas.before(el3);
-    const sc = new X.Scene(); sc.background = new X.Color('#9dbd7c');
+    const sc = new X.Scene(); sc.background = new X.Color('#e4edd9'); sc.fog = new X.Fog('#e4edd9', 30, 70);
     const camera = new X.PerspectiveCamera(32, 1, 0.5, 260);
-    const hemi = new X.HemisphereLight('#fff6e8', '#a7bf8a', 1.2); sc.add(hemi);
-    const sun = new X.DirectionalLight('#fff0d8', 1.8);
-    sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024);
+    const hemi = new X.HemisphereLight('#fff7ea', '#b3c79a', 1.4); sc.add(hemi);
+    const rim = new X.DirectionalLight('#fff0f4', 0.45); sc.add(rim, rim.target);
+    const sun = new X.DirectionalLight('#fff0d8', 1.45);
+    sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.radius = 4;
     Object.assign(sun.shadow.camera, { left: -15, right: 15, top: 15, bottom: -15, near: 1, far: 80 });
     sun.shadow.bias = -0.0006; sun.shadow.normalBias = 0.03;
     sc.add(sun, sun.target);
@@ -6902,37 +6933,119 @@
     const waiting = Object.keys(PETS).map((k, i) => { const m = petModel(k); m.g.position.set(shx - 1.0 + i * 0.6, 0, shz - 0.25 + (i % 2) * 0.15); m.g.scale.setScalar(0.8); m.body.rotation.x = -0.35; shelterG.add(m.g); return { k, m }; });
     pickable(shelterG, () => ({ x: SHELTER.x - 20, y: SHELTER.y - 20 }));
 
-    // ---------- 동글이: a clay ball person, feet at the origin, facing +z ----------
-    const skin = M(CLAY.mid), hairM = M('#2b2420', { roughness: 0.55 }), blushM = M('#f2a3a3', { transparent: true, opacity: 0.55 });
-    function dongle(shirt, sprout) {
-      const g = new X.Group(), body = new X.Group(); g.add(body);
-      const feet = [ball(0.2, skin, -0.22, 0.13, 0.06, 0.7), ball(0.2, skin, 0.22, 0.13, 0.06, 0.7)];
-      body.add(...feet, mesh(SPH, skin, 0.42, 0.42, 0.38, 0, 0.66, 0));
-      const band = mesh(new X.TorusGeometry(1, 0.2, 10, 24), M(shirt), 0.34, 0.34, 0.34, 0, 0.98, 0); band.rotation.x = Math.PI / 2; body.add(band);
-      const hands = [ball(0.17, skin, -0.42, 0.72, 0.16), ball(0.17, skin, 0.42, 0.72, 0.16)]; body.add(...hands);
-      const head = new X.Group(); head.position.set(0, 1.5, 0); body.add(head);
-      head.add(mesh(SPH, skin, 0.7, 0.66, 0.68, 0, 0, 0));
+    // ---------- 동글이: four looks to choose from, all matte clay, feet at the origin, facing +z ----------
+    // Built to the clay originals: a big round head a little wider than tall, a tiny face
+    // close together in the middle, a few thin strands fanning from the crown, ball hands
+    // held up by the cheeks, a small ball body and two little feet.
+    const charGeo = new X.SphereGeometry(1, 40, 28), arcGeo = new X.TorusGeometry(1, 0.3, 8, 18, Math.PI);
+    const skin = M('#efe2c8', { roughness: 0.78 }), inkM = M('#2b2420', { roughness: 0.45 }), blushM = M('#f2a0a0', { transparent: true, opacity: 0.42, roughness: 0.9 });
+    const shineM = M('#ffffff', { roughness: 0.1, emissive: '#ffffff', emissiveIntensity: 0.8 });
+    const pastel = (c) => '#' + new X.Color(c).lerp(new X.Color('#ffffff'), 0.4).getHexString();
+    const cb = (r, m, x, y, z, sx = 1, sy = 1, sz = 1) => mesh(charGeo, m, r * sx, r * sy, r * sz, x, y, z);
+    // the point on an egg-shaped head (radius R, height R*ky) at (x, y), nudged out by `out`
+    const front = (R, ky, x, y, out = 0) => Math.sqrt(Math.max(0.0001, 1 - (x / R) ** 2 - (y / (R * ky)) ** 2)) * R + out;
+    function face(head, R, ky, eyes, y0 = 0) {
       for (const s of [-1, 1]) {
-        const eye = mesh(new X.TorusGeometry(1, 0.26, 6, 14, Math.PI), hairM, 0.075, 0.075, 0.075, s * 0.23, 0.02, 0.63); eye.rotation.y = s * 0.33; head.add(eye);
-        const bl = ball(0.11, blushM, s * 0.38, -0.13, 0.53, 0.6); bl.rotation.y = s * 0.6; head.add(bl);
+        const ex = s * R * 0.15, ey = y0 + R * 0.02, ez = front(R, ky, ex, ey, 0.005), turn = Math.asin(ex / R);
+        if (eyes === 'dot') {
+          const e = cb(0.062 * R / 0.78, inkM, ex, ey, ez, 0.8, 1.05, 0.45); e.rotation.y = turn; head.add(e);
+          head.add(cb(0.018 * R / 0.78, shineM, ex - 0.02, ey + 0.03, ez + 0.022));
+        } else {
+          const e = mesh(arcGeo, inkM, 0.05 * R / 0.78, 0.05 * R / 0.78, 0.05 * R / 0.78, ex, ey, ez); e.rotation.y = turn; head.add(e);
+        }
+        const bx = s * R * 0.36, by = y0 - R * 0.12, bl = cb(0.1 * R / 0.78, blushM, bx, by, front(R, ky, bx, by, -0.02), 1, 0.55, 0.35); bl.rotation.y = Math.asin(bx / R); head.add(bl);
       }
-      const smile = mesh(new X.TorusGeometry(1, 0.26, 6, 14, Math.PI), hairM, 0.06, 0.06, 0.06, 0, -0.17, 0.66); smile.rotation.z = Math.PI; head.add(smile);
-      // a few soft strands from the crown down over the forehead
-      for (let i = -2; i <= 2; i++) {
-        const pts = [0.1, 0.3, 0.5, 0.68, 0.8].map((th, j) => { const ph = i * 0.3 + (j > 2 ? i * 0.06 : 0), R = 0.7 * (j === 4 ? 1.0 : 1.02); return new X.Vector3(R * Math.sin(th) * Math.sin(ph), (0.66 / 0.7) * R * Math.cos(th), (0.68 / 0.7) * R * Math.sin(th) * Math.cos(ph)); });
-        head.add(put(new X.Mesh(new X.TubeGeometry(new X.CatmullRomCurve3(pts), 12, 0.02, 5), hairM), 0, 0, 0));
+      const my = y0 - R * 0.13, mouth = mesh(arcGeo, inkM, 0.042 * R / 0.78, 0.042 * R / 0.78, 0.042 * R / 0.78, 0, my, front(R, ky, 0, my, 0.004)); mouth.rotation.z = Math.PI; head.add(mouth);
+    }
+    // thin strands laid side by side over the crown and down onto the forehead, like the clay ones
+    function hair(head, R, ky) {
+      const at = (x, a, lift) => { const k = Math.sqrt(Math.max(0, 1 - (x / R) ** 2)); return new X.Vector3(x, R * ky * k * Math.cos(a) * lift, R * k * Math.sin(a) * lift); };
+      for (let i = 0; i < 6; i++) {
+        const x = ((i - 2.5) / 2.5) * R * 0.5;
+        const pts = [-0.55, -0.15, 0.25, 0.55, 0.78].map((a, j) => at(x * (1 + j * 0.06), a, j === 4 ? 1.0 : 1.012));
+        head.add(put(new X.Mesh(new X.TubeGeometry(new X.CatmullRomCurve3(pts), 18, 0.021 * R / 0.78, 6), inkM), 0, 0, 0));
       }
-      if (sprout) {
-        head.add(mesh(CYL, M('#6f9a58'), 0.025, 0.28, 0.025, 0, 0.78, 0));
-        for (const s of [-1, 1]) { const lf = ball(0.12, '#8fbf6a', s * 0.1, 0.94, 0, 0.45); lf.rotation.z = -s * 0.5; head.add(lf); }
+    }
+    function sproutOn(head, y) {
+      head.add(mesh(CYL, M('#6f9a58'), 0.022, 0.24, 0.022, 0, y + 0.1, 0));
+      for (const s of [-1, 1]) { const lf = cb(0.11, M('#8fbf6a', { roughness: 0.7 }), s * 0.09, y + 0.24, 0, 1, 0.42, 0.7); lf.rotation.z = -s * 0.55; head.add(lf); }
+    }
+    // a soft hat over the top of the head (it stops above the eyes)
+    function cap(head, R, ky, color, open = 0.37) {
+      const shell = mesh(new X.SphereGeometry(1, 36, 18, 0, Math.PI * 2, 0, Math.PI * open), M(color, { roughness: 0.92 }), R * 1.05, R * ky * 1.05, R * 1.05, 0, 0, 0);
+      head.add(shell);
+      return R * 1.05 * Math.sin(Math.PI * open);
+    }
+    function dongle(c, look = (G.look3d && G.look3d.style) || 'orig', eyes = (G.look3d && G.look3d.eyes) || 'smile') {
+      const g = new X.Group(), body = new X.Group(); g.add(body);
+      const accent = c.player ? '#f3d98a' : pastel(c.shirt || '#c8b8a8');
+      const m = { g, body, lx: null, ly: null, heading: 0 };
+      if (look === 'mochi') {
+        // one squishy blob with the face on its front
+        const R = 0.86, ky = 0.8;
+        m.head = new X.Group(); m.head.position.set(0, 0.74, 0); body.add(m.head);
+        m.head.add(cb(R, skin, 0, 0, 0, 1, ky, 0.95));
+        face(m.head, R, ky, eyes, R * 0.08);
+        m.hands = [cb(0.13, skin, -0.78, -0.12, 0.2), cb(0.13, skin, 0.78, -0.12, 0.2)]; m.head.add(...m.hands);
+        m.feet = [cb(0.13, skin, -0.3, 0.07, 0.22, 1, 0.6, 1.1), cb(0.13, skin, 0.3, 0.07, 0.22, 1, 0.6, 1.1)]; body.add(...m.feet);
+        if (c.player) sproutOn(m.head, R * ky);
+        else { const bow = cb(0.12, M(accent, { roughness: 0.8 }), 0.32, R * ky * 0.82, 0.1, 1.3, 0.8, 0.6); bow.rotation.z = -0.4; m.head.add(bow); }
+        m.top = 0.74 + R * ky + (c.player ? 0.35 : 0.1);
+      } else {
+        const R = 0.78, ky = 0.93;
+        m.feet = [cb(0.15, skin, -0.15, 0.1, 0.05, 1, 0.72, 1.12), cb(0.15, skin, 0.15, 0.1, 0.05, 1, 0.72, 1.12)];
+        body.add(...m.feet, cb(0.36, skin, 0, 0.5, 0, 1, 0.94, 0.94));
+        m.hands = [cb(0.16, skin, -0.38, 0.78, 0.12), cb(0.16, skin, 0.38, 0.78, 0.12)]; body.add(...m.hands);
+        m.head = new X.Group(); m.head.position.set(0, 1.46, 0); body.add(m.head);
+        m.head.add(cb(R, skin, 0, 0, 0, 1.04, ky, 0.98));
+        face(m.head, R, ky, eyes);
+        let topY = R * ky;
+        if (look === 'orig') hair(m.head, R, ky);
+        else if (look === 'bear') {
+          cap(m.head, R, ky, accent, 0.4);
+          for (const s of [-1, 1]) { m.head.add(cb(0.21, M(accent, { roughness: 0.92 }), s * R * 0.62, R * ky * 0.72, -0.04)); m.head.add(cb(0.11, M('#f6c9c9', { roughness: 0.9 }), s * R * 0.62, R * ky * 0.72, 0.12, 1, 1, 0.5)); }
+          topY += 0.08;
+        } else if (look === 'beanie') {
+          const rimR = cap(m.head, R, ky, accent, 0.37);
+          const band = mesh(new X.TorusGeometry(1, 0.11, 10, 36), M(shade(accent, -0.08), { roughness: 0.95 }), rimR, rimR, rimR, 0, R * ky * Math.cos(Math.PI * 0.37) * 1.02, 0); band.rotation.x = Math.PI / 2; m.head.add(band);
+          m.head.add(cb(0.17, M('#fffaf1', { roughness: 1 }), 0, R * ky * 1.08, 0));
+          topY += 0.3;
+        }
+        if (c.player) sproutOn(m.head, topY);
+        m.top = 1.46 + topY + (c.player ? 0.35 : 0.08);
       }
-      sc.add(g);
-      return { g, body, head, feet, hands, lx: null, ly: null, heading: 0 };
+      g.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = false; } });
+      return m;
     }
     const people = new Map();
-    people.set(player, dongle(player.shirt, true));
-    // neighbors can be tapped too: the tap lands where the 2D code looks for their head
-    for (const n of npcs) { const m = dongle(n.shirt, false); people.set(n, m); m.g.userData.tap = () => ({ x: n.x, y: n.y - 42 }); pickables.push(m.g); }
+    function makePeople() {
+      for (const [, m] of people) { sc.remove(m.g); const i = pickables.indexOf(m.g); if (i >= 0) pickables.splice(i, 1); }
+      people.clear();
+      const me = dongle(player); sc.add(me.g); people.set(player, me);
+      // neighbors can be tapped too: the tap lands where the 2D code looks for their head
+      for (const n of npcs) { const m = dongle(n); sc.add(m.g); people.set(n, m); m.g.userData.tap = () => ({ x: n.x, y: n.y - 42 }); pickables.push(m.g); }
+    }
+    makePeople();
+    // little portraits for the picker, drawn by a second small renderer
+    let thumbR = null, thumbScene = null, thumbCam = null;
+    function thumb3d(look, eyes) {
+      if (!thumbR) {
+        thumbR = new X.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+        thumbR.setPixelRatio(1); thumbR.setSize(220, 220, false);
+        thumbScene = new X.Scene();
+        thumbScene.add(new X.HemisphereLight('#fffaf2', '#e6dac4', 2.3));
+        const d = new X.DirectionalLight('#fff3e0', 1.5); d.position.set(-2, 4, 5); thumbScene.add(d);
+        thumbCam = new X.PerspectiveCamera(30, 1, 0.1, 50);
+      }
+      const m = dongle(player, look, eyes); thumbScene.add(m.g);
+      m.g.rotation.y = -0.35;
+      const mid = m.top / 2;
+      thumbCam.position.set(0, mid + 1.2, 6.2); thumbCam.lookAt(0, mid - 0.05, 0);
+      thumbR.render(thumbScene, thumbCam);
+      const url = thumbR.domElement.toDataURL('image/png');
+      thumbScene.remove(m.g);
+      return url;
+    }
 
     // the pet you adopted, and its ball
     let myPet = null, myPetK = null;
@@ -6992,7 +7105,39 @@
     }
 
     const vp = new X.Vector3(), ray = new X.Raycaster(), ndc = new X.Vector2(), floor = new X.Plane(new X.Vector3(0, 1, 0), 0), hit = new X.Vector3();
-    return { X, renderer, el: el3, sc, camera, hemi, sun, groundMat, winM, lampM, treeObjs, plotObjs, soilDry, soilWet, growCrop, stallGoods, fundSign, shelterSign, waiting, people, petModel, myPet, myPetK, petBall, bugObj, bugObjs, rod, line, lineGeo, bobber, snowman, builtObjs, buildProject, pickables, bugM, woodM, vp, ray, ndc, floor, hit, last: performance.now(), on: false, fundKey: '', stallKey: '', shelterKey: '', season: -1, w: 0, h: 0, tx: null, tz: null, ball };
+    return { X, renderer, el: el3, sc, camera, hemi, sun, rim, makePeople, thumb3d, yaw: 0, groundMat, winM, lampM, treeObjs, plotObjs, soilDry, soilWet, growCrop, stallGoods, fundSign, shelterSign, waiting, people, petModel, myPet, myPetK, petBall, bugObj, bugObjs, rod, line, lineGeo, bobber, snowman, builtObjs, buildProject, pickables, bugM, woodM, vp, ray, ndc, floor, hit, last: performance.now(), on: false, fundKey: '', stallKey: '', shelterKey: '', season: -1, w: 0, h: 0, tx: null, tz: null, ball };
+  }
+
+  // ---------- choosing how everyone looks, and from where you watch ----------
+  const thumbs = {};
+  function openLook3d() { if (!v3) return; openSheet('look3dSheet'); renderLook3d(); sfx.talk(); }
+  function segRow(box, opts, cur, fn) {
+    box.innerHTML = '';
+    for (const k in opts) { const b = el('button', null, opts[k]); b.type = 'button'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(cur === k)); b.addEventListener('click', () => fn(k)); box.append(b); }
+  }
+  function renderLook3d() {
+    const L = look3d(), grid = $('look3dLooks'); grid.innerHTML = '';
+    for (const k in LOOKS3D) {
+      const b = el('button', 'look3d'); b.type = 'button'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(L.style === k));
+      const key = k + '|' + L.eyes, im = el('img'); im.alt = ''; im.src = thumbs[key] || (thumbs[key] = v3.thumb3d(k, L.eyes));
+      b.append(im, el('b', null, LOOKS3D[k].ko), el('span', 'muted', LOOKS3D[k].desc));
+      b.addEventListener('click', () => setLook3d({ style: k }));
+      grid.append(b);
+    }
+    segRow($('look3dEyes'), EYES3D, L.eyes, (k) => setLook3d({ eyes: k }));
+    segRow($('look3dCam'), Object.fromEntries(Object.entries(CAMS3D).map(([k, v]) => [k, v.ko])), L.cam, (k) => setLook3d({ cam: k }));
+  }
+  function setLook3d(ch) {
+    G.look3d = { ...look3d(), ...ch };
+    if (ch.style || ch.eyes) v3.makePeople();
+    tone(660, 0.08, 'sine', 0.04); persist(); renderLook3d();
+  }
+  $('look3dDone').addEventListener('click', () => { closeSheet(); toast('내 동글이를 누르면 언제든 다시 바꿀 수 있어요.', 'Tap yourself any time to change.'); });
+  function hitSelf3d(cx, cy) {
+    const V = v3, m = V && V.people.get(player); if (!m) return false;
+    V.ndc.set((cx / canvas.clientWidth) * 2 - 1, -(cy / canvas.clientHeight) * 2 + 1);
+    V.ray.setFromCamera(V.ndc, V.camera);
+    return V.ray.intersectObject(m.g, true).length > 0;
   }
 
   // ---------- turning a tap on the 3D picture back into a point in the 2D village ----------
@@ -7022,7 +7167,7 @@
       else m.idle = (m.idle || 0) + dt;
     }
     m.lx = c.x; m.ly = c.y;
-    if (!moving && (m.idle || 0) > 0.9 && !opts.keepFacing) m.want = 0;
+    if (!moving && (m.idle || 0) > 0.9 && !opts.keepFacing) m.want = v3 ? v3.yaw : 0;
     m.heading = turn(m.heading, m.want || 0, Math.min(1, dt * 9));
     m.g.rotation.y = m.heading;
     const hop = moving ? Math.abs(Math.sin(p)) * 0.13 : 0;
@@ -7034,10 +7179,8 @@
     m.body.scale.set(1 + sq * 0.6, sy, 1 + sq * 0.6);
     m.head.rotation.x = bowK * 0.55;
     if (m.feet) {
-      m.feet[0].position.y = 0.13 + Math.max(0, Math.sin(p)) * (moving ? 0.1 : 0);
-      m.feet[1].position.y = 0.13 + Math.max(0, -Math.sin(p)) * (moving ? 0.1 : 0);
-      m.hands[0].position.z = 0.16 + (moving ? Math.sin(p) * 0.1 : 0);
-      m.hands[1].position.z = 0.16 - (moving ? Math.sin(p) * 0.1 : 0);
+      m.feet.forEach((f, i) => { f.userData.y0 ??= f.position.y; f.position.y = f.userData.y0 + (moving ? Math.max(0, (i ? -1 : 1) * Math.sin(p)) * 0.09 : 0); });
+      m.hands.forEach((hd, i) => { hd.userData.z0 ??= hd.position.z; hd.position.z = hd.userData.z0 + (moving ? (i ? -1 : 1) * Math.sin(p) * 0.08 : 0); });
     }
   }
   function render3d() {
@@ -7045,16 +7188,18 @@
     // size and camera: the same width of village as the 2D view, seen from above and in front
     const w = canvas.clientWidth, h = canvas.clientHeight;
     if (w !== V.w || h !== V.h) { V.w = w; V.h = h; V.renderer.setSize(w, h, false); V.camera.aspect = w / h; V.camera.updateProjectionMatrix(); }
-    const aspect = w / h, visW = aspect < 1 ? 11.5 : 17;
-    const hf = 2 * Math.atan(Math.tan((V.camera.fov * Math.PI) / 360) * aspect), dist = visW / 2 / Math.tan(hf / 2), el = 0.8;
+    const aspect = w / h, visW = aspect < 1 ? 10.5 : 16, cam = CAMS3D[look3d().cam] || CAMS3D.diag, el = cam.el, yaw = (V.yaw = cam.yaw);
+    const hf = 2 * Math.atan(Math.tan((V.camera.fov * Math.PI) / 360) * aspect), dist = visW / 2 / Math.tan(hf / 2);
     const tx = clamp(player.x * U, 4, W * U - 4), tz = clamp(player.y * U, 3, H * U - 3);
     V.tx = V.tx == null ? tx : lerp(V.tx, tx, Math.min(1, dt * 6)); V.tz = V.tz == null ? tz : lerp(V.tz, tz, Math.min(1, dt * 6));
-    V.camera.position.set(V.tx, dist * Math.sin(el), V.tz + dist * Math.cos(el));
-    V.camera.lookAt(V.tx, 0.6, V.tz);
+    V.camera.position.set(V.tx + Math.sin(yaw) * Math.cos(el) * dist, dist * Math.sin(el), V.tz + Math.cos(yaw) * Math.cos(el) * dist);
+    V.camera.lookAt(V.tx, 0.9, V.tz);
     V.sun.position.set(V.tx - 7, 16, V.tz + 7); V.sun.target.position.set(V.tx, 0, V.tz);
+    V.rim.position.set(V.tx - Math.sin(yaw) * 10, 9, V.tz - Math.cos(yaw) * 10); V.rim.target.position.set(V.tx, 1, V.tz);
+    V.sc.fog.near = dist * 0.9; V.sc.fog.far = dist * 2.2;
     // the hour: the 2D tint goes on top; here the sun dims and windows and lamps glow
     const night = nightAmount();
-    V.sun.intensity = 1.8 - night * 1.25; V.hemi.intensity = 1.2 - night * 0.55;
+    V.sun.intensity = 1.45 - night * 1.0; V.hemi.intensity = 1.4 - night * 0.6;
     V.winM.emissiveIntensity = night * 1.3; V.lampM.emissiveIntensity = night * 2;
     // the seasons: crowns change color, winter whitens the ground, a snowman appears
     const se = season();
@@ -7149,7 +7294,7 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     for (const c of [player, ...npcs]) {
       if (!c.player) { const ft = toScreen3(c.x, c.y, 0); drawName({ name: c.name, x: ft.x, y: ft.y }); }
-      const hd = toScreen3(c.x, c.y, 2.3);
+      const m = v3.people.get(c), hd = toScreen3(c.x, c.y, (m && m.top) || 2.3);
       if (c.emote) { ctx.save(); ctx.translate(hd.x - 18, hd.y + 8); drawEmote(c, 0); ctx.restore(); }
       if (c.bubble) drawBubble({ x: hd.x, y: hd.y + 90, bubble: c.bubble });
     }
