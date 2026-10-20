@@ -47,6 +47,17 @@
   }
   #world { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
   #world3d { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .talk-head { display: flex; align-items: center; gap: 12px; }
+  .talk-head img { width: 64px; height: 76px; object-fit: contain; flex: none; }
+  .talk-head div { display: flex; flex-direction: column; gap: 2px; }
+  .talk-head .muted { font-size: 13px; }
+  .talk-say { position: relative; margin: 0; padding: 14px 16px; border-radius: 18px; background: var(--grouped); font-size: 16px; font-weight: 600; line-height: 1.5; word-break: keep-all; }
+  .talk-say::before { content: ""; position: absolute; left: 26px; top: -8px; border: 8px solid transparent; border-top: 0; border-bottom-color: var(--grouped); }
+  .chat-log { display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto; padding: 4px 2px; }
+  .chat-line { align-self: flex-start; max-width: 80%; display: flex; flex-direction: column; gap: 1px; padding: 8px 12px; border-radius: 14px 14px 14px 4px; background: var(--grouped); font-size: 14px; line-height: 1.4; word-break: keep-all; }
+  .chat-line b { font-size: 11px; color: var(--sub); }
+  .chat-line.me { align-self: flex-end; border-radius: 14px 14px 4px 14px; background: #fbeee2; }
+  @media (prefers-reduced-motion: no-preference) { .talk-say.pop { animation: starpop 0.4s cubic-bezier(0.3, 1.6, 0.5, 1); } }
   .clock-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .clock-inputs label { display: flex; flex-direction: column; gap: 4px; }
   .clock-inputs input { height: 44px; padding: 0 10px; border: 0; border-radius: 12px; background: var(--surface); color: var(--ink); font: 600 16px var(--font); }
@@ -1083,7 +1094,8 @@
 </div>
 
 <div class="sheet" id="chatSheet" hidden>
-  <div class="row-head"><h2>말 걸기</h2><span class="muted" id="chatWho"></span></div>
+  <div class="row-head"><h2 id="chatTitle">말 걸기</h2><span class="muted" id="chatWho"></span></div>
+  <div class="chat-log" id="chatLog" aria-live="polite"></div>
   <div class="phrases" id="chatPhrases"></div>
   <span class="label">표정</span>
   <div class="num-row" id="chatEmotes"></div>
@@ -1213,6 +1225,13 @@
   <p class="muted" id="clockGate"></p>
   <button class="btn" id="clockOk" type="button">이대로 할게요</button>
   <button class="btn soft" id="clockClose" type="button">닫기</button>
+</div>
+
+<div class="sheet" id="talkSheet" hidden>
+  <div class="talk-head"><img id="talkPic" alt=""><div><h2 id="talkName"></h2><span class="muted" id="talkMood"></span></div></div>
+  <p class="talk-say" id="talkSay" aria-live="polite"></p>
+  <div class="phrases" id="talkOpts"></div>
+  <button class="btn soft" id="talkClose" type="button">안녕, 또 봐!</button>
 </div>
 
 <div class="sheet" id="wishSheet" hidden>
@@ -2897,10 +2916,11 @@
 
     for (const b of bugs) if (b.flee <= 0 && b.a > 0.4 && Math.hypot(w.x - b.x, w.y - (b.y - b.alt)) < 26) { chaseBug(b); return; }
     if (G.pet && Math.hypot(w.x - pet.x, w.y - (pet.y - 18)) < 28) { openPet(); return; }
+    for (const f of friendsHere()) if (Math.hypot(w.x - f.x, w.y - (f.y - 42)) < 32) { openChat(f); return; }
     for (const n of npcs) if (Math.hypot(w.x - n.x, w.y - (n.y - 42)) < 30) {
       if (holidayWants(n)) { visitNeighbor(n); return; }
       if (n.shopkeeper) { goTo(shop.spot, () => { openSheet('shopSheet'); renderShop(); talkTo(n); }); return; }
-      talkTo(n); return;
+      openTalk(n); return;
     }
     for (const p of plots) if (w.x > p.x - 4 && w.x < p.x + p.w + 4 && w.y > p.y - 18 && w.y < p.y + p.h + 4) { goTo(plotSpot(p), () => useplot(p)); return; }
     for (const t of trees) if (Math.abs(w.x - t.x) < 36 * t.s && w.y > t.y - 122 * t.s && w.y < t.y + 8) { goTo(treeSpot(t), () => shakeTree(t)); return; }
@@ -2945,7 +2965,7 @@
     if (built('jeong')) opts.push([JEONG.spot, restJeong]);
     opts.push([house.door, enterRoom]);
     opts.push([pier.tip, () => startFishing(pier.bob)]);
-    npcs.forEach((n) => opts.push([n, () => (holidayWants(n) ? holidayVisit(n) : talkTo(n))]));
+    npcs.forEach((n) => opts.push([n, () => (holidayWants(n) ? holidayVisit(n) : n.shopkeeper ? talkTo(n) : openTalk(n))]));
     const e2 = pondEdge(player.x, player.y); opts.push([e2.stand, () => startFishing(e2.bob)]);
     let best = null, bd = 60;
     for (const [pt, fn] of opts) { const d = Math.hypot(pt.x - player.x, pt.y - player.y); if (d < bd) { bd = d; best = fn; } }
@@ -4935,7 +4955,7 @@
   const net = { room: null, user: null, db: null, uid: null, owner: false, tried: false, boardOn: false };
   const friends = new Map();                                      // peer label -> their 동글이 here
   const names = {};                                               // id -> name as THIS viewer sees it (never stored)
-  let boardDocs = [], nameKey = '', toldOutside = false;
+  let boardDocs = [], nameKey = '', toldOutside = false, toldVillage = false;
   async function connect() {
     if (net.tried || !window.claude || typeof window.claude.use !== 'function') return;
     net.tried = true;
@@ -4949,36 +4969,46 @@
     }
     if (scene === 'cafe') watchBoard();
   }
+  // friends meet where both of you are: in 몽글카페, or walking around the village
+  const MEET = () => ({ cafe: { w: CAFE.w, h: CAFE.h, y0: CBASE + 20, spot: CAFE_DOOR.spot }, village: { w: W, h: H, y0: 70, spot: VBUS.spot } });
+  const FRIEND_SHIRT = '#b9a3e3';
   function sendWhere() {
     if (!net.room) return;
-    const here = scene === 'cafe';
-    net.room.presence(here ? { v: 1, where: 'cafe', look: G.look } : { v: 1, where: 'out', look: G.look, x: null, y: null, sit: null, say: null, emo: null }).catch(() => {});
+    const where = scene === 'cafe' || scene === 'village' ? scene : 'out';
+    net.room.presence(where !== 'out' ? { v: 1, where, look: G.look } : { v: 1, where: 'out', look: G.look, x: null, y: null, sit: null, say: null, emo: null }).catch(() => {});
     lastSent = '';
   }
+  const arriveText = (f) => (f.where === 'village' ? [`${nameOf(f.by)}님이 마을에 놀러 왔어요! 눌러서 말을 걸어 봐요.`, 'A friend came to visit! Tap them to talk.'] : [`${nameOf(f.by)}님이 들어왔어요. 인사해 볼까요?`, 'Someone came in. Say hello?']);
   function syncFriends(ch) {
     const seen = new Set();
     for (const p of ch.peers) {
       if (p.sameTab || p.kind !== 'viewer') continue;
-      const pr = p.presence || {};
-      if (pr.where !== 'cafe') continue;
+      const pr = p.presence || {}, place = MEET()[pr.where];
+      if (!place) continue;
       seen.add(p.peer);
-      const x = clamp(Number(pr.x) || CAFE_DOOR.spot.x, 40, CAFE.w - 40), y = clamp(Number(pr.y) || CAFE_DOOR.spot.y, CBASE + 20, CAFE.h - 20);
+      const x = clamp(Number(pr.x) || place.spot.x, 40, place.w - 40), y = clamp(Number(pr.y) || place.spot.y, place.y0, place.h - 20);
       let f = friends.get(p.peer);
       const say = pr.say && typeof pr.say === 'object' ? pr.say : null, emo = pr.emo && typeof pr.emo === 'object' ? pr.emo : null;
       if (!f) {
         // what they said before we arrived is not replayed
-        f = mong('', '#a39d93', x, y, { friend: true, by: p.by, tx: x, ty: y, sayAt: say && say.at, emoAt: emo && emo.at, mine: p.isMe });
+        f = mong('', FRIEND_SHIRT, x, y, { friend: true, by: p.by, tx: x, ty: y, where: pr.where, sayAt: say && say.at, emoAt: emo && emo.at, mine: p.isMe });
         friends.set(p.peer, f);
-        if (scene === 'cafe' && !p.isMe) setTimeout(() => toast(`${nameOf(f.by)}님이 들어왔어요. 인사해 볼까요?`, 'Someone came in. Say hello?'), 900);
+        if (pr.where === scene && !p.isMe) setTimeout(() => toast(...arriveText(f)), 900);
+      } else if (f.where !== pr.where) {
+        // they moved between the café and the village
+        f.where = pr.where; f.x = x; f.y = y; f.sit = -1;
+        if (pr.where === scene && !p.isMe) setTimeout(() => toast(...arriveText(f)), 600);
       }
       f.tx = x; f.ty = y;
       f.look = LOOKS.includes(pr.look) ? pr.look : 1;
-      f.sit = Number.isInteger(pr.sit) && SEATS[pr.sit] ? pr.sit : -1;
-      if (say && say.at !== f.sayAt) { f.sayAt = say.at; const line = lineFor(say); if (line) f.bubble = { ko: line[0], en: line[1], t: 5 }; }
+      f.sit = pr.where === 'cafe' && Number.isInteger(pr.sit) && SEATS[pr.sit] ? pr.sit : -1;
+      if (say && say.at !== f.sayAt) { f.sayAt = say.at; const line = lineFor(say); if (line) { f.bubble = { ko: line[0], en: line[1], t: 5 }; if (!p.isMe) logChat(f, line); } }
       if (emo && emo.at !== f.emoAt) { f.emoAt = emo.at; if (EMOTES[emo.k]) f.emo = { k: emo.k, t: 2.4 }; }
     }
     for (const k of [...friends.keys()]) if (!seen.has(k)) friends.delete(k);
-    if (scene !== 'cafe' && friends.size && !toldOutside && G.started) { toldOutside = true; toast('몽글카페에 친구가 와 있어요. 시내 카페로 가 볼까요?', 'A friend is at the café downtown.'); }
+    const away = (where) => [...friends.values()].some((f) => !f.mine && f.where === where);
+    if (G.started && scene !== 'cafe' && away('cafe') && !toldOutside) { toldOutside = true; toast('몽글카페에 친구가 와 있어요. 시내 카페로 가 볼까요?', 'A friend is at the café downtown.'); }
+    if (G.started && scene !== 'village' && away('village') && !toldVillage) { toldVillage = true; toast('마을에 친구가 놀러 와 있어요. 마을로 가 볼까요?', 'A friend is in the village.'); }
     resolveNames(); syncCafeBar();
   }
   async function resolveNames() {
@@ -4992,7 +5022,7 @@
     if (modal === 'boardSheet') renderBoard();
   }
   const nameOf = (id) => (id && id === net.uid ? '나' : (id && names[id]) || '이웃');
-  const friendsHere = () => [...friends.values()].filter((f) => !f.mine);
+  const friendsHere = () => [...friends.values()].filter((f) => !f.mine && f.where === scene);
 
   // ---------- 몽글카페: being here ----------
   let lastSent = '', sendT = 0;
@@ -5022,7 +5052,7 @@
       sendWhere(); syncRoomUI();
     });
   }
-  const seatTaken = (i) => regulars.some((r) => r.sit === i) || [...friends.values()].some((f) => f.sit === i);
+  const seatTaken = (i) => regulars.some((r) => r.sit === i) || [...friends.values()].some((f) => f.where === 'cafe' && f.sit === i);
   function sitAt(i) {
     const s = SEATS[i];
     if (seatTaken(i)) { toast('누가 앉아 있어요. 다른 자리를 골라요.', 'That seat is taken.'); return; }
@@ -5031,7 +5061,7 @@
   function standUp() { player.sit = -1; player.y = Math.min(player.y + 18, CAFE.h - 30); }
   function speakLine(m) {
     const line = lineFor(m) || ['…', '…'];
-    say(player, line, 5); sfx.talk();
+    say(player, line, 5); sfx.talk(); logChat(null, line);
     if (G.en && PHRASES[m.k]) speak(PHRASES[m.k][1]);
     if (net.room) net.room.presence({ say: { ...m, at: Date.now() } }).catch(() => {});
   }
@@ -5052,15 +5082,19 @@
       if (keys.size || p.goal) p.sit = -1;
       else { const s = SEATS[p.sit]; p.x = s.x; p.y = s.y; p.dir = s.dir; p.moving = false; }
     }
-    if (p.emo) { p.emo.t -= dt; if (p.emo.t <= 0) p.emo = null; }
     for (const r of regulars) {
       if (r.bubble) { r.bubble.t -= dt; if (r.bubble.t <= 0) r.bubble = null; }
       r.chatCd -= dt; if (r.chatCd <= 0) { r.chatCd = rand(14, 28); if (Math.random() < 0.5) say(r, pick(CAFE_LINES)); }
     }
     if (barista.bubble) { barista.bubble.t -= dt; if (barista.bubble.t <= 0) barista.bubble = null; }
+  }
+  function updateFriends(dt) {
+    const p = player;
+    if (p.emo) { p.emo.t -= dt; if (p.emo.t <= 0) p.emo = null; }
     for (const f of friends.values()) {
-      f.sip = f.sit >= 0;
-      if (f.sit >= 0) { const s = SEATS[f.sit]; f.x = s.x; f.y = s.y; f.dir = s.dir; f.moving = false; }
+      if (f.where !== scene) continue;
+      f.sip = scene === 'cafe' && f.sit >= 0;
+      if (f.sip) { const s = SEATS[f.sit]; f.x = s.x; f.y = s.y; f.dir = s.dir; f.moving = false; }
       else {
         const dx = f.tx - f.x, dy = f.ty - f.y, d = Math.hypot(dx, dy);
         if (d > 180) { f.x = f.tx; f.y = f.ty; f.moving = false; }
@@ -5072,9 +5106,9 @@
     }
     // tell the others where I am: absolute state, only when it changes
     sendT -= dt;
-    if (net.room && sendT <= 0) {
+    if (net.room && sendT <= 0 && (scene === 'cafe' || scene === 'village')) {
       sendT = 0.1;
-      const st = { x: Math.round(p.x), y: Math.round(p.y), sit: p.sit >= 0 ? p.sit : -1 };
+      const st = { x: Math.round(p.x), y: Math.round(p.y), sit: scene === 'cafe' && p.sit >= 0 ? p.sit : -1 };
       const key = `${st.x},${st.y},${st.sit}`;
       if (key !== lastSent) { lastSent = key; net.room.presence(st).catch(() => {}); }
     }
@@ -5104,25 +5138,48 @@
   }
 
   // ---------- 몽글카페: the chat sheet ----------
-  function openChat() {
-    if (scene !== 'cafe') return;
+  // what was said nearby, mine and theirs, newest last
+  const chatLog = [];
+  let chatWith = null;
+  function logChat(f, line) {
+    chatLog.push({ by: f ? f.by : null, where: scene, line, at: Date.now() });
+    if (chatLog.length > 30) chatLog.shift();
+    if (modal === 'chatSheet') renderChatLog();
+  }
+  function renderChatLog() {
+    const box = $('chatLog'); box.innerHTML = '';
+    const rows = chatLog.filter((c) => c.where === scene && (!chatWith || !c.by || c.by === chatWith.by)).slice(-8);
+    box.hidden = !rows.length;
+    for (const c of rows) {
+      const r = el('div', 'chat-line' + (c.by ? '' : ' me'));
+      if (c.by) r.append(el('b', null, nameOf(c.by)));
+      r.append(el('span', null, G.en ? `${c.line[0]} · ${c.line[1]}` : c.line[0]));
+      box.append(r);
+    }
+    box.scrollTop = box.scrollHeight;
+  }
+  function openChat(f) {
+    if (scene !== 'cafe' && scene !== 'village') return;
+    chatWith = f && f.by ? f : null;
     openSheet('chatSheet');
     const n = friendsHere().length;
-    $('chatWho').textContent = n ? `지금 카페에 친구 ${n}명` : '';
+    $('chatTitle').textContent = chatWith ? `${nameOf(chatWith.by)}님과 이야기` : '말 걸기';
+    $('chatWho').textContent = n ? `지금 ${scene === 'cafe' ? '카페' : '마을'}에 친구 ${n}명` : '';
     $('chatNote').textContent = !net.room ? '지금은 혼자 있어요. 이 게임 링크를 친구와 공유하면, 같은 시간에 들어온 친구가 여기서 보여요.'
       : n ? '고른 말은 말풍선으로 모두에게 보여요.' : '아직 아무도 없어요. 말풍선은 친구가 들어오면 보여요.';
+    renderChatLog();
     const ph = $('chatPhrases'); ph.innerHTML = '';
     for (const k in PHRASES) {
       const b = el('button', 'phrase'); b.type = 'button';
       b.append(el('span', null, PHRASES[k][0])); if (G.en) b.append(el('small', null, PHRASES[k][1]));
-      b.addEventListener('click', () => { closeSheet(); speakLine({ k }); });
+      b.addEventListener('click', () => speakLine({ k }));
       ph.append(b);
     }
     const em = $('chatEmotes'); em.innerHTML = '';
     for (const k in EMOTES) {
       const b = el('button', 'num-chip emo', EMOTES[k][0]); b.type = 'button'; b.style.color = EMOTES[k][1];
       b.setAttribute('aria-label', { heart: '하트', note: '음표', flower: '꽃', laugh: '웃음', sleepy: '졸려요', wow: '깜짝' }[k]);
-      b.addEventListener('click', () => { closeSheet(); showEmote(k); });
+      b.addEventListener('click', () => { showEmote(k); tone(760, 0.06); });
       em.append(b);
     }
     $('chatFree').hidden = !freeChat();
@@ -5131,18 +5188,18 @@
   function sendTyped() {
     const t = cleanText($('chatText').value);
     if (!t || !freeChat()) return;
-    closeSheet(); speakLine({ text: t });
+    $('chatText').value = ''; speakLine({ text: t });
   }
-  $('chatBtn').addEventListener('click', openChat);
+  $('chatBtn').addEventListener('click', () => openChat(friendsHere().length === 1 ? friendsHere()[0] : null));
   $('chatSend').addEventListener('click', sendTyped);
   $('chatText').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendTyped(); } });
   $('chatClose').addEventListener('click', closeSheet);
   function syncCafeBar() {
-    $('cafeBar').hidden = scene !== 'cafe' || !!modal || !G.started;
+    $('cafeBar').hidden = !G.started || !!modal || !(scene === 'cafe' || (scene === 'village' && friendsHere().length > 0));
     const n = friendsHere().length;
     $('cafeN').hidden = !n; $('cafeN').textContent = String(n);
     $('chatLabel').textContent = G.en ? 'Chat' : '말하기';
-    $('chatBtn').setAttribute('aria-label', n ? `말하기 (카페에 친구 ${n}명)` : '말하기');
+    $('chatBtn').setAttribute('aria-label', n ? `말하기 (${scene === 'cafe' ? '카페' : '마을'}에 친구 ${n}명)` : '말하기');
   }
 
   // ---------- 몽글카페: the guestbook ----------
@@ -5387,7 +5444,7 @@
     CTABLES.forEach((t) => list.push([t.y, () => drawCafeTable(t)]));
     CPLANTS.forEach(([px, py]) => list.push([py, () => drawCafePlant(px, py)]));
     regulars.forEach((r) => list.push([r.y + 1, () => drawMong(r)]));
-    const fr = [...friends.values()];
+    const fr = [...friends.values()].filter((f) => f.where === 'cafe');
     fr.forEach((f) => list.push([f.y + 1, () => { drawMong(f); drawTag(f); }]));
     list.push([player.y + 1, () => drawMong(player)]);
     list.sort((a, b) => a[0] - b[0]).forEach(([, fn]) => fn());
@@ -7146,8 +7203,10 @@
       g.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = false; } });
       return m;
     }
-    const people = new Map();
+    const people = new Map(), friendModels = new Map();
     function makePeople() {
+      for (const [, m] of friendModels) { sc.remove(m.g); const i = pickables.indexOf(m.g); if (i >= 0) pickables.splice(i, 1); }
+      friendModels.clear();
       for (const [, m] of people) { sc.remove(m.g); const i = pickables.indexOf(m.g); if (i >= 0) pickables.splice(i, 1); }
       people.clear();
       const me = dongle(player); sc.add(me.g); people.set(player, me);
@@ -7234,7 +7293,7 @@
     }
 
     const vp = new X.Vector3(), ray = new X.Raycaster(), ndc = new X.Vector2(), floor = new X.Plane(new X.Vector3(0, 1, 0), 0), hit = new X.Vector3();
-    return { X, renderer, el: el3, sc, camera, hemi, sun, rim, makePeople, thumb3d, yaw: 0, groundMat, winM, lampM, treeObjs, plotObjs, soilDry, soilWet, growCrop, stallGoods, fundSign, shelterSign, waiting, people, petModel, myPet, myPetK, petBall, bugObj, bugObjs, rod, line, lineGeo, bobber, snowman, builtObjs, buildProject, pickables, bugM, woodM, vp, ray, ndc, floor, hit, last: performance.now(), on: false, fundKey: '', stallKey: '', shelterKey: '', season: -1, w: 0, h: 0, tx: null, tz: null, ball };
+    return { X, renderer, el: el3, sc, camera, hemi, sun, rim, makePeople, thumb3d, dongle, friendModels, yaw: 0, groundMat, winM, lampM, treeObjs, plotObjs, soilDry, soilWet, growCrop, stallGoods, fundSign, shelterSign, waiting, people, petModel, myPet, myPetK, petBall, bugObj, bugObjs, rod, line, lineGeo, bobber, snowman, builtObjs, buildProject, pickables, bugM, woodM, vp, ray, ndc, floor, hit, last: performance.now(), on: false, fundKey: '', stallKey: '', shelterKey: '', season: -1, w: 0, h: 0, tx: null, tz: null, ball };
   }
 
   // ---------- choosing how everyone looks, and from where you watch ----------
@@ -7364,8 +7423,15 @@
     const shk = G.pet ? G.pet.k : '';
     if (shk !== V.shelterKey) { V.shelterKey = shk; V.shelterSign.userData.redraw(G.pet ? '동글 보호소' : '새 가족을 찾아요'); V.waiting.forEach((o) => { o.m.g.visible = o.k !== shk; }); }
     for (const o of V.waiting) o.m.head.rotation.z = Math.sin(G.t * 0.8 + o.m.g.position.x * 3) * 0.12;
-    // people
+    // people, and friends visiting the village
     for (const [c, m] of V.people) pose(m, c, dt);
+    const here = new Set(friendsHere());
+    for (const [f, m] of V.friendModels) if (!here.has(f)) { V.sc.remove(m.g); const i = V.pickables.indexOf(m.g); if (i >= 0) V.pickables.splice(i, 1); V.friendModels.delete(f); }
+    for (const f of here) {
+      let m = V.friendModels.get(f);
+      if (!m) { m = V.dongle(f); V.sc.add(m.g); m.g.userData.tap = () => ({ x: f.x, y: f.y - 42 }); V.pickables.push(m.g); V.friendModels.set(f, m); }
+      pose(m, f, dt);
+    }
     // the swing seat follows whoever is on it
     const pg = V.builtObjs.play;
     if (pg && pg.userData.seats) pg.userData.seats[0].rotation.x = player.swingT > 0 ? ((player.y - SWING.y) / 10) * 0.5 : Math.sin(G.t * 1.2) * 0.03;
@@ -7428,6 +7494,13 @@
       if (c.emote) { ctx.save(); ctx.translate(hd.x - 18, hd.y + 8); drawEmote(c, 0); ctx.restore(); }
       if (c.bubble) drawBubble({ x: hd.x, y: hd.y + 90, bubble: c.bubble });
     }
+    for (const f of friendsHere()) {
+      const m = v3.friendModels.get(f), ft = toScreen3(f.x, f.y, 0), hd = toScreen3(f.x, f.y, (m && m.top) || 2.3);
+      drawTag({ by: f.by, x: ft.x, y: ft.y });
+      if (f.bubble) drawBubble({ x: hd.x, y: hd.y + 90, bubble: f.bubble });
+      if (f.emo) drawEmo({ emo: f.emo, x: hd.x, y: hd.y + 104 });
+    }
+    if (player.emo) { const hd = toScreen3(player.x, player.y, (v3.people.get(player) || {}).top || 2.3); drawEmo({ emo: player.emo, x: hd.x, y: hd.y + 104 }); }
     if (G.pet) {
       const hd = toScreen3(pet.x, pet.y, 1.25);
       if (pet.emote) { ctx.save(); ctx.translate(hd.x - 18, hd.y + 8); drawEmote(pet, 0); ctx.restore(); }
@@ -7437,6 +7510,65 @@
     if (holiday() === 'chuseok' && nightAmount() > 0.02) drawMoon(nightAmount());
     if (sleepFade > 0) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = `rgba(42,38,70,${clamp(1 - Math.abs(sleepFade - 0.8) / 0.8, 0, 1)})`; ctx.fillRect(0, 0, canvas.width, canvas.height); }
   }
+
+  // =====================================================================
+  // ---------- 이웃과 이야기: tap a neighbor to talk, not just to hear a line ----------
+  // Each neighbor has their own way of being, and something useful to tell you that they
+  // read from the village as it is today: prices, the piggy bank, the fundraiser, a word.
+  // =====================================================================
+  const PEOPLE = {
+    동이: { mood: '느긋하고 다정해요. 저금을 좋아해요', hi: ['왔구나! 오늘 하루는 어땠어?', '천천히 와도 괜찮아.'], how: ['나는 아침마다 저금통을 흔들어 봐. 짤랑짤랑 소리가 좋아.', '오늘은 구름이 느리게 가더라. 나도 느리게 걸었어.', '조금씩 모으는 게 제일 든든해.'] },
+    글이: { mood: '책 읽기와 영어 단어를 좋아해요', hi: ['안녕! 오늘 새로 배운 말 있어?', '도서관에서 막 나왔어.'], how: ['요즘 영어 그림책을 읽고 있어. 재밌어!', '단어 하나씩 모으는 게 꼭 도감 같아.', '오늘은 조용히 책 읽기 좋은 날이야.'] },
+    포포: { mood: '장난꾸러기, 노는 게 제일 좋아요', hi: ['야호! 같이 놀자!', '나 방금 나비 따라 뛰어다녔어!'], how: ['오늘 연못에서 개구리 소리 들었어!', '심심하면 나랑 같이 걷자!', '곤충 잡기 내기할래? 헤헤.'] },
+    말랑: { mood: '맛있는 걸 좋아하는 먹보예요', hi: ['안녕~ 배고프지 않아?', '오늘은 뭐 먹을까 고민 중이야.'], how: ['붕어빵은 꼬리부터 먹어야 제맛이야.', '부엌에서 요리하면 재료보다 비싸게 팔 수 있대!', '배부르면 마음도 말랑해져.'] },
+  };
+  let talking = null;
+  function openTalk(n) {
+    const P = PEOPLE[n.name]; if (!P) { talkTo(n); return; }
+    talking = n; n.wait = Math.max(n.wait, 8); n.target = null; n.moving = false; n.dir = Math.sign(player.x - n.x) || 1; n.emote = { t: 1.4 };
+    $('talkPic').src = `assets/dongle/base-${n.look}.png`;
+    $('talkName').textContent = callName(n.name);
+    $('talkMood').textContent = P.mood;
+    talkSay(pick(isNight() ? [...P.hi, '밤이라 졸리다… 그래도 반가워!'] : P.hi));
+    openSheet('talkSheet'); renderTalk(); sfx.talk();
+  }
+  function talkSay(t) { const b = $('talkSay'); b.textContent = t; b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); }
+  // something worth knowing, as this neighbor would put it
+  function tipFrom(n) {
+    if (n.name === '동이') {
+      const g = goalItem();
+      if (g && G.bank < g.price) return `${g.ko} 모으고 있지? ${won(g.price - G.bank)}만 더 모으면 돼. 매일 조금씩이면 금방이야.`;
+      const next = interestOn(G.bank, BANK_RATE);
+      return next > 0 ? `저금통에 ${won(G.bank)} 있으면 내일 아침 이자가 ${won(next)} 붙어. 신기하지?` : '저금통에 돈을 넣어 두면 하룻밤마다 이자가 붙어. 작게 시작해도 돼!';
+    }
+    if (n.name === '글이') {
+      const ks = Object.keys(ENG).filter((k) => ITEMS[k] || FOODS[k] || BUGS[k]), k = pick(ks);
+      setTimeout(() => speak(ENG[k][0]), 300);
+      G.words = G.words || {}; G.words[k] = true; persist();
+      const w = info(k).ko, c = w.charCodeAt(w.length - 1) - 0xac00, topic = c >= 0 && c < 11172 && c % 28 ? '은' : '는';
+      return `'${w}'${topic} 영어로 '${ENG[k][0]}'야. 같이 소리 내 볼까? 단어장에도 넣어 둘게!`;
+    }
+    if (n.name === '포포') {
+      const p = fundProject();
+      if (p && fundState().raised > 0) return `${p.ko} 모금이 ${Math.floor((fundState().raised / p.target) * 100)}%래! 다 모이면 같이 놀자!`;
+      return isNight() ? '밤에는 반딧불이가 반짝여. 연못 쪽으로 가 봐!' : '나무를 흔들면 열매가 떨어져. 제철 과일은 더 빨리 열린대!';
+    }
+    if (n.name === '말랑') {
+      const ups = Object.keys(G.prices).filter((k) => G.prev[k]).map((k) => [k, G.prices[k] - G.prev[k]]).sort((a, b) => b[1] - a[1]);
+      if (ups.length && ups[0][1] > 0) return `오늘 ${info(ups[0][0]).ko} 값이 어제보다 ${won(ups[0][1])} 올랐대. 팔기 좋은 날이야!`;
+      return '시세가 낮은 날엔 팔지 말고 기다려 봐. 내일은 오를 수도 있어.';
+    }
+    return '오늘도 좋은 하루!';
+  }
+  function renderTalk() {
+    const n = talking, box = $('talkOpts'); box.innerHTML = ''; if (!n) return;
+    const P = PEOPLE[n.name];
+    const opt = (label, fn) => { const b = el('button', 'phrase'); b.type = 'button'; b.append(el('span', null, label)); b.addEventListener('click', fn); box.append(b); };
+    opt('요즘 어때?', () => { talkSay(pick(P.how)); sfx.talk(); });
+    opt('알려 줄 거 있어?', () => { talkSay(tipFrom(n)); sfx.talk(); });
+    opt('같이 걷자!', () => { n.follow = 40; n.target = null; closeSheet(); talking = null; say(n, ['좋아, 같이 가자!', "Let's go together!"]); toast(`${callName(n.name)}가 한동안 같이 걸어요.`, 'Walking together!'); sfx.harvest(); });
+  }
+  $('talkClose').addEventListener('click', () => { if (talking) say(talking, ['또 봐!', 'See you!'], 2.4); talking = null; closeSheet(); });
 
   // ---------- 명절 in the village: 강강술래 under the moon, kites on 설날 ----------
   const RING = { x: 775, y: 530, r: 120 };
@@ -7614,7 +7746,7 @@
     return false;
   }
 
-  let sleepFade = 0;
+  let sleepFade = 0, lastScene = '';
   function update(dt) {
     G.t += dt;
     if (G.started && !document.hidden) tickPlay(dt);
@@ -7711,6 +7843,13 @@
       if (n.chatCd <= 0) { n.chatCd = rand(9, 20); if (!n.bubble && Math.random() < 0.55) say(n, n.shopkeeper && !holiday() ? pick(LINES_SHOP) : pick(chatter())); }
       if (G.started && scene === 'village' && n.greetCd <= 0 && Math.hypot(n.x - p.x, n.y - p.y) < 70) { n.greetCd = 40; say(n, ['안녕!', 'Hi!'], 2); n.dir = Math.sign(p.x - n.x) || 1; }
       if (n.shopkeeper) { n.moving = false; continue; }
+      if (n.follow > 0) {
+        n.follow -= dt;
+        const fx = player.x + (player.dir || 1) * 34, fy = player.y + 10;
+        if (Math.hypot(fx - n.x, fy - n.y) > 26) moveChar(n, fx, fy, 115, dt); else n.moving = false;
+        if (n.follow <= 0) say(n, ['재밌었어! 또 같이 걷자.', 'That was fun!']);
+        continue;
+      }
       const ring = ringSpot(n); // 강강술래 under the 추석 moon
       if (ring) { n.target = null; moveChar(n, ring.x, ring.y, n.speed * 1.5, dt); continue; }
       if (n.target) {
@@ -7744,6 +7883,8 @@
     else if (scene === 'ride') updateRide(dt);
     else if (scene === 'market') updateMarket(dt);
     else if (scene === 'cafe') updateCafe(dt);
+    if (scene !== lastScene) { lastScene = scene; sendWhere(); syncCafeBar(); }
+    if (scene === 'cafe' || scene === 'village') updateFriends(dt);
     for (const t of trees) {
       if (t.shake > 0) t.shake = Math.max(0, t.shake - dt);
       if (t.fruit && t.n < 3) { t.regrow += dt; if (t.regrow >= regrowTime(t.fruit)) { t.regrow = 0; t.n++; } }
@@ -8705,6 +8846,7 @@
     list.push([VBUS.y - 2, () => drawCityBusStop(VBUS, '동글마을 정류장', '동글시내', '#7fb069')]);
     if (season() === 3) list.push([600, () => drawSnowman(600, 600)]);
     [player, ...npcs].forEach((c) => list.push([c.y, () => { drawMong(c); if (!c.player) drawName(c); }]));
+    friendsHere().forEach((f) => list.push([f.y + 0.5, () => { drawMong(f); drawTag(f); }]));
     bugs.forEach((b) => list.push([b.y + 0.5, () => drawBug(b)]));
     list.sort((a, b) => a[0] - b[0]).forEach(([, fn]) => fn());
     drawKites();
@@ -8729,7 +8871,8 @@
       ctx.globalCompositeOperation = 'source-over';
     }
 
-    [player, ...npcs].forEach(drawBubble);
+    [player, ...npcs, ...friendsHere()].forEach(drawBubble);
+    [player, ...friendsHere()].forEach(drawEmo);
     drawPetBubble();
     seasonFall();
     if (holiday() === 'chuseok' && night > 0.02) drawMoon(night);
