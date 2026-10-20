@@ -247,7 +247,7 @@
     display: flex; gap: 8px; justify-content: center;
     padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
   }
-  .room-bar .btn { flex: 1; max-width: 160px; box-shadow: 0 6px 18px rgba(31, 27, 23, 0.14); }
+  .room-bar .btn { flex: 1; max-width: 160px; padding-inline: 6px; font-size: 16px; box-shadow: 0 6px 18px rgba(31, 27, 23, 0.14); }
   .tabs { display: flex; gap: 4px; padding: 4px; border-radius: 14px; background: var(--grouped); }
   .tabs button { flex: 1; height: 36px; border: 0; border-radius: 10px; background: transparent; color: var(--sub); font: 600 14px var(--font); cursor: pointer; }
   .tabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
@@ -527,6 +527,47 @@
   .btn.buy { background: var(--up); }
   .btn.sell { background: var(--down); }
   .btn.buy:disabled, .btn.sell:disabled { background: var(--grouped); color: #c4beb6; }
+
+  /* 부엌 */
+  #cookSheet > * { flex-shrink: 0; }
+  .recipe { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 16px; background: var(--grouped); }
+  .recipe.off .recipe-pic { opacity: 0.55; }
+  .recipe-pic { width: 52px; height: 52px; flex: none; }
+  .recipe-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .recipe-body > b { font-size: 16px; }
+  .recipe-body .muted { font-size: 12px; }
+  .needs { display: flex; flex-wrap: wrap; gap: 4px; }
+  .need { display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px 2px 3px; border-radius: 10px; background: var(--surface); font-size: 12px; font-weight: 600; color: var(--sub); }
+  .need img { width: 18px; height: 18px; }
+  .need.ok { color: #3f7a2c; }
+  .cook-title { font-size: 20px; font-weight: 800; text-align: center; }
+  .pot-wrap { display: flex; justify-content: center; padding-top: 40px; }
+  .pot { position: relative; width: 200px; height: 118px; border-radius: 0 0 100px 100px / 0 0 80px 80px; background: linear-gradient(180deg, #a7b1bb, #6f7a85); box-shadow: inset 0 -10px 16px rgba(0, 0, 0, 0.15); }
+  .pot::before, .pot::after { content: ""; position: absolute; top: 18px; width: 26px; height: 12px; border-radius: 8px; background: #6f7a85; }
+  .pot::before { left: -20px; } .pot::after { right: -20px; }
+  .pot-soup { position: absolute; left: 6px; right: 6px; top: -14px; height: 36px; border-radius: 50%; box-shadow: inset 0 0 0 6px #8b96a1; overflow: hidden; display: flex; align-items: center; justify-content: center; transition: background 0.4s; }
+  .pot-in { display: flex; gap: 2px; }
+  .pot-in img { width: 30px; height: 30px; margin-top: 6px; transform: rotate(calc(var(--i) * 25deg - 20deg)); }
+  .steam { position: absolute; top: -34px; width: 8px; height: 20px; border-radius: 4px; background: rgba(255, 255, 255, 0.85); opacity: 0; }
+  .steam.s1 { left: 60px; } .steam.s2 { left: 96px; } .steam.s3 { left: 132px; }
+  .cook-hand { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  .cook-hand .meter, .cook-hand .trade, .cook-hand .btn.stir { width: 100%; }
+  .ingredient { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 84px; padding: 10px 4px; border: 0; border-radius: 16px; background: #fbeee2; color: var(--ink); font: 700 13px var(--font); cursor: pointer; box-shadow: inset 0 0 0 2px var(--accent); }
+  .ingredient img { width: 48px; height: 48px; }
+  .ingredient:disabled { background: var(--grouped); box-shadow: none; opacity: 0.6; cursor: default; }
+  .cook-done { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%; }
+  .cook-done img { width: 120px; height: 120px; }
+  .cook-done b { font-size: 20px; }
+  @media (prefers-reduced-motion: no-preference) {
+    .pot.boil .steam { animation: steam 1.4s ease-out infinite; }
+    .pot.boil .steam.s2 { animation-delay: 0.45s; } .pot.boil .steam.s3 { animation-delay: 0.9s; }
+    @keyframes steam { 0% { opacity: 0; transform: translateY(10px) scaleY(0.6); } 40% { opacity: 0.9; } 100% { opacity: 0; transform: translateY(-26px) scaleY(1.2); } }
+    .pot.stirred .pot-in { animation: swirl 0.5s ease-out; }
+    @keyframes swirl { 50% { transform: translateX(10px) rotate(12deg); } }
+    .pot-in img { animation: plop 0.4s cubic-bezier(0.3, 1.5, 0.5, 1); }
+    @keyframes plop { from { transform: translateY(-60px) scale(1.4); opacity: 0; } }
+    .cook-done img { animation: starpop 0.6s cubic-bezier(0.3, 1.8, 0.5, 1); }
+  }
 
   /* 내 가게 */
   #stallSheet > * { flex-shrink: 0; }
@@ -909,6 +950,18 @@
   <button class="btn soft" id="boardClose" type="button">닫기</button>
 </div>
 
+<div class="sheet" id="cookSheet" hidden>
+  <div class="row-head"><h2>부엌</h2><span class="muted" id="cookCount"></span></div>
+  <div class="bank-pane" id="cookList"></div>
+  <div class="bank-pane" id="cookPlay" hidden>
+    <b class="cook-title" id="cookTitle"></b>
+    <div class="pot-wrap" id="potWrap"><div class="pot" id="pot"><div class="pot-soup" id="potSoup"><div class="pot-in" id="potIn"></div></div><i class="steam s1"></i><i class="steam s2"></i><i class="steam s3"></i></div></div>
+    <p class="muted" id="cookStep" aria-live="polite"></p>
+    <div class="cook-hand" id="cookHand"></div>
+  </div>
+  <button class="btn soft" id="cookBack" type="button">닫기</button>
+</div>
+
 <div class="sheet" id="stallSheet" hidden>
   <div class="row-head"><h2>내 가게</h2><span class="muted" id="stallOpens"></span></div>
   <div class="bank-pane" id="stallSetup">
@@ -972,6 +1025,7 @@
 
 <div class="room-bar" id="roomBar" hidden>
   <button class="btn" id="decoBtn" type="button">꾸미기</button>
+  <button class="btn" id="cookBtn" type="button">요리하기</button>
   <button class="btn soft" id="bankBtn" type="button">저금통</button>
   <button class="btn soft" id="exitBtn" type="button">나가기</button>
 </div>
@@ -1151,6 +1205,13 @@
     sikhye:       { ko: '식혜', en: 'Sikhye', price: 2000, color: '#f2e6c6', taste: '시원하고 달큰해요' },
     misu:         { ko: '미숫가루', en: 'Misugaru', price: 4000, color: '#cfae7c', taste: '고소하고 든든해요' },
     bingsu:       { ko: '빙수', en: 'Bingsu', price: 9000, color: '#8d4a3a', taste: '사르르 녹는 시원한 맛이에요' },
+    // cooked at home (부엌)
+    carrotjuice:  { ko: '당근 주스', en: 'Carrot juice', price: 3500, color: '#f39a2e', taste: '달콤하고 상큼해요' },
+    flowertea:    { ko: '꽃차', en: 'Flower tea', price: 6000, color: '#f3dc8a', taste: '향긋하고 따뜻해요' },
+    tomatosoup:   { ko: '토마토 수프', en: 'Tomato soup', price: 6000, color: '#d9503f', taste: '따끈하고 새콤해요' },
+    hwachae:      { ko: '과일 화채', en: 'Fruit punch', price: 9000, color: '#f6b8c4', taste: '시원하고 알록달록해요' },
+    grilledfish:  { ko: '생선구이', en: 'Grilled fish', price: 9000, color: '#d9954a', taste: '겉은 바삭, 속은 촉촉해요' },
+    strawjam:     { ko: '딸기잼', en: 'Strawberry jam', price: 15000, color: '#c0283a', taste: '빵에 발라 먹으면 최고예요' },
     hangangramen: { ko: '한강라면', en: 'Riverside ramen', price: 4000, color: '#e0703f', taste: '강바람 맞으며 먹으니 더 맛있어요' },
   };
   const FOOD_KEYS = Object.keys(FOODS);
@@ -3597,6 +3658,7 @@
   }
   function drawFoodShape(k) {
     if (['hotteok', 'kkultteok', 'sikhye', 'misu', 'bingsu'].includes(k)) return drawMoreFood(k);
+    if (['carrotjuice', 'flowertea', 'tomatosoup', 'hwachae', 'grilledfish', 'strawjam'].includes(k)) return drawDish(k);
     const ink = '#2b2420';
     if (k === 'tteokbokki') {
       ctx.fillStyle = clayGrad(0, 4, 13, '#9fd0a8', '#6fb07f', '#4f8f5f'); ctx.beginPath(); ctx.ellipse(0, 4, 13, 6, 0, 0, 7); ctx.fill();
@@ -4077,6 +4139,7 @@
     ['job', '일해서 벌기', '편의점 알바로 거스름돈을 계산하고 시급을 받았어요.'],
     ['save', '저축', '저금통이나 은행에 돈을 넣었어요.'],
     ['interest', '이자', '맡겨 둔 돈에 이자가 붙었어요.'],
+    ['cook', '가치 더하기', '재료로 요리를 만들었어요. 요리는 재료보다 더 비싸게 팔 수 있어요.'],
     ['shop', '값 정하기', '내 가게에서 내가 정한 값으로 팔아 봤어요. 비싸면 손님이 줄고, 싸면 금방 팔려요.'],
     ['plan', '적금', '5일 동안 꾸준히 넣어서 적금 만기 이자를 받았어요.'],
     ['invest', '주식', '회사의 작은 조각(주식)을 사 봤어요. 값은 오르기도 내리기도 해요.'],
@@ -4993,8 +5056,8 @@
   // =====================================================================
   // ---------- eating up close: 와구와구 ----------
   // =====================================================================
-  const DRINKS = new Set(['hotchoco', 'strawlatte', 'bananamilk', 'sikhye', 'misu']);
-  const SLURP = new Set(['cupramen', 'hangangramen', 'eomuk']);
+  const DRINKS = new Set(['hotchoco', 'strawlatte', 'bananamilk', 'sikhye', 'misu', 'carrotjuice', 'flowertea', 'hwachae']);
+  const SLURP = new Set(['cupramen', 'hangangramen', 'eomuk', 'tomatosoup']);
   const BITES = [0.55, 0.95, 1.35, 1.75];
   let munch = null;
   function closeupEat(k, after) {
@@ -5271,6 +5334,177 @@
     }
     ctx.fillStyle = '#fffaf1'; rr(ctx, x + w / 2 - 34, top - 22, 68, 20, 8); ctx.fill();
     label('내 가게', x + w / 2, top - 12, 12, '#c8714f');
+  }
+
+  // =====================================================================
+  // ---------- 부엌: cook what you grew, picked and caught ----------
+  // A dish is worth more than what went into it: 가치 더하기, seen in won.
+  // =====================================================================
+  const ANY = { fruit: { ko: '과일', keys: FRUIT_KEYS, icon: 'apple' }, fish: { ko: '물고기', keys: ['crucian', 'carp', 'catfish', 'mandarin'], icon: 'crucian' } };
+  const RECIPES = [
+    { k: 'carrotjuice', need: [['carrot', 2]] },
+    { k: 'flowertea', need: [['flower', 2]] },
+    { k: 'tomatosoup', need: [['tomato', 1], ['carrot', 1]] },
+    { k: 'hwachae', need: [['fruit', 3]] },
+    { k: 'grilledfish', need: [['fish', 1]] },
+    { k: 'strawjam', need: [['strawberry', 2]] },
+  ];
+  const haveOf = (k) => (ANY[k] ? ANY[k].keys.reduce((a, x) => a + (G.inv[x] || 0), 0) : G.inv[k] || 0);
+  const canCook = (r) => r.need.every(([k, n]) => haveOf(k) >= n);
+  const needName = (k) => (ANY[k] ? `${ANY[k].ko} 아무거나` : info(k).ko);
+  // the cheapest things that fit, so a koi never ends up on the grill by accident
+  function takeFor(r) {
+    const out = [], left = { ...G.inv };
+    for (const [k, n] of r.need) {
+      const pool = (ANY[k] ? ANY[k].keys : [k]).filter((x) => left[x] > 0).sort((a, b) => refPrice(a) - refPrice(b));
+      for (let i = 0; i < n; i++) { const x = pool.find((y) => left[y] > 0); if (!x) return null; left[x]--; out.push(x); }
+    }
+    return out;
+  }
+  let cook = null;
+  function openKitchen() { cook = null; openSheet('cookSheet'); renderKitchen(); sfx.talk(); }
+  function renderKitchen() {
+    $('cookList').hidden = !!cook; $('cookPlay').hidden = !cook;
+    if (cook) return renderPot();
+    const ready = RECIPES.filter(canCook).length;
+    $('cookCount').textContent = ready ? `지금 만들 수 있는 요리 ${ready}개` : '';
+    const list = $('cookList'); list.innerHTML = '';
+    for (const r of RECIPES) {
+      const f = FOODS[r.k], ok = canCook(r), take = ok ? takeFor(r) : null;
+      const card = el('div', 'recipe' + (ok ? '' : ' off'));
+      const im = el('img', 'recipe-pic'); im.src = iconURL(r.k); im.alt = '';
+      const body = el('div', 'recipe-body');
+      body.append(el('b', null, f.ko));
+      const needs = el('div', 'needs');
+      for (const [k, n] of r.need) {
+        const h = haveOf(k), chip = el('span', 'need' + (h >= n ? ' ok' : ''));
+        const ni = el('img'); ni.src = iconURL(ANY[k] ? ANY[k].icon : k); ni.alt = '';
+        chip.append(ni, `${needName(k)} ${Math.min(h, n)}/${n}`);
+        needs.append(chip);
+      }
+      body.append(needs);
+      // 가치 더하기: what the ingredients fetch today against what the dish is worth
+      const cost = (take || r.need.flatMap(([k, n]) => Array(n).fill(ANY[k] ? ANY[k].keys[0] : k))).reduce((a, x) => a + refPrice(x), 0);
+      const val = el('span', 'muted'); val.append(`재료값 약 ${won(cost)} → 요리 `, el('b', f.price > cost ? 'up-t' : null, won(f.price)));
+      body.append(val);
+      const go = el('button', 'btn small', ok ? '만들기' : '재료 부족'); go.type = 'button'; go.disabled = !ok;
+      go.addEventListener('click', () => startCook(r));
+      card.append(im, body, go);
+      list.append(card);
+    }
+    if (!ready) list.append(el('p', 'example', '밭에서 당근·꽃·토마토·딸기를 키우고, 과일나무를 흔들고, 낚시를 해서 재료를 모아 와요.'));
+  }
+  // ---------- 부엌: drop things in, stir, done ----------
+  const STIRS = 6;
+  function startCook(r) {
+    const items = takeFor(r); if (!items) return;
+    cook = { r, items, dropped: 0, stir: 0, done: false };
+    renderKitchen();
+  }
+  function renderPot() {
+    const c = cook, f = FOODS[c.r.k];
+    $('cookTitle').textContent = c.done ? `${f.ko} 완성!` : `${f.ko} 만들기`;
+    $('potSoup').style.background = c.dropped ? f.color : '#eef1f3';
+    if (c.shown !== c.dropped) {
+      const inPot = $('potIn'); inPot.innerHTML = ''; c.shown = c.dropped;
+      c.items.slice(0, c.dropped).forEach((k, i) => { const im = el('img'); im.src = iconURL(k); im.alt = ''; im.style.setProperty('--i', i); inPot.append(im); });
+    }
+    $('pot').classList.toggle('boil', c.stir > 0 && !c.done);
+    $('potWrap').hidden = c.done;
+    const hand = $('cookHand'); hand.innerHTML = '';
+    const step = $('cookStep');
+    if (c.done) {
+      step.textContent = `${f.taste}. 가방에 넣거나 바로 먹을 수 있어요.`;
+      const res = el('div', 'cook-done');
+      const im = el('img'); im.src = iconURL(c.r.k); im.alt = '';
+      res.append(im, el('b', null, f.ko), el('span', 'muted', `내 가게에서 ${won(f.price)} 정도에 팔 수 있어요`));
+      hand.append(res);
+      const row = el('div', 'trade');
+      const eatB = el('button', 'btn', '바로 먹기'); eatB.type = 'button';
+      eatB.addEventListener('click', () => { const k = c.r.k; cook = null; renderKitchen(); eat(k); });
+      const keepB = el('button', 'btn soft', '가방에 넣기'); keepB.type = 'button';
+      keepB.addEventListener('click', () => { toast(`${eul(f.ko)} 가방에 넣었어요.`, 'Into your bag!'); cook = null; renderKitchen(); });
+      row.append(eatB, keepB); hand.append(row);
+      return;
+    }
+    if (c.dropped < c.items.length) {
+      step.textContent = '재료를 눌러서 냄비에 넣어요.';
+      c.items.slice(c.dropped).forEach((k, i) => {
+        const b = el('button', 'ingredient'); b.type = 'button'; b.setAttribute('aria-label', `${info(k).ko} 넣기`);
+        const im = el('img'); im.src = iconURL(k); im.alt = ''; b.append(im, el('span', null, info(k).ko));
+        if (i === 0) b.addEventListener('click', () => { c.dropped++; tone(520 + c.dropped * 60, 0.12, 'sine', 0.05, -120); renderPot(); });
+        else b.disabled = true;
+        hand.append(b);
+      });
+      return;
+    }
+    step.textContent = c.stir ? `보글보글… ${STIRS - c.stir}번 더 저어요!` : '이제 국자로 휘휘 저어요!';
+    const bar = el('div', 'meter'); const fill = el('i'); fill.style.width = `${(c.stir / STIRS) * 100}%`; bar.append(fill);
+    const stirB = el('button', 'btn stir', '휘휘 젓기'); stirB.type = 'button';
+    stirB.addEventListener('click', () => {
+      c.stir++; for (let i = 0; i < 3; i++) tone(rand(300, 520), 0.08, 'sine', 0.03, 120, i * 0.05);
+      $('pot').classList.remove('stirred'); void $('pot').offsetWidth; $('pot').classList.add('stirred');
+      if (c.stir >= STIRS) finishCook(); else renderPot();
+    });
+    hand.append(bar, stirB);
+  }
+  function finishCook() {
+    const c = cook;
+    for (const k of c.items) G.inv[k]--;
+    G.inv[c.r.k] = (G.inv[c.r.k] || 0) + 1;
+    const rec = G.dex[c.r.k] || { n: 0, best: 0 }; rec.n = Math.max(rec.n, 1); G.dex[c.r.k] = rec;
+    c.done = true; learn('cook');
+    sfx.harvest(); persist(); renderPot();
+  }
+  $('cookBack').addEventListener('click', () => { if (cook && !cook.done) { cook = null; renderKitchen(); } else closeSheet(); });
+  $('cookBtn').addEventListener('click', openKitchen);
+
+  // ---------- pictures: home cooking ----------
+  function drawDish(k) {
+    if (k === 'carrotjuice' || k === 'flowertea') {
+      const tea = k === 'flowertea';
+      if (tea) {
+        ctx.fillStyle = clayGrad(0, 4, 12, '#ffffff', '#f4efe6', '#d9cfbf'); ctx.beginPath(); ctx.ellipse(0, 9, 12, 3.4, 0, 0, 7); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-9, -3); ctx.lineTo(9, -3); ctx.quadraticCurveTo(8, 8, 0, 8); ctx.quadraticCurveTo(-8, 8, -9, -3); ctx.fill();
+        ctx.strokeStyle = '#e7dfd2'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(10, 1, 3.4, -1.2, 1.4); ctx.stroke();
+        ctx.fillStyle = '#f3dc8a'; ctx.beginPath(); ctx.ellipse(0, -3, 8.6, 2.4, 0, 0, 7); ctx.fill();
+        ctx.fillStyle = '#f2a7b8'; for (let i = 0; i < 5; i++) { const a = (i / 5) * Math.PI * 2; ctx.beginPath(); ctx.ellipse(Math.cos(a) * 2.2, -3 + Math.sin(a) * 0.9, 1.6, 0.9, a, 0, 7); ctx.fill(); }
+        ctx.fillStyle = '#e2bd55'; ctx.beginPath(); ctx.arc(0, -3, 0.9, 0, 7); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(-3, -8); ctx.quadraticCurveTo(-5, -11, -3, -14); ctx.moveTo(3, -8); ctx.quadraticCurveTo(1, -11, 3, -14); ctx.stroke();
+      } else {
+        ctx.fillStyle = 'rgba(232,240,244,0.9)'; ctx.beginPath(); ctx.moveTo(-7, -11); ctx.lineTo(7, -11); ctx.lineTo(5.5, 12); ctx.lineTo(-5.5, 12); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#f39a2e'; ctx.beginPath(); ctx.moveTo(-6.4, -5); ctx.lineTo(6.4, -5); ctx.lineTo(5.3, 11); ctx.lineTo(-5.3, 11); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillRect(-5, -4, 2, 13);
+        ctx.strokeStyle = '#7fb069'; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(2, -16); ctx.lineTo(0, 4); ctx.stroke();
+        ctx.fillStyle = '#e8873a'; ctx.beginPath(); ctx.arc(6, -10, 3.4, 0, 7); ctx.fill(); ctx.fillStyle = '#f6c08a'; ctx.beginPath(); ctx.arc(6, -10, 1.6, 0, 7); ctx.fill();
+      }
+    } else if (k === 'tomatosoup') {
+      ctx.fillStyle = clayGrad(0, 4, 13, '#ffffff', '#f4efe6', '#d9cfbf'); ctx.beginPath(); ctx.moveTo(-12, -2); ctx.lineTo(12, -2); ctx.quadraticCurveTo(11, 11, 0, 11); ctx.quadraticCurveTo(-11, 11, -12, -2); ctx.fill();
+      ctx.fillStyle = '#d9503f'; ctx.beginPath(); ctx.ellipse(0, -2, 11.5, 3.4, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = '#f6efe2'; ctx.beginPath(); ctx.arc(-3, -2.4, 1.6, 0, 7); ctx.fill();
+      ctx.fillStyle = '#7fb069'; ctx.beginPath(); ctx.ellipse(3, -2.6, 2.6, 1.2, 0.5, 0, 7); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(-4, -7); ctx.quadraticCurveTo(-6, -10, -4, -13); ctx.moveTo(4, -7); ctx.quadraticCurveTo(2, -10, 4, -13); ctx.stroke();
+    } else if (k === 'strawjam') {
+      ctx.fillStyle = 'rgba(232,240,244,0.85)'; rr(ctx, -8, -6, 16, 17, 4); ctx.fill();
+      ctx.fillStyle = '#c0283a'; rr(ctx, -7, -2, 14, 12, 3); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillRect(-5.5, -1, 2, 9);
+      ctx.fillStyle = '#fffaf1'; ctx.beginPath(); ctx.ellipse(0, -7, 10, 3.6, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = '#e58aa0'; for (let i = -8; i < 9; i += 4) { ctx.beginPath(); ctx.arc(i, -7, 1.1, 0, 7); ctx.fill(); }
+      ctx.fillStyle = '#fffaf1'; rr(ctx, -5, 2, 10, 5, 1.5); ctx.fill();
+      ctx.fillStyle = '#c0283a'; ctx.beginPath(); ctx.arc(0, 4.5, 1.6, 0, 7); ctx.fill();
+    } else if (k === 'hwachae') {
+      ctx.fillStyle = 'rgba(232,240,244,0.85)'; ctx.beginPath(); ctx.moveTo(-12, -4); ctx.lineTo(12, -4); ctx.quadraticCurveTo(11, 10, 0, 10); ctx.quadraticCurveTo(-11, 10, -12, -4); ctx.fill();
+      ctx.fillStyle = '#f6b8c4'; ctx.beginPath(); ctx.moveTo(-11, -1); ctx.lineTo(11, -1); ctx.quadraticCurveTo(10, 9, 0, 9); ctx.quadraticCurveTo(-10, 9, -11, -1); ctx.fill();
+      for (const [x, y, c] of [[-6, 2, '#e0473b'], [-1, 4, '#f39a2e'], [4, 2, '#e3cc68'], [7, 5, '#c0283a'], [-4, 6, '#7fb069']]) { ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x, y, 2, 0, 7); ctx.fill(); }
+      ctx.fillStyle = 'rgba(255,255,255,0.8)'; for (const [x, y] of [[-8, -1], [2, 0], [8, 1]]) { rr(ctx, x - 1.6, y - 1.6, 3.2, 3.2, 0.8); ctx.fill(); }
+    } else if (k === 'grilledfish') {
+      ctx.fillStyle = clayGrad(0, 6, 14, '#ffffff', '#f4efe6', '#d9cfbf'); ctx.beginPath(); ctx.ellipse(0, 5, 14, 5.4, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = clayGrad(-1, 1, 11, '#f2c27a', '#d9954a', '#a8652e'); ctx.beginPath(); ctx.ellipse(-1, 2, 9.5, 4.4, 0, 0, 7); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(7.5, 2); ctx.lineTo(13, -2); ctx.lineTo(13, 6); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = 'rgba(90,50,20,0.6)'; ctx.lineWidth = 1.1; for (const x of [-5, -1, 3]) { ctx.beginPath(); ctx.moveTo(x - 1.5, -1); ctx.lineTo(x + 1.5, 5); ctx.stroke(); }
+      ctx.fillStyle = '#2b2420'; ctx.beginPath(); ctx.arc(-7.4, 1, 0.9, 0, 7); ctx.fill();
+      ctx.fillStyle = '#f2e27a'; ctx.beginPath(); ctx.arc(-11, 6, 2.6, Math.PI * 0.1, Math.PI * 1.1); ctx.fill();
+    }
   }
 
   // ---------- "what can I do here": a floating action chip near things you can use ----------
