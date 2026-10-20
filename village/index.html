@@ -528,6 +528,36 @@
   .btn.sell { background: var(--down); }
   .btn.buy:disabled, .btn.sell:disabled { background: var(--grouped); color: #c4beb6; }
 
+  /* 내 가게 */
+  #stallSheet > * { flex-shrink: 0; }
+  .slots { display: flex; flex-direction: column; gap: 8px; }
+  .slot { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 16px; background: var(--grouped); }
+  .slot.add { height: 56px; border: 2px dashed #e0d6ca; background: transparent; color: var(--sub); font: 700 15px var(--font); cursor: pointer; align-items: center; justify-content: center; }
+  .slot-top { display: flex; align-items: center; gap: 10px; }
+  .slot-nm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .slot-nm b { font-size: 16px; }
+  .slot-step { display: flex; align-items: center; gap: 10px; }
+  .slot-step .muted { width: 46px; flex: none; }
+  .slot-step .round { width: 34px; height: 34px; background: var(--surface); box-shadow: none; font-size: 18px; }
+  .slot-step b { min-width: 86px; text-align: center; font-size: 17px; font-variant-numeric: tabular-nums; }
+  .slot-hint { font-size: 13px; color: var(--sub); }
+  .w-cheap { color: var(--down); } .w-fair { color: #3f9b5f; } .w-dear, .w-pricey { color: var(--up); }
+  .picks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .pick { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 6px; border: 0; border-radius: 14px; background: var(--grouped); color: var(--ink); font-family: var(--font); cursor: pointer; }
+  .pick img { width: 44px; height: 44px; }
+  .pick b { font-size: 13px; }
+  .pick .muted { font-size: 12px; }
+  .log { display: flex; flex-direction: column; gap: 6px; }
+  .shopper { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 14px; background: var(--grouped); }
+  .shopper img { width: 34px; height: 44px; object-fit: contain; flex: none; }
+  .shopper div { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .shopper b { font-size: 14px; }
+  .shopper .muted { font-size: 12px; }
+  .shopper.buy { box-shadow: inset 3px 0 0 var(--up); }
+  .shopper.pass { opacity: 0.7; }
+  .tip { font-weight: 700; color: var(--accent); }
+  @media (prefers-reduced-motion: no-preference) { .shopper { animation: scan 0.35s cubic-bezier(0.3, 1.5, 0.5, 1); } }
+
   /* 몽글카페 */
   .cafe-bar { position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
   .chat-btn { position: relative; width: 62px; height: 62px; border: 0; border-radius: 20px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; background: rgba(255, 255, 255, 0.95); color: var(--ink); font: 700 11px var(--font); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 6px 18px rgba(0, 0, 0, 0.12); }
@@ -879,6 +909,22 @@
   <button class="btn soft" id="boardClose" type="button">닫기</button>
 </div>
 
+<div class="sheet" id="stallSheet" hidden>
+  <div class="row-head"><h2>내 가게</h2><span class="muted" id="stallOpens"></span></div>
+  <div class="bank-pane" id="stallSetup">
+    <p class="example">팔 물건을 올리고 하나에 얼마 받을지 정해요. 너무 비싸면 손님이 그냥 가고, 싸면 금방 다 팔려요.</p>
+    <div class="slots" id="stallSlots"></div>
+    <div class="picks" id="stallPick" hidden></div>
+    <button class="btn" id="stallGo" type="button">장사 시작!</button>
+  </div>
+  <div class="bank-pane" id="stallRun" hidden>
+    <div class="card"><div class="row-head"><b class="card-h" id="stallCount"></b><span class="muted" id="stallTally"></span></div><b class="stock-big" id="stallEarned">0원</b></div>
+    <div class="card" id="stallSum" hidden></div>
+    <div class="log" id="stallLog" aria-live="polite"></div>
+  </div>
+  <button class="btn soft" id="stallClose" type="button">닫기</button>
+</div>
+
 <div class="sheet" id="musicSheet" hidden>
   <div class="row-head"><h2>배경음악</h2><span class="muted" id="musicNow"></span></div>
   <div class="tracks" id="trackList" role="radiogroup" aria-label="배경음악 고르기"></div>
@@ -1023,6 +1069,7 @@
     if (Math.abs(x - 1262) < 62 && y > 376 && y < 398) return true; // bus shelter
     if (x > house.x - 8 && x < house.x + house.w + 8 && y > house.y - 10 && y < house.y + house.h + 8) return true;
     if (x > shop.x - 6 && x < shop.x + shop.w + 6 && y > shop.y - 10 && y < shop.y + shop.h + 10) return true;
+    if (x > 474 && x < 590 && y > 436 && y < 478) return true; // 내 가게
     const dx = (x - pond.cx) / (pond.rx + 12), dy = (y - pond.cy) / (pond.ry + 10);
     if (dx * dx + dy * dy < 1) return true;
     for (const t of trees) if (Math.hypot(x - t.x, (y - t.y) * 1.6) < 15) return true;
@@ -1174,6 +1221,7 @@
     shirt: 'yellow', look: 1, en: false, muted: false, music: true, track: 'musicbox',
     stamps: 0, quizDay: 0,
     plan: null, stocks: null, // 적금 and 주식 at 동글은행
+    stall: null, // 내 가게: what is on the counter and at what price
     tips: { planted: false, fished: false, room: false },
   };
   function rollPrices() {
@@ -1183,7 +1231,7 @@
   rollPrices(); G.prev = { ...G.prices };
 
   function save() {
-    return { v: 2, won: 1, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, stats: G.stats, notes: G.notes, track: G.track, stamps: G.stamps, quizDay: G.quizDay, plan: G.plan, stocks: G.stocks, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
+    return { v: 2, won: 1, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, stats: G.stats, notes: G.notes, track: G.track, stamps: G.stamps, quizDay: G.quizDay, plan: G.plan, stocks: G.stocks, stall: G.stall, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
   }
   function load(s) {
     if (!s || s.v !== 2) return false;
@@ -1195,7 +1243,7 @@
       if (s.stats && s.stats.total) { sc(s.stats.total.in); sc(s.stats.total.out); s.stats.total.save = (s.stats.total.save || 0) * W; for (const d of Object.values(s.stats.days || {})) { sc(d.in); sc(d.out); d.save = (d.save || 0) * W; } }
       s.prices = {}; s.prev = {}; s.mprices = {};
     }
-    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home, acct: s.acct || 0, jobDay: s.jobDay || 0, mprices: s.mprices || {}, haggle: s.haggle || null, reqs: s.reqs || null, words: s.words || {}, stats: { ...G.stats, ...(s.stats || {}) }, notes: Array.isArray(s.notes) ? s.notes : [], track: s.track || 'musicbox', stamps: s.stamps || 0, quizDay: s.quizDay || 0, plan: s.plan || null, stocks: s.stocks && s.stocks.hist ? s.stocks : null });
+    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home, acct: s.acct || 0, jobDay: s.jobDay || 0, mprices: s.mprices || {}, haggle: s.haggle || null, reqs: s.reqs || null, words: s.words || {}, stats: { ...G.stats, ...(s.stats || {}) }, notes: Array.isArray(s.notes) ? s.notes : [], track: s.track || 'musicbox', stamps: s.stamps || 0, quizDay: s.quizDay || 0, plan: s.plan || null, stocks: s.stocks && s.stocks.hist ? s.stocks : null, stall: s.stall || null });
     (s.plots || []).forEach((p, i) => { if (plots[i]) Object.assign(plots[i], p); });
     (s.trees || []).forEach(([n, r], i) => { if (trees[i] && trees[i].fruit) { trees[i].n = n; trees[i].regrow = r; } });
     return true;
@@ -2306,6 +2354,7 @@
     if (Math.abs(w.x - VBUS.x) < 70 && w.y > VBUS.y - 130 && w.y < VBUS.y + 10) { goTo(VBUS.spot, () => openRide('bus:city')); return; }
     if (w.x > shop.x - 10 && w.x < shop.x + shop.w + 10 && w.y > shop.y - 50 && w.y < shop.y + shop.h + 10) { goTo(shop.spot, () => { openSheet('shopSheet'); renderShop(); talkTo(npcs[4]); }); return; }
     if (w.x > house.x - 15 && w.x < house.x + house.w + 15 && w.y > house.y - 70 && w.y < house.y + house.h + 10) { goTo(house.door, enterRoom); return; }
+    if (w.x > STALL.x - 10 && w.x < STALL.x + STALL.w + 10 && w.y > STALL.y - 90 && w.y < STALL.y + STALL.h + 10) { goTo(STALL.spot, openStall); return; }
     if ((w.x > pier.x - 30 && w.x < pier.x + pier.w && w.y > pier.y - 60 && w.y < pier.y + pier.h + 8)) { goTo(pier.tip, () => startFishing(pier.bob)); return; }
     const dx = (w.x - pond.cx) / pond.rx, dy = (w.y - pond.cy) / pond.ry;
     if (dx * dx + dy * dy < 1.05) { const e2 = pondEdge(player.x, player.y); goTo(e2.stand, () => startFishing(e2.bob)); return; }
@@ -2332,6 +2381,7 @@
     const opts = [];
     plots.forEach((p) => opts.push([plotSpot(p), () => useplot(p)]));
     opts.push([shop.spot, openShop]);
+    opts.push([STALL.spot, openStall]);
     opts.push([house.door, enterRoom]);
     opts.push([pier.tip, () => startFishing(pier.bob)]);
     npcs.forEach((n) => opts.push([n, () => talkTo(n)]));
@@ -4027,6 +4077,7 @@
     ['job', '일해서 벌기', '편의점 알바로 거스름돈을 계산하고 시급을 받았어요.'],
     ['save', '저축', '저금통이나 은행에 돈을 넣었어요.'],
     ['interest', '이자', '맡겨 둔 돈에 이자가 붙었어요.'],
+    ['shop', '값 정하기', '내 가게에서 내가 정한 값으로 팔아 봤어요. 비싸면 손님이 줄고, 싸면 금방 팔려요.'],
     ['plan', '적금', '5일 동안 꾸준히 넣어서 적금 만기 이자를 받았어요.'],
     ['invest', '주식', '회사의 작은 조각(주식)을 사 봤어요. 값은 오르기도 내리기도 해요.'],
   ];
@@ -5059,6 +5110,169 @@
   }
   $('eatStage').addEventListener('pointerdown', (e) => { e.preventDefault(); if (munch && munch.t > 0.4) endMunch(); });
 
+  // =====================================================================
+  // ---------- 내 가게: a little stall where the child sets the prices ----------
+  // Customers each have a price in mind (around today's shop price). Ask too much and they
+  // walk on; ask little and it all goes fast. Supply and demand, felt rather than told.
+  // =====================================================================
+  const STALL = { x: 480, y: 440, w: 104, h: 34, spot: { x: 532, y: 500 } };
+  const STALL_OPENS = 2, STALL_CUSTOMERS = 10;
+  const sellable = (k) => !!(ITEMS[k] || FOODS[k]);
+  // what this sells for elsewhere today: the shop's price for produce, the menu price for food
+  const refPrice = (k) => (ITEMS[k] ? G.prices[k] || ITEMS[k].base : FOODS[k].price);
+  const priceStep = (p) => (p >= 1000 ? 100 : 10);
+  function stallState() {
+    if (!G.stall) G.stall = { slots: [], day: 0, opens: 0 };
+    if (G.stall.day !== G.day) { G.stall.day = G.day; G.stall.opens = 0; }
+    G.stall.slots = G.stall.slots.filter((s) => sellable(s.k) && G.inv[s.k] > 0).map((s) => ({ ...s, n: clamp(s.n, 1, G.inv[s.k]) }));
+    return G.stall;
+  }
+  let stallRun = null, stallPicking = false;
+  function openStall() {
+    if (stallRun && stallRun.done) stallRun = null;
+    if (stallRun) { openSheet('stallSheet'); return; } // still selling: show it again
+    stallPicking = false;
+    openSheet('stallSheet'); renderStall(); sfx.talk();
+  }
+  function priceWord(p, ref) { const r = p / ref; return r < 0.85 ? ['싸게', 'cheap'] : r <= 1.15 ? ['적당히', 'fair'] : r <= 1.6 ? ['비싸게', 'dear'] : ['아주 비싸게', 'pricey']; }
+  function renderStall() {
+    const st = stallState();
+    $('stallOpens').textContent = `오늘 장사 ${st.opens} / ${STALL_OPENS}`;
+    $('stallSetup').hidden = !!stallRun; $('stallRun').hidden = !stallRun;
+    const box = $('stallSlots'); box.innerHTML = '';
+    st.slots.forEach((s, i) => {
+      const ref = refPrice(s.k), word = priceWord(s.price, ref);
+      const card = el('div', 'slot');
+      const top = el('div', 'slot-top');
+      const im = el('img', 'ico'); im.src = iconURL(s.k); im.alt = '';
+      const nm = el('div', 'slot-nm'); nm.append(el('b', null, info(s.k).ko), el('span', 'muted', `가방에 ${G.inv[s.k]}개`));
+      const rm = el('button', 'linkish', '빼기'); rm.type = 'button'; rm.addEventListener('click', () => { st.slots.splice(i, 1); persist(); renderStall(); });
+      top.append(im, nm, rm);
+      const step = (label, val, dec, inc, aria) => {
+        const r = el('div', 'slot-step'); r.append(el('span', 'muted', label));
+        const m = el('button', 'round', '−'); m.type = 'button'; m.setAttribute('aria-label', `${aria} 줄이기`); m.addEventListener('click', dec);
+        const v = el('b', null, val);
+        const pl = el('button', 'round', '+'); pl.type = 'button'; pl.setAttribute('aria-label', `${aria} 늘리기`); pl.addEventListener('click', inc);
+        r.append(m, v, pl); return r;
+      };
+      const qty = step('몇 개', `${s.n}개`, () => { s.n = Math.max(1, s.n - 1); persist(); renderStall(); }, () => { s.n = Math.min(G.inv[s.k], 9, s.n + 1); persist(); renderStall(); }, '개수');
+      const pr = step('하나에', won(s.price), () => { s.price = Math.max(10, s.price - priceStep(s.price - 1)); persist(); renderStall(); }, () => { s.price = Math.min(ref * 3, s.price + priceStep(s.price)); persist(); renderStall(); }, '값');
+      const hint = el('p', 'slot-hint');
+      hint.append(`${ITEMS[s.k] ? '도담이네 가게 오늘 시세' : '가게에서 사면'} ${won(ref)} · `, el('b', 'w-' + word[1], `${word[0]} 정했어요`));
+      card.append(top, qty, pr, hint);
+      box.append(card);
+    });
+    if (st.slots.length < 3) {
+      const add = el('button', 'slot add', '+ 팔 물건 올리기'); add.type = 'button';
+      add.addEventListener('click', () => { stallPicking = !stallPicking; renderStall(); });
+      box.append(add);
+    }
+    // picking from the bag
+    const pickBox = $('stallPick'); pickBox.hidden = !stallPicking; pickBox.innerHTML = '';
+    if (stallPicking) {
+      const keys = [...FOOD_KEYS, ...Object.keys(ITEMS)].filter((k) => sellable(k) && G.inv[k] > 0 && !st.slots.some((s) => s.k === k));
+      if (!keys.length) pickBox.append(el('p', 'muted', '가방에 팔 물건이 없어요. 밭과 과일나무, 낚시, 요리로 모아 와요.'));
+      for (const k of keys) {
+        const b = el('button', 'pick'); b.type = 'button';
+        const im = el('img'); im.src = iconURL(k); im.alt = '';
+        b.append(im, el('b', null, info(k).ko), el('span', 'muted', `${G.inv[k]}개`));
+        b.addEventListener('click', () => { st.slots.push({ k, n: Math.min(G.inv[k], 3), price: wonRound(refPrice(k)) }); stallPicking = false; persist(); renderStall(); });
+        pickBox.append(b);
+      }
+    }
+    const go = $('stallGo');
+    go.disabled = !st.slots.length || st.opens >= STALL_OPENS;
+    go.textContent = st.opens >= STALL_OPENS ? '오늘 장사는 끝났어요. 내일 또 열어요' : st.slots.length ? '장사 시작!' : '먼저 팔 물건을 올려요';
+  }
+  $('stallGo').addEventListener('click', startStall);
+  $('stallClose').addEventListener('click', () => { if (stallRun && !stallRun.done) return; stallRun = null; closeSheet(); });
+
+  // ---------- 내 가게: ten customers come by ----------
+  const BUY_SAY = ['이거 주세요!', '맛있어 보여요!', '하나 살게요.', '좋아요, 주세요~'];
+  const PASS_SAY = ['음… 조금 비싸네요.', '다음에 올게요~', '생각보다 비싸요.'];
+  function startStall() {
+    const st = stallState();
+    if (!st.slots.length || st.opens >= STALL_OPENS || stallRun) return;
+    st.opens++;
+    stallRun = { left: st.slots.map((s) => ({ ...s, sold: 0 })), i: 0, earned: 0, sold: 0, passed: 0, timer: null, done: false };
+    $('stallLog').innerHTML = ''; $('stallSum').hidden = true; $('stallClose').disabled = true;
+    renderStall(); renderRun();
+    stallRun.timer = setInterval(nextShopper, 1150);
+    setTimeout(nextShopper, 300);
+  }
+  function nextShopper() {
+    const r = stallRun; if (!r || r.done) return;
+    const avail = r.left.filter((s) => s.n > 0);
+    if (r.i >= STALL_CUSTOMERS || !avail.length) return endStall();
+    r.i++;
+    const s = pick(avail), ref = refPrice(s.k);
+    // each customer has their own idea of a fair price, around today's
+    const wtp = ref * clamp(1 + 0.24 * gauss(), 0.55, 1.7);
+    const look = 1 + Math.floor(Math.random() * 5);
+    let say, bought = 0;
+    if (s.price <= wtp) {
+      bought = s.price <= wtp * 0.72 && s.n >= 2 ? 2 : 1;
+      s.n -= bought; s.sold += bought; G.inv[s.k] -= bought;
+      const amt = s.price * bought;
+      r.earned += amt; r.sold += bought; G.coins += amt;
+      addLedger(`내 가게에서 ${info(s.k).ko} ${bought}개 판매`, amt, 'sell'); learn('shop');
+      say = bought === 2 ? '싸다! 2개 주세요!' : pick(BUY_SAY);
+      sfx.coin();
+    } else {
+      r.passed++;
+      say = ITEMS[s.k] && s.price > (G.prices[s.k] || ref) * 1.2 ? '도담이네 가게가 더 싸던데요?' : pick(PASS_SAY);
+      sfx.soft();
+    }
+    const row = el('div', 'shopper' + (bought ? ' buy' : ' pass'));
+    const face = el('img'); face.src = `assets/dongle/base-${look}.png`; face.alt = '';
+    const tx = el('div'); tx.append(el('b', null, say), el('span', 'muted', bought ? `${info(s.k).ko} ${bought}개 · +${won(s.price * bought)}` : `${info(s.k).ko} ${won(s.price)}을 보고 그냥 갔어요`));
+    row.append(face, tx);
+    $('stallLog').prepend(row);
+    renderRun(); persist();
+  }
+  function renderRun() {
+    const r = stallRun; if (!r) return;
+    $('stallCount').textContent = `손님 ${r.i} / ${STALL_CUSTOMERS}`;
+    $('stallEarned').textContent = won(r.earned);
+    $('stallTally').textContent = `팔린 물건 ${r.sold}개 · 그냥 간 손님 ${r.passed}명`;
+  }
+  function endStall() {
+    const r = stallRun; if (!r || r.done) return;
+    r.done = true; clearInterval(r.timer);
+    const st = stallState();
+    const soldOut = r.left.every((s) => s.n === 0);
+    let tip;
+    if (!r.sold) tip = '아무도 사지 않았어요. 값을 조금 내려 볼까요? 도담이네 가게 시세를 참고해요.';
+    else if (soldOut && r.i <= STALL_CUSTOMERS * 0.6) tip = '눈 깜짝할 새 다 팔렸어요! 다음엔 값을 조금 올려도 될 것 같아요.';
+    else if (r.passed > r.i / 2) tip = '비싸서 그냥 간 손님이 많았어요. 값을 조금 내리면 더 많이 팔릴 거예요.';
+    else tip = '값을 딱 알맞게 정했어요! 손님도 좋아하고 돈도 벌었어요.';
+    const sum = $('stallSum'); sum.hidden = false; sum.innerHTML = '';
+    sum.append(el('b', 'card-h', soldOut ? '다 팔았어요!' : '오늘 장사 끝!'), el('p', 'card-t', `손님 ${r.i}명 중 ${r.i - r.passed}명이 샀어요. 번 돈 ${won(r.earned)}.`), el('p', 'card-t tip', tip));
+    $('stallClose').disabled = false;
+    st.slots = st.slots.filter((s) => G.inv[s.k] > 0);
+    sfx.harvest(); persist();
+  }
+
+  // ---------- 내 가게: in the village ----------
+  function drawStallCart() {
+    const { x, y, w, h } = STALL, top = y - 58;
+    ctx.fillStyle = 'rgba(80,60,40,0.2)'; ctx.beginPath(); ctx.ellipse(x + w / 2, y + h, w * 0.6, 9, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#8d5f45'; ctx.fillRect(x + 6, top + 6, 5, h + 52); ctx.fillRect(x + w - 11, top + 6, 5, h + 52);
+    ctx.fillStyle = woodGrad(x + w / 2, y + h / 2, w); rr(ctx, x, y, w, h, 6); ctx.fill();
+    ctx.fillStyle = 'rgba(255,240,220,0.25)'; rr(ctx, x + 6, y + 6, w - 12, 6, 3); ctx.fill();
+    // what is on sale today sits on the counter
+    const slots = (G.stall && G.stall.slots) || [];
+    slots.slice(0, 3).forEach((s, i) => { ctx.save(); ctx.translate(x + 22 + i * 30, y - 2); ctx.scale(0.62, 0.62); FISH[s.k] ? drawFishIcon(s.k) : FOODS[s.k] ? drawFoodShape(s.k) : drawProduce(s.k, 0, 0, 1); ctx.restore(); });
+    // striped awning and a hand-painted sign
+    for (let i = 0, n = 6; i < n; i++) {
+      ctx.fillStyle = i % 2 ? '#fffaf1' : '#e58aa0';
+      const sx = x - 6 + i * ((w + 12) / n), sw = (w + 12) / n;
+      ctx.beginPath(); ctx.moveTo(sx, top); ctx.lineTo(sx + sw, top); ctx.lineTo(sx + sw, top + 14); ctx.arc(sx + sw / 2, top + 14, sw / 2, 0, Math.PI); ctx.fill();
+    }
+    ctx.fillStyle = '#fffaf1'; rr(ctx, x + w / 2 - 34, top - 22, 68, 20, 8); ctx.fill();
+    label('내 가게', x + w / 2, top - 12, 12, '#c8714f');
+  }
+
   // ---------- "what can I do here": a floating action chip near things you can use ----------
   function openShop() { openSheet('shopSheet'); renderShop(); talkTo(npcs[4]); }
   let ctxT = 0, ctxKey = '', ctxRun = null;
@@ -5077,6 +5291,7 @@
     for (const t of trees) if (t.fruit && t.n > 0) opts.push([treeSpot(t), [`${FRUITS[t.fruit].ko} 따기`, `Pick ${FRUITS[t.fruit].en.toLowerCase()}`, t.fruit], () => shakeTree(t)]);
     for (const b of bugs) if (b.flee <= 0 && b.a > 0.6) opts.push([{ x: b.x, y: b.y + 6 }, [`${BUGS[b.k].ko} 잡기`, `Catch ${BUGS[b.k].en.toLowerCase()}`, b.k], () => swingNet(b)]);
     opts.push([shop.spot, ['가게 들어가기', 'Enter shop', 'coin'], openShop]);
+    opts.push([STALL.spot, ['내 가게 열기', 'Open my stall', 'coin'], openStall]);
     opts.push([VBUS.spot, ['버스 타기', 'Take the bus', 'bus'], () => openRide('bus:city')]);
     opts.push([house.door, ['집에 들어가기', 'Go inside', 'house'], enterRoom]);
     opts.push([pier.tip, ['낚시하기', 'Go fishing', 'crucian'], () => startFishing(pier.bob)]);
@@ -6173,6 +6388,7 @@
     lamps.forEach((l) => list.push([l.y, () => drawLamp(l)]));
     list.push([house.y + house.h, drawHouse]);
     list.push([shop.y + shop.h, drawShop]);
+    list.push([STALL.y + STALL.h, drawStallCart]);
     list.push([pier.y + 4, drawPierSign]);
     list.push([VBUS.y - 2, () => drawCityBusStop(VBUS, '동글마을 정류장', '동글시내', '#7fb069')]);
     if (season() === 3) list.push([600, () => drawSnowman(600, 600)]);
