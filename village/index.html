@@ -47,6 +47,10 @@
   }
   #world { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
   #world3d { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .work-stage { display: flex; justify-content: center; padding: 6px 0; }
+  .work-stage img { width: 140px; height: 140px; cursor: pointer; }
+  #workPlay .meter i { transition: width 0.2s; }
+  @media (prefers-reduced-motion: no-preference) { #workPic.bump { animation: purr 0.3s ease-in-out; } }
   .talk-head { display: flex; align-items: center; gap: 12px; }
   .talk-head img { width: 64px; height: 76px; object-fit: contain; flex: none; }
   .talk-head div { display: flex; flex-direction: column; gap: 2px; }
@@ -1234,6 +1238,33 @@
   <button class="btn soft" id="talkClose" type="button">안녕, 또 봐!</button>
 </div>
 
+<div class="sheet" id="workSheet" hidden>
+  <div class="row-head"><h2>목공 작업대</h2><span class="muted" id="workMats"></span></div>
+  <div class="bank-pane" id="workList">
+    <p class="muted" id="workForest"></p>
+    <div class="card">
+      <b class="card-h">통나무 → 판자</b>
+      <p class="card-t" id="sawValue"></p>
+      <button class="btn small" id="sawBtn" type="button">통나무 켜기</button>
+    </div>
+    <span class="label">가구 만들기</span>
+    <div class="bank-pane" id="craftList"></div>
+    <div class="card">
+      <b class="card-h">묘목</b>
+      <p class="card-t">나무를 베면 그루터기에 묘목을 다시 심어요. 묘목은 하나에 1,000원이고, 이틀이 지나면 다 자라요.</p>
+      <button class="btn small soft" id="saplingBtn" type="button">묘목 1개 사기 · 1,000원</button>
+    </div>
+  </div>
+  <div class="bank-pane" id="workPlay" hidden>
+    <b class="cook-title" id="workTitle"></b>
+    <div class="work-stage"><img id="workPic" alt=""></div>
+    <p class="muted" id="workStep" aria-live="polite"></p>
+    <div class="meter"><i id="workFill"></i></div>
+    <button class="btn stir" id="workTap" type="button">쓱싹!</button>
+  </div>
+  <button class="btn soft" id="workClose" type="button">닫기</button>
+</div>
+
 <div class="sheet" id="wishSheet" hidden>
   <div class="row-head"><h2>보름달 소원</h2><span class="muted">추석 밤</span></div>
   <div class="wish-sky" id="wishSky"><div class="wish-moon"></div><p class="wish-fly" id="wishFly" hidden></p></div>
@@ -1395,6 +1426,9 @@
   const PLAY = { x: 300, y: 790 }, SWING = { x: 230, y: 796 };
   const JEONG = { x: 500, y: 250, spot: { x: 500, y: 270 } };
   const SHELTER = { x: 1185, y: 590, spot: { x: 1150, y: 622 } }; // 동글 보호소, where a pet waits for a family
+  // 동글 숲: six pines in the south-east corner, and the workbench below them
+  const FOREST = [[1262, 668], [1330, 668], [1262, 748], [1330, 748], [1262, 828], [1330, 828]].map(([x, y]) => ({ x, y }));
+  const BENCH = { x: 1296, y: 912, spot: { x: 1296, y: 938 } };
   const plots = [];
   for (let r = 0; r < 2; r++) for (let c = 0; c < 3; c++) plots.push({ x: 212 + c * 64, y: 345 + r * 56, w: 54, h: 40, stage: 0, watered: false, grow: 0, color: 0 });
   const PATH = [[310, 300], [470, 318], [620, 400], [770, 440], [905, 380], [1050, 340]];
@@ -1414,6 +1448,8 @@
     if (dx * dx + dy * dy < 1) return true;
     for (const t of trees) if (Math.hypot(x - t.x, (y - t.y) * 1.6) < 15) return true;
     if (x > SHELTER.x - 62 && x < SHELTER.x + 62 && y > SHELTER.y - 30 && y < SHELTER.y + 8) return true;
+    for (const f of FOREST) if (Math.hypot(x - f.x, (y - f.y) * 1.6) < 13) return true;
+    if (Math.abs(x - BENCH.x) < 42 && y > BENCH.y - 30 && y < BENCH.y + 6) return true;
     return fundBlocked(x, y);
   }
 
@@ -1538,7 +1574,13 @@
     moss:    { ko: '이끼 카펫', price: 40000, c: '#b9cf98', s: '#a8c186' },
   };
   const WALL_SLOTS = 5;
-  const ITEMS = { ...CROPS, ...FRUITS, ...FISH, ...BUGS };
+  // wood from 동글 숲: cut, sawn, and sold or built with
+  const WOOD = {
+    log: { ko: '통나무', en: 'Log', base: 1500, color: '#9a6c48' },
+    plank: { ko: '판자', en: 'Plank', base: 2000, color: '#d9b38c' },
+    sapling: { ko: '묘목', en: 'Sapling', base: 1000, color: '#7fb069' },
+  };
+  const ITEMS = { ...CROPS, ...FRUITS, ...FISH, ...BUGS, ...WOOD };
   const FRUIT_KEYS = Object.keys(FRUITS), BUG_KEYS = Object.keys(BUGS);
   const DEX_ALL = [...Object.keys(CROPS), ...FRUIT_KEYS, ...Object.keys(FISH), ...BUG_KEYS, ...FOOD_KEYS];
   const BAG_KEYS = [...Object.keys(ITEMS), ...FOOD_KEYS];
@@ -1576,6 +1618,7 @@
     give: 0, goal: null, goalsDone: 0, // 나눔 통, and what the 저금통 is saving up for
     fund: null, // 마을 모금: what is being raised, and what has been built
     pet: null, // 반려동물: { k, name, day, food, love, fedDay, patDay, playDay, mealDay }
+    forest: null, // 동글 숲: for each pine, when it was replanted and whether it is a stump
     view3d: false, look3d: null, // 3D 마을 시험판으로 보기, and how everyone looks there
     clock: 'real', dayKey: null, clockOffset: 0, clockSet: false, // 마을 시계: Korean time ('real', maybe nudged) or 4-minute days ('fast')
     tips: { planted: false, fished: false, room: false },
@@ -1587,7 +1630,7 @@
   rollPrices(); G.prev = { ...G.prices };
 
   function save() {
-    return { v: 2, won: 1, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, stats: G.stats, notes: G.notes, track: G.track, stamps: G.stamps, quizDay: G.quizDay, plan: G.plan, stocks: G.stocks, stall: G.stall, holi: G.holi, wishes: G.wishes, give: G.give, goal: G.goal, goalsDone: G.goalsDone, fund: G.fund, pet: G.pet, view3d: G.view3d, look3d: G.look3d, clock: G.clock, dayKey: G.dayKey, clockOffset: G.clockOffset, clockSet: G.clockSet, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
+    return { v: 2, won: 1, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, stats: G.stats, notes: G.notes, track: G.track, stamps: G.stamps, quizDay: G.quizDay, plan: G.plan, stocks: G.stocks, stall: G.stall, holi: G.holi, wishes: G.wishes, give: G.give, goal: G.goal, goalsDone: G.goalsDone, fund: G.fund, pet: G.pet, forest: G.forest, view3d: G.view3d, look3d: G.look3d, clock: G.clock, dayKey: G.dayKey, clockOffset: G.clockOffset, clockSet: G.clockSet, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
   }
   function load(s) {
     if (!s || s.v !== 2) return false;
@@ -1599,7 +1642,7 @@
       if (s.stats && s.stats.total) { sc(s.stats.total.in); sc(s.stats.total.out); s.stats.total.save = (s.stats.total.save || 0) * W; for (const d of Object.values(s.stats.days || {})) { sc(d.in); sc(d.out); d.save = (d.save || 0) * W; } }
       s.prices = {}; s.prev = {}; s.mprices = {};
     }
-    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home, acct: s.acct || 0, jobDay: s.jobDay || 0, mprices: s.mprices || {}, haggle: s.haggle || null, reqs: s.reqs || null, words: s.words || {}, stats: { ...G.stats, ...(s.stats || {}) }, notes: Array.isArray(s.notes) ? s.notes : [], track: s.track || 'musicbox', stamps: s.stamps || 0, quizDay: s.quizDay || 0, plan: s.plan || null, stocks: s.stocks && s.stocks.hist ? s.stocks : null, stall: s.stall || null, holi: s.holi || null, wishes: Array.isArray(s.wishes) ? s.wishes : [], give: s.give || 0, goal: s.goal || null, goalsDone: s.goalsDone || 0, fund: s.fund && s.fund.built ? s.fund : null, pet: s.pet && PETS[s.pet.k] ? s.pet : null, view3d: !!s.view3d, look3d: s.look3d || null, clock: s.clock === 'fast' ? 'fast' : 'real', dayKey: s.dayKey || null, clockOffset: +s.clockOffset || 0, clockSet: !!s.clockSet });
+    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home, acct: s.acct || 0, jobDay: s.jobDay || 0, mprices: s.mprices || {}, haggle: s.haggle || null, reqs: s.reqs || null, words: s.words || {}, stats: { ...G.stats, ...(s.stats || {}) }, notes: Array.isArray(s.notes) ? s.notes : [], track: s.track || 'musicbox', stamps: s.stamps || 0, quizDay: s.quizDay || 0, plan: s.plan || null, stocks: s.stocks && s.stocks.hist ? s.stocks : null, stall: s.stall || null, holi: s.holi || null, wishes: Array.isArray(s.wishes) ? s.wishes : [], give: s.give || 0, goal: s.goal || null, goalsDone: s.goalsDone || 0, fund: s.fund && s.fund.built ? s.fund : null, pet: s.pet && PETS[s.pet.k] ? s.pet : null, forest: Array.isArray(s.forest) ? s.forest : null, view3d: !!s.view3d, look3d: s.look3d || null, clock: s.clock === 'fast' ? 'fast' : 'real', dayKey: s.dayKey || null, clockOffset: +s.clockOffset || 0, clockSet: !!s.clockSet });
     (s.plots || []).forEach((p, i) => { if (plots[i]) Object.assign(plots[i], p); });
     (s.trees || []).forEach(([n, r], i) => { if (trees[i] && trees[i].fruit) { trees[i].n = n; trees[i].regrow = r; } });
     return true;
@@ -2930,6 +2973,8 @@
     if (w.x > STALL.x - 10 && w.x < STALL.x + STALL.w + 10 && w.y > STALL.y - 90 && w.y < STALL.y + STALL.h + 10) { goTo(STALL.spot, openStall); return; }
     if (Math.abs(w.x - FUNDBOX.x) < 46 && w.y > FUNDBOX.y - 112 && w.y < FUNDBOX.y + 10) { goTo(FUNDBOX.spot, openFund); return; }
     if (w.x > SHELTER.x - 110 && w.x < SHELTER.x + 64 && w.y > SHELTER.y - 72 && w.y < SHELTER.y + 12) { goTo(SHELTER.spot, openShelter); return; }
+    for (let i = 0; i < FOREST.length; i++) { const sp = FOREST[i]; if (Math.abs(w.x - sp.x) < 30 && w.y > sp.y - 92 && w.y < sp.y + 12) { goTo(forestSpot(i), () => useForest(i)); return; } }
+    if (Math.abs(w.x - BENCH.x) < 46 && w.y > BENCH.y - 80 && w.y < BENCH.y + 10) { goTo(BENCH.spot, openWork); return; }
     if (built('play') && w.x > PLAY.x - 120 && w.x < PLAY.x && w.y > PLAY.y - 95 && w.y < PLAY.y + 20) { goTo(SWING, rideSwing); return; }
     if (built('jeong') && Math.abs(w.x - JEONG.x) < 92 && w.y > JEONG.y - 140 && w.y < JEONG.y + 10) { goTo(JEONG.spot, restJeong); return; }
     if ((w.x > pier.x - 30 && w.x < pier.x + pier.w && w.y > pier.y - 60 && w.y < pier.y + pier.h + 8)) { goTo(pier.tip, () => startFishing(pier.bob)); return; }
@@ -2961,6 +3006,8 @@
     opts.push([STALL.spot, openStall]);
     opts.push([FUNDBOX.spot, openFund]);
     opts.push([SHELTER.spot, openShelter]);
+    FOREST.forEach((_, i) => opts.push([forestSpot(i), () => useForest(i)]));
+    opts.push([BENCH.spot, openWork]);
     if (built('play')) opts.push([SWING, rideSwing]);
     if (built('jeong')) opts.push([JEONG.spot, restJeong]);
     opts.push([house.door, enterRoom]);
@@ -4649,7 +4696,7 @@
 
   // ---------- 보호자 화면: what the child earned, spent, saved and learned ----------
   const MONEY_IN = { sell: '팔기', job: '알바', interest: '이자', errand: '영어 심부름·놀이', gift: '칭찬 선물', stock: '주식 수익·배당', sebae: '세뱃돈' };
-  const MONEY_OUT = { seed: '씨앗', food: '간식', home: '집 꾸미기', ride: '버스·지하철', stock: '주식 손해', donate: '마을 모금', pet: '반려동물' };
+  const MONEY_OUT = { seed: '씨앗', food: '간식', home: '집 꾸미기', ride: '버스·지하철', stock: '주식 손해', donate: '마을 모금', pet: '반려동물', tree: '묘목' };
   const LESSONS = [
     ['sell', '처음 팔아 보기', '키운 것을 팔아서 돈을 벌었어요.'],
     ['profit', '이익', '씨앗을 심어 키운 작물을 팔았어요. 씨앗값을 빼고 남는 게 이익이에요.'],
@@ -4664,6 +4711,8 @@
     ['plan', '적금', '5일 동안 꾸준히 넣어서 적금 만기 이자를 받았어요.'],
     ['invest', '주식', '회사의 작은 조각(주식)을 사 봤어요. 값은 오르기도 내리기도 해요.'],
     ['goal', '목표 저축', '갖고 싶은 것을 정하고 저금통에 끝까지 모아서 샀어요.'],
+    ['craft', '만들어 쓰기', '통나무를 판자로, 판자를 가구로 만들었어요. 직접 만들면 아낄 수 있지만 시간과 손이 들어요.'],
+    ['forest', '다시 심기', '나무를 베고 그루터기에 묘목을 다시 심었어요. 쓴 자원은 다시 키워야 해요.'],
     ['pet', '고정 지출', '반려동물 사료처럼 매일 꼭 나가는 돈이 있어요. 묶음으로 사면 아낄 수도 있어요.'],
     ['donate', '기부와 공공', '마을 모금에 돈을 보탰어요. 모두가 조금씩 모아 모두가 쓰는 걸 만들어요.'],
     ['sebae', '세뱃돈 나누기', '설날 세뱃돈을 쓸 돈과 모을 돈으로 나눠 봤어요.'],
@@ -4811,6 +4860,7 @@
     const tips = [];
     const gl = goalItem();
     if (gl) tips.push(G.bank >= gl.price ? `“${eul(gl.ko)} 살 만큼 다 모았네! 모으는 동안 어떤 마음이었어?”` : `“${gl.ko}까지 ${won(gl.price - G.bank)} 남았네. 하루에 얼마씩 모으면 될까?”`);
+    if (G.stats.learn.craft) tips.push('“의자를 가게에서 사는 거랑 판자로 직접 만드는 거, 뭐가 더 좋았어? 왜?”');
     if (G.pet) tips.push(`“${petName()} 사료값이 일주일에 얼마 들까? 1봉씩 사는 거랑 7봉 묶음 중에 뭐가 더 쌀까?”`);
     const given = G.fund ? Object.values(G.fund.my).reduce((a, b) => a + b, 0) : 0;
     if (given) tips.push(G.fund.built.length ? `“마을에 ${iga(G.fund.built.map((k) => PROJECTS.find((x) => x.k === k).ko).join('·'))} 생겼네. 모두가 함께 모은 돈으로 만든 거야. 또 뭐가 생기면 좋을까?”` : `“마을 모금에 ${won(given)}을 냈네. 다 지어지면 뭘 하고 놀고 싶어?”`);
@@ -5902,7 +5952,7 @@
     ctx.fillStyle = 'rgba(255,240,220,0.25)'; rr(ctx, x + 6, y + 6, w - 12, 6, 3); ctx.fill();
     // what is on sale today sits on the counter
     const slots = (G.stall && G.stall.slots) || [];
-    slots.slice(0, 3).forEach((s, i) => { ctx.save(); ctx.translate(x + 22 + i * 30, y - 2); ctx.scale(0.62, 0.62); FISH[s.k] ? drawFishIcon(s.k) : FOODS[s.k] ? drawFoodShape(s.k) : drawProduce(s.k, 0, 0, 1); ctx.restore(); });
+    slots.slice(0, 3).forEach((s, i) => { ctx.save(); ctx.translate(x + 22 + i * 30, y - 2); ctx.scale(0.62, 0.62); FISH[s.k] ? drawFishIcon(s.k) : FOODS[s.k] ? drawFoodShape(s.k) : WOOD[s.k] ? drawWoodIcon(s.k) : drawProduce(s.k, 0, 0, 1); ctx.restore(); });
     // striped awning and a hand-painted sign
     for (let i = 0, n = 6; i < n; i++) {
       ctx.fillStyle = i % 2 ? '#fffaf1' : '#e58aa0';
@@ -7119,6 +7169,31 @@
     const waiting = Object.keys(PETS).map((k, i) => { const m = petModel(k); m.g.position.set(shx - 1.0 + i * 0.6, 0, shz - 0.25 + (i % 2) * 0.15); m.g.scale.setScalar(0.8); m.body.rotation.x = -0.35; shelterG.add(m.g); return { k, m }; });
     pickable(shelterG, () => ({ x: SHELTER.x - 20, y: SHELTER.y - 20 }));
 
+    // ---------- 동글 숲: pines that can be cut and grow back, and the workbench ----------
+    const pineM = M('#5f9a63'), pineSnow = M('#f4f7f8');
+    const pineG = new X.ConeGeometry(1, 1, 10);
+    const forest3 = FOREST.map((sp, i) => {
+      const g = new X.Group(); g.position.set(sp.x * U, 0, sp.y * U);
+      const grown = new X.Group(), young = new X.Group(), sapling = new X.Group(), stump = new X.Group();
+      const pine = (grp, s) => { grp.add(post(0.14 * s, 0.8 * s, '#9a6c48', 0, 0)); [[0.7, 1.1, 0.9], [0.55, 0.95, 1.5], [0.4, 0.8, 2.05]].forEach(([r, h, y]) => grp.add(mesh(pineG, pineM, r * s, h * s, r * s, 0, y * s, 0))); };
+      pine(grown, 1.15); pine(young, 0.6);
+      sapling.add(post(0.03, 0.4, '#6f9a58', 0, 0)); sapling.add(ball(0.09, '#7fb069', -0.08, 0.38, 0, 0.5), ball(0.09, '#7fb069', 0.08, 0.4, 0, 0.5));
+      stump.add(post(0.3, 0.32, '#8d5f45', 0, 0)); stump.add(mesh(CYL, M('#e2c49a'), 0.29, 0.02, 0.29, 0, 0.33, 0));
+      const cap = mesh(pineG, pineSnow, 0.45, 0.4, 0.45, 0, 2.55, 0); grown.add(cap);
+      g.add(grown, young, sapling, stump);
+      pickable(g, () => ({ x: sp.x, y: sp.y - 40 }));
+      return { g, grown, young, sapling, stump, cap };
+    });
+    {
+      const g = new X.Group(), bx = BENCH.x * U, bz = BENCH.y * U;
+      g.add(block(1.9, 0.14, 0.7, '#c99a6b', bx, 0.82, bz - 0.4, 0.05));
+      for (const lx of [-0.8, 0.8]) for (const lz of [-0.65, -0.15]) g.add(post(0.06, 0.8, '#8d5f45', bx + lx, bz + lz));
+      const lg = mesh(CYL, M('#9a6c48'), 0.15, 0.9, 0.15, bx - 0.2, 1.05, bz - 0.4); lg.rotation.z = Math.PI / 2; g.add(lg);
+      const saw = block(0.6, 0.04, 0.2, '#c3ccd4', bx + 0.6, 1.0, bz - 0.4, 0.02); saw.rotation.z = 0.4; g.add(saw);
+      const sg = board('동글 숲', 1.8, { fg: '#5f8a4f', h: 0.5 }); sg.position.set(bx, 1.9, bz - 0.4); g.add(sg);
+      pickable(g, () => ({ x: BENCH.x, y: BENCH.y - 20 }));
+    }
+
     // ---------- 동글이: four looks to choose from, all matte clay, feet at the origin, facing +z ----------
     // Built to the clay originals: a big round head a little wider than tall, a tiny face
     // close together in the middle, a few thin strands fanning from the crown, ball hands
@@ -7293,7 +7368,7 @@
     }
 
     const vp = new X.Vector3(), ray = new X.Raycaster(), ndc = new X.Vector2(), floor = new X.Plane(new X.Vector3(0, 1, 0), 0), hit = new X.Vector3();
-    return { X, renderer, el: el3, sc, camera, hemi, sun, rim, makePeople, thumb3d, dongle, friendModels, yaw: 0, groundMat, winM, lampM, treeObjs, plotObjs, soilDry, soilWet, growCrop, stallGoods, fundSign, shelterSign, waiting, people, petModel, myPet, myPetK, petBall, bugObj, bugObjs, rod, line, lineGeo, bobber, snowman, builtObjs, buildProject, pickables, bugM, woodM, vp, ray, ndc, floor, hit, last: performance.now(), on: false, fundKey: '', stallKey: '', shelterKey: '', season: -1, w: 0, h: 0, tx: null, tz: null, ball };
+    return { X, renderer, el: el3, sc, camera, hemi, sun, rim, makePeople, thumb3d, dongle, friendModels, forest3, yaw: 0, groundMat, winM, lampM, treeObjs, plotObjs, soilDry, soilWet, growCrop, stallGoods, fundSign, shelterSign, waiting, people, petModel, myPet, myPetK, petBall, bugObj, bugObjs, rod, line, lineGeo, bobber, snowman, builtObjs, buildProject, pickables, bugM, woodM, vp, ray, ndc, floor, hit, last: performance.now(), on: false, fundKey: '', stallKey: '', shelterKey: '', season: -1, w: 0, h: 0, tx: null, tz: null, ball };
   }
 
   // ---------- choosing how everyone looks, and from where you watch ----------
@@ -7404,6 +7479,12 @@
       o.fruits.forEach((f, i) => { f.visible = !!o.t.fruit && i < o.t.n; });
       o.crown.rotation.z = Math.sin(G.t * 0.8 + o.t.x) * 0.012 + (o.t.shake > 0 ? Math.sin(G.t * 46) * o.t.shake * 0.08 : 0);
     }
+    V.forest3.forEach((o, i) => {
+      const st = forestStage(i), fx = chopFx[i];
+      o.grown.visible = st === 'grown'; o.young.visible = st === 'young'; o.sapling.visible = st === 'sapling'; o.stump.visible = st === 'stump';
+      o.cap.visible = season() === 3;
+      o.grown.rotation.z = fx.shake > 0 ? Math.sin(G.t * 50) * fx.shake * 0.12 : 0;
+    });
     for (const o of V.plotObjs) {
       o.soil.material = o.pl.watered ? V.soilWet : V.soilDry;
       const key = `${o.pl.stage}|${o.pl.crop}|${o.pl.color}`;
@@ -7570,6 +7651,187 @@
   }
   $('talkClose').addEventListener('click', () => { if (talking) say(talking, ['또 봐!', 'See you!'], 2.4); talking = null; closeSheet(); });
 
+  // =====================================================================
+  // ---------- 동글 숲과 목공 작업대: cut, replant, saw, build ----------
+  // Not an axe that makes wood appear forever: six pines at the edge of the village,
+  // each one cut must be replanted (a sapling costs 1,000원) and takes two days to grow
+  // back. Logs become planks by your own sawing (value added), and planks become
+  // furniture, next to what the same piece costs in the shop (make or buy).
+  // =====================================================================
+  const CRAFTS = [
+    { k: 'stool', planks: 2 },
+    { k: 'table', planks: 4 },
+    { k: 'shelf', planks: 6 },
+  ];
+  const SAPLING_PRICE = 1000, CHOPS = 3, LOGS_PER_TREE = 3, PLANKS_PER_LOG = 2;
+  function forestState() {
+    if (!Array.isArray(G.forest) || G.forest.length !== FOREST.length) G.forest = FOREST.map(() => ({ planted: null, cut: false }));
+    return G.forest;
+  }
+  function forestStage(i) {
+    const f = forestState()[i];
+    if (f.cut) return 'stump';
+    if (f.planted == null) return 'grown';
+    const d = G.day - f.planted;
+    return d >= 2 ? 'grown' : d >= 1 ? 'young' : 'sapling';
+  }
+  const forestSpot = (i) => ({ x: FOREST[i].x - 30, y: FOREST[i].y + 16 });
+  const chopFx = FOREST.map(() => ({ shake: 0, hits: 0 }));
+  function useForest(i) {
+    const st = forestStage(i), fx = chopFx[i], sp = FOREST[i];
+    player.dir = 1;
+    if (st === 'grown') {
+      fx.hits++; fx.shake = 0.4;
+      burst(sp.x - 6, sp.y - 20, 8, '#d9b38c', { up: 60, spread: 40, life: 0.5 });
+      tone(170 + fx.hits * 20, 0.09, 'square', 0.04, -80);
+      if (fx.hits < CHOPS) { toast(`탁! ${CHOPS - fx.hits}번 더 하면 쓰러져요.`, 'Chop!'); return; }
+      fx.hits = 0;
+      forestState()[i].cut = true;
+      G.inv.log = (G.inv.log || 0) + LOGS_PER_TREE;
+      burst(sp.x, sp.y - 40, 18, '#7fb069', { up: 90, spread: 70 });
+      tone(110, 0.35, 'triangle', 0.06, -40); sfx.harvest();
+      toast(`쿵! 통나무 ${LOGS_PER_TREE}개를 얻었어요. 그루터기에 묘목을 다시 심어 줘요.`, `Timber! ${LOGS_PER_TREE} logs. Plant a sapling in the stump.`);
+      persist(); return;
+    }
+    if (st === 'stump') {
+      if (!(G.inv.sapling > 0)) {
+        if (G.coins < SAPLING_PRICE) { toast(`묘목은 ${won(SAPLING_PRICE)}이에요. 돈을 모아서 다시 심어 줘요.`, 'You need money for a sapling.'); sfx.soft(); return; }
+        G.coins -= SAPLING_PRICE; addLedger('묘목 구입', -SAPLING_PRICE, 'tree');
+        G.inv.sapling = (G.inv.sapling || 0) + 1;
+      }
+      G.inv.sapling--; forestState()[i] = { planted: G.day, cut: false };
+      learn('forest'); sfx.plant();
+      burst(sp.x, sp.y - 6, 10, '#bfe3a0', { up: 50 });
+      toast('묘목을 심었어요. 이틀 뒤면 다 자란 소나무가 돼요.', 'Sapling planted. It grows back in two days.');
+      persist(); return;
+    }
+    toast(st === 'sapling' ? '아기 소나무가 자라고 있어요. 이틀 뒤면 다 자라요.' : '어린 소나무예요. 내일이면 다 자라요.', 'Still growing.');
+  }
+
+  // ---------- the workbench: saw logs into planks, build furniture ----------
+  let work = null; // { kind: 'saw' | 'build', k, n, need }
+  function openWork() { work = null; openSheet('workSheet'); renderWork(); sfx.talk(); }
+  function renderWork() {
+    const inv = G.inv, f = forestState().map((_, i) => forestStage(i));
+    $('workMats').textContent = `통나무 ${inv.log || 0} · 판자 ${inv.plank || 0} · 묘목 ${inv.sapling || 0}`;
+    $('workList').hidden = !!work; $('workPlay').hidden = !work;
+    if (work) return renderWorkPlay();
+    $('workForest').textContent = `숲: 다 자란 소나무 ${f.filter((s) => s === 'grown').length} · 자라는 나무 ${f.filter((s) => s === 'sapling' || s === 'young').length} · 그루터기 ${f.filter((s) => s === 'stump').length}`;
+    const logP = G.prices.log || ITEMS.log.base, plankP = G.prices.plank || ITEMS.plank.base;
+    $('sawValue').textContent = `오늘 시세로 통나무 1개 ${won(logP)} → 판자 2개 ${won(plankP * 2)}. 손으로 켜면 값이 올라가요.`;
+    $('sawBtn').disabled = !(inv.log > 0);
+    $('sawBtn').textContent = inv.log > 0 ? '통나무 켜기' : '통나무가 없어요';
+    const list = $('craftList'); list.innerHTML = '';
+    for (const c of CRAFTS) {
+      const it = FURN[c.k], ok = (inv.plank || 0) >= c.planks, cost = c.planks * plankP;
+      const card = el('div', 'recipe' + (ok ? '' : ' off'));
+      const im = el('img', 'recipe-pic'); im.src = iconURL('f:' + c.k); im.alt = '';
+      const body = el('div', 'recipe-body');
+      const val = el('span', 'muted'); val.append(`가게에서 사면 ${won(it.price)} · 판자값 약 `, el('b', 'up-t', won(cost)));
+      body.append(el('b', null, it.ko), el('span', 'need' + (ok ? ' ok' : ''), `판자 ${Math.min(inv.plank || 0, c.planks)}/${c.planks}`), val);
+      const go = el('button', 'btn small', ok ? '만들기' : '판자 부족'); go.type = 'button'; go.disabled = !ok;
+      go.addEventListener('click', () => { work = { kind: 'build', k: c.k, n: 0, need: 3, planks: c.planks }; renderWork(); });
+      card.append(im, body, go); list.append(card);
+    }
+    $('saplingBtn').disabled = G.coins < SAPLING_PRICE;
+  }
+  function renderWorkPlay() {
+    const w = work, saw = w.kind === 'saw';
+    $('workTitle').textContent = saw ? '통나무 켜기' : `${FURN[w.k].ko} 만들기`;
+    $('workPic').src = iconURL(saw ? 'log' : 'f:' + w.k);
+    $('workStep').textContent = w.n >= w.need ? (saw ? `판자 ${PLANKS_PER_LOG}개가 됐어요!` : `${FURN[w.k].ko} 완성! 집 꾸미기에서 놓을 수 있어요.`) : saw ? `톱을 밀고 당겨요. ${w.need - w.n}번 더!` : `망치로 뚝딱! ${w.need - w.n}번 더!`;
+    $('workFill').style.width = `${(w.n / w.need) * 100}%`;
+    const b = $('workTap');
+    b.textContent = w.n >= w.need ? '좋아요' : saw ? '쓱싹!' : '뚝딱!';
+  }
+  function workTap() {
+    const w = work; if (!w) return;
+    if (w.n >= w.need) { work = null; renderWork(); return; }
+    w.n++;
+    const pic = $('workPic'); pic.classList.remove('bump'); void pic.offsetWidth; pic.classList.add('bump');
+    if (w.kind === 'saw') { tone(rand(380, 460), 0.12, 'sawtooth', 0.02, -200); }
+    else tone(220, 0.08, 'square', 0.05, -60);
+    if (w.n >= w.need) {
+      if (w.kind === 'saw') { G.inv.log--; G.inv.plank = (G.inv.plank || 0) + PLANKS_PER_LOG; }
+      else { G.inv.plank -= w.planks; G.home.owned[w.k] = (G.home.owned[w.k] || 0) + 1; }
+      learn('craft'); sfx.harvest(); persist();
+      $('workMats').textContent = `통나무 ${G.inv.log || 0} · 판자 ${G.inv.plank || 0} · 묘목 ${G.inv.sapling || 0}`;
+    }
+    renderWorkPlay();
+  }
+  $('sawBtn').addEventListener('click', () => { if (G.inv.log > 0) { work = { kind: 'saw', n: 0, need: 4 }; renderWork(); } });
+  $('workTap').addEventListener('click', workTap);
+  $('workPic').addEventListener('click', workTap);
+  $('saplingBtn').addEventListener('click', () => {
+    if (G.coins < SAPLING_PRICE) return;
+    G.coins -= SAPLING_PRICE; G.inv.sapling = (G.inv.sapling || 0) + 1;
+    addLedger('묘목 구입', -SAPLING_PRICE, 'tree'); sfx.coin(); persist(); renderWork();
+    toast('묘목을 샀어요. 그루터기를 누르면 심을 수 있어요.', 'Bought a sapling.');
+  });
+  $('workClose').addEventListener('click', () => { if (work && work.n < work.need) { work = null; renderWork(); } else { work = null; closeSheet(); } });
+
+  // ---------- pictures: pines, stumps, saplings, the workbench, and the wood itself ----------
+  function drawPine(x, y, s, snow) {
+    ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+    ctx.fillStyle = 'rgba(100,80,50,0.18)'; ctx.beginPath(); ctx.ellipse(0, 0, 26, 8, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = clayGrad(0, -14, 8, '#b5875f', '#9a6c48', '#7c5236'); rr(ctx, -5, -30, 10, 32, 4); ctx.fill();
+    for (const [ty, w, h] of [[-26, 30, 34], [-48, 24, 30], [-68, 17, 26]]) {
+      ctx.fillStyle = clayGrad(-6, ty - h / 2, w, '#8cc07c', '#5f9a63', '#467a4c');
+      ctx.beginPath(); ctx.moveTo(-w, ty); ctx.quadraticCurveTo(-w * 0.3, ty - h * 0.5, 0, ty - h); ctx.quadraticCurveTo(w * 0.3, ty - h * 0.5, w, ty); ctx.quadraticCurveTo(0, ty + 7, -w, ty); ctx.fill();
+      if (snow) { ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.beginPath(); ctx.moveTo(-w * 0.45, ty - h * 0.62); ctx.quadraticCurveTo(0, ty - h * 1.05, w * 0.45, ty - h * 0.62); ctx.quadraticCurveTo(0, ty - h * 0.5, -w * 0.45, ty - h * 0.62); ctx.fill(); }
+    }
+    ctx.restore();
+  }
+  function drawStump(x, y) {
+    ctx.fillStyle = 'rgba(100,80,50,0.18)'; ctx.beginPath(); ctx.ellipse(x, y, 18, 6, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#8d5f45'; rr(ctx, x - 12, y - 14, 24, 14, 5); ctx.fill();
+    ctx.fillStyle = '#e2c49a'; ctx.beginPath(); ctx.ellipse(x, y - 14, 12, 5, 0, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(141,95,69,0.6)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(x, y - 14, 7, 3, 0, 0, 7); ctx.stroke(); ctx.beginPath(); ctx.ellipse(x, y - 14, 3, 1.4, 0, 0, 7); ctx.stroke();
+  }
+  function drawSapling(x, y, big) {
+    const h = big ? 30 : 16;
+    ctx.fillStyle = 'rgba(100,80,50,0.16)'; ctx.beginPath(); ctx.ellipse(x, y, 10, 4, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#a07a53'; ctx.beginPath(); ctx.ellipse(x, y - 1, 9, 3.5, 0, 0, 7); ctx.fill();
+    if (big) { ctx.save(); ctx.translate(x, y); ctx.scale(0.5, 0.5); drawPine(0, 0, 1, false); ctx.restore(); return; }
+    ctx.strokeStyle = '#6f9a58'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y - 1); ctx.lineTo(x, y - h); ctx.stroke();
+    ctx.fillStyle = '#7fb069'; ctx.beginPath(); ctx.ellipse(x - 5, y - h + 2, 5, 2.4, 0.5, 0, 7); ctx.ellipse(x + 5, y - h + 1, 5, 2.4, -0.5, 0, 7); ctx.fill();
+    ctx.fillStyle = '#c99a6b'; ctx.fillRect(x + 8, y - 18, 2, 18);
+  }
+  function drawForestTree(i) {
+    const sp = FOREST[i], st = forestStage(i), fx = chopFx[i];
+    const jig = fx.shake > 0 ? Math.sin(G.t * 50) * fx.shake * 6 : 0;
+    if (st === 'grown') drawPine(sp.x + jig, sp.y, 1, season() === 3);
+    else if (st === 'stump') drawStump(sp.x, sp.y);
+    else drawSapling(sp.x, sp.y, st === 'young');
+  }
+  function drawWorkbench() {
+    const { x, y } = BENCH;
+    ctx.fillStyle = 'rgba(100,80,50,0.18)'; ctx.beginPath(); ctx.ellipse(x, y + 2, 44, 9, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#8d5f45'; for (const lx of [-30, 26]) rr(ctx, x + lx, y - 22, 6, 24, 2), ctx.fill();
+    ctx.fillStyle = woodGrad(x, y - 26, 80); rr(ctx, x - 38, y - 30, 76, 12, 4); ctx.fill();
+    // a log waiting on the bench, and a saw leaning on it
+    ctx.fillStyle = '#9a6c48'; rr(ctx, x - 26, y - 40, 34, 10, 5); ctx.fill();
+    ctx.fillStyle = '#e2c49a'; ctx.beginPath(); ctx.ellipse(x + 8, y - 35, 3, 5, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#c3ccd4'; ctx.beginPath(); ctx.moveTo(x + 14, y - 30); ctx.lineTo(x + 34, y - 46); ctx.lineTo(x + 38, y - 42); ctx.lineTo(x + 20, y - 28); ctx.fill();
+    ctx.fillStyle = '#c8714f'; rr(ctx, x + 33, y - 52, 9, 8, 3); ctx.fill();
+    ctx.fillStyle = '#fffaf1'; rr(ctx, x - 36, y - 76, 72, 22, 8); ctx.fill();
+    label('동글 숲', x, y - 65, 12, '#5f8a4f');
+  }
+  function drawWoodIcon(kind) {
+    if (kind === 'log') {
+      for (const [x, y] of [[-6, 4], [6, 4], [0, -5]]) {
+        ctx.fillStyle = clayGrad(x, y, 7, '#b5875f', '#9a6c48', '#7c5236'); rr(ctx, x - 10, y - 4.5, 16, 9, 4.5); ctx.fill();
+        ctx.fillStyle = '#e2c49a'; ctx.beginPath(); ctx.ellipse(x + 6, y, 3, 4.5, 0, 0, 7); ctx.fill();
+        ctx.strokeStyle = 'rgba(141,95,69,0.6)'; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.ellipse(x + 6, y, 1.4, 2.2, 0, 0, 7); ctx.stroke();
+      }
+    } else if (kind === 'plank') {
+      for (const [y, c] of [[5, '#c99a6b'], [0, '#d9b38c'], [-5, '#e2c49a']]) { ctx.fillStyle = c; rr(ctx, -12, y - 2.5, 24, 5, 1.5); ctx.fill(); ctx.strokeStyle = 'rgba(141,95,69,0.35)'; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(-9, y); ctx.lineTo(9, y); ctx.stroke(); }
+    } else if (kind === 'sapling') {
+      ctx.fillStyle = clayGrad(0, 7, 8, '#df8e6d', '#c8714f', '#a85a3d'); ctx.beginPath(); ctx.moveTo(-7, 2); ctx.lineTo(7, 2); ctx.lineTo(5, 11); ctx.lineTo(-5, 11); ctx.closePath(); ctx.fill();
+      ctx.save(); ctx.translate(0, 2); ctx.scale(0.24, 0.24); drawPine(0, 0, 1, false); ctx.restore();
+    }
+  }
+
   // ---------- 명절 in the village: 강강술래 under the moon, kites on 설날 ----------
   const RING = { x: 775, y: 530, r: 120 };
   function ringSpot(n) {
@@ -7697,6 +7959,8 @@
     opts.push([FUNDBOX.spot, ['마을 모금함', 'Donation box', 'fund:' + (fundProject() || PROJECTS[PROJECTS.length - 1]).k], openFund]);
     if (built('play')) opts.push([SWING, ['그네 타기', 'Ride the swing', 'fund:play'], rideSwing]);
     if (built('jeong')) opts.push([JEONG.spot, ['정자에서 쉬기', 'Rest a while', 'fund:jeong'], restJeong]);
+    FOREST.forEach((_, i) => { const st = forestStage(i); if (st === 'grown') opts.push([forestSpot(i), ['나무 베기', 'Chop the pine', 'log'], () => useForest(i)]); else if (st === 'stump') opts.push([forestSpot(i), ['묘목 심기', 'Plant a sapling', 'sapling'], () => useForest(i)]); });
+    opts.push([BENCH.spot, ['작업대 쓰기', 'Use the workbench', 'plank'], openWork]);
     opts.push([SHELTER.spot, G.pet ? ['동글 보호소', 'Animal shelter', 'pet:' + Object.keys(PETS).find((k) => k !== G.pet.k)] : ['보호소 친구 만나기', 'Meet the shelter pets', 'pet:white'], openShelter]);
     opts.push([VBUS.spot, ['버스 타기', 'Take the bus', 'bus'], () => openRide('bus:city')]);
     opts.push([house.door, ['집에 들어가기', 'Go inside', 'house'], enterRoom]);
@@ -7885,6 +8149,7 @@
     else if (scene === 'cafe') updateCafe(dt);
     if (scene !== lastScene) { lastScene = scene; sendWhere(); syncCafeBar(); }
     if (scene === 'cafe' || scene === 'village') updateFriends(dt);
+    for (const fx of chopFx) if (fx.shake > 0) fx.shake = Math.max(0, fx.shake - dt);
     for (const t of trees) {
       if (t.shake > 0) t.shake = Math.max(0, t.shake - dt);
       if (t.fruit && t.n < 3) { t.regrow += dt; if (t.regrow >= regrowTime(t.fruit)) { t.regrow = 0; t.n++; } }
@@ -8259,6 +8524,7 @@
       else if (kind === 'coin') drawCoin();
       else if (kind === 'seed') drawSeedBag();
       else if (kind === 'pouch') drawPouch();
+      else if (WOOD[kind]) drawWoodIcon(kind);
       else if (kind.startsWith('pet:')) { ctx.scale(0.7, 0.7); ctx.translate(-1, 18); drawPetShape(kind.slice(4), { sit: true, dir: 1, happy: true }); }
       else if (kind.startsWith('fund:')) {
         const k = kind.slice(5);
@@ -8841,6 +9107,8 @@
     if (built('play')) list.push([PLAY.y - 30, () => drawPlayground()]);
     if (built('jeong')) list.push([JEONG.y, () => drawJeongja()]);
     list.push([SHELTER.y + 6, drawShelter]);
+    FOREST.forEach((sp, i) => list.push([sp.y, () => drawForestTree(i)]));
+    list.push([BENCH.y + 2, drawWorkbench]);
     if (G.pet) list.push([pet.y, () => drawPetIn(true)]);
     list.push([pier.y + 4, drawPierSign]);
     list.push([VBUS.y - 2, () => drawCityBusStop(VBUS, '동글마을 정류장', '동글시내', '#7fb069')]);
