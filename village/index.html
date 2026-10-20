@@ -532,6 +532,7 @@
   #cookSheet > * { flex-shrink: 0; }
   .recipe { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 16px; background: var(--grouped); }
   .recipe.off .recipe-pic { opacity: 0.55; }
+  .recipe .btn:disabled { padding-inline: 2px; }
   .recipe-pic { width: 52px; height: 52px; flex: none; }
   .recipe-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
   .recipe-body > b { font-size: 16px; }
@@ -567,6 +568,60 @@
     .pot-in img { animation: plop 0.4s cubic-bezier(0.3, 1.5, 0.5, 1); }
     @keyframes plop { from { transform: translateY(-60px) scale(1.4); opacity: 0; } }
     .cook-done img { animation: starpop 0.6s cubic-bezier(0.3, 1.8, 0.5, 1); }
+  }
+
+  /* 명절: 설날 세배, 추석 송편과 보름달 */
+  .recipe.holi { background: #fff3f1; box-shadow: inset 0 0 0 1.5px #f6cfd6; }
+  .holi-tag { align-self: flex-start; padding: 2px 8px; border-radius: 10px; background: #fde3e8; color: #c0485f; font-size: 12px; font-weight: 700; }
+  .song-plate { position: relative; display: flex; justify-content: center; gap: 6px; padding: 16px 12px 12px; border-radius: 50% / 42%; background: radial-gradient(ellipse at 50% 40%, #ffffff, #eee7dc); box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.05); }
+  .song-piece { width: 44px; height: 28px; border-radius: 50% 50% 14% 14% / 92% 92% 8% 8%; box-shadow: inset 0 -3px 4px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.1); }
+  .song-piece.empty { box-sizing: border-box; border: 2px dashed #e3d4c0; box-shadow: none; }
+  .song-board { display: flex; justify-content: center; align-items: center; height: 140px; }
+  .dough { position: relative; width: 120px; height: 120px; padding: 0; border: 0; border-radius: 50%; cursor: pointer; box-shadow: inset 0 -10px 18px rgba(0, 0, 0, 0.1), inset 0 8px 14px rgba(255, 255, 255, 0.6), 0 6px 12px rgba(120, 90, 60, 0.15); transition: width 0.35s, height 0.35s, border-radius 0.35s; }
+  .dough.none { background: transparent; border: 3px dashed #e3d4c0; box-shadow: none; cursor: default; }
+  .dough.p1 { width: 140px; height: 96px; }
+  .dough.p2 { width: 150px; height: 84px; border-radius: 50% 50% 14% 14% / 92% 92% 8% 8%; }
+  .filling { position: absolute; left: 50%; top: 50%; width: 40px; height: 32px; margin: -16px 0 0 -20px; border-radius: 50%; background-image: radial-gradient(circle, rgba(0, 0, 0, 0.22) 1.5px, transparent 2px); background-size: 8px 8px; }
+  .song-chip { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 72px; padding: 10px 4px; border: 0; border-radius: 16px; background: var(--grouped); color: var(--ink); font: 700 13px var(--font); cursor: pointer; }
+  .song-chip i { width: 38px; height: 38px; border-radius: 50%; box-shadow: inset 0 -4px 6px rgba(0, 0, 0, 0.12); }
+  .song-chip.fill-c i { width: 32px; height: 26px; background-image: radial-gradient(circle, rgba(0, 0, 0, 0.22) 1.5px, transparent 2px); background-size: 7px 7px; }
+  .song-chip:active { transform: scale(0.94); }
+  .song-plate.steaming::after { content: ""; position: absolute; left: 20%; right: 20%; top: -26px; height: 36px; border-radius: 50%; background: radial-gradient(ellipse at 30% 70%, rgba(170, 180, 192, 0.5), transparent 60%), radial-gradient(ellipse at 70% 60%, rgba(170, 180, 192, 0.45), transparent 60%); }
+  .sebae-stage { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: end; }
+  .sebae-who { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+  .sebae-who img { height: 100px; width: auto; max-width: 100%; object-fit: contain; transform-origin: 50% 100%; }
+  .sebae-who b { font-size: 14px; }
+  .sebae-say { position: relative; min-height: 36px; margin: 0 0 4px; padding: 8px 12px; border-radius: 14px; background: var(--grouped); font-size: 14px; font-weight: 700; line-height: 1.35; text-align: center; word-break: keep-all; }
+  .sebae-say::after { content: ""; position: absolute; left: 50%; bottom: -6px; margin-left: -6px; border: 6px solid transparent; border-bottom: 0; border-top-color: var(--grouped); }
+  .sebae-say:empty { visibility: hidden; }
+  .sebae-act { display: flex; flex-direction: column; gap: 8px; }
+  .pouch { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px; border: 0; background: none; font: 700 15px var(--font); color: var(--accent); cursor: pointer; }
+  .pouch img { width: 104px; height: 104px; }
+  .sebae-money { display: flex; justify-content: center; align-items: center; gap: 14px; padding: 2px 0 4px; }
+  .sebae-money .bills { display: flex; gap: 6px; }
+  .sebae-money .coin { cursor: default; }
+  .sebae-money > b { font-size: 26px; font-weight: 800; }
+  .coin.c10000 { width: 86px; height: 46px; border-radius: 7px; font-size: 15px; background: linear-gradient(135deg, #dcefcf, #a8d394 60%, #86bb70); color: #24461a; box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.45), 0 2px 4px rgba(0, 0, 0, 0.14); }
+  .split { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 16px; border: 0; border-radius: 16px; background: var(--grouped); color: var(--ink); font: 700 16px var(--font); text-align: left; cursor: pointer; }
+  .split .muted { font-size: 13px; font-weight: 500; }
+  .split:active { transform: scale(0.98); }
+  .wish-sky { position: relative; height: 150px; border-radius: 18px; overflow: hidden; background: radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.85) 1px, transparent 1.6px), radial-gradient(circle at 75% 60%, rgba(255, 255, 255, 0.7) 1px, transparent 1.6px), radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.6) 1px, transparent 1.6px), linear-gradient(180deg, #2e3068, #565591); background-size: 60px 50px, 80px 70px, 70px 60px, auto; }
+  .wish-moon { position: absolute; left: 50%; top: 22px; width: 76px; height: 76px; margin-left: -38px; border-radius: 50%; background: radial-gradient(circle at 38% 34%, #fffbea, #f8e7a8 60%, #e9c96f); box-shadow: 0 0 30px 8px rgba(255, 236, 160, 0.35); transition: box-shadow 0.8s; }
+  .wish-sky.lit .wish-moon { box-shadow: 0 0 50px 22px rgba(255, 236, 160, 0.65); }
+  .wish-fly { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); margin: 0; padding: 6px 12px; border-radius: 14px; background: rgba(255, 250, 241, 0.95); color: var(--ink); font-size: 13px; font-weight: 700; white-space: nowrap; }
+  .wish-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .wish { padding: 12px 10px; border: 0; border-radius: 14px; background: var(--grouped); color: var(--ink); font: 600 14px var(--font); line-height: 1.35; cursor: pointer; word-break: keep-all; }
+  .wish.on { background: #fdf0d2; box-shadow: inset 0 0 0 2px #e2bd55; }
+  @media (prefers-reduced-motion: no-preference) {
+    .sebae-who img.bowing { animation: bow 1s ease-in-out; }
+    @keyframes bow { 35%, 65% { transform: translateY(10px) scale(1.04, 0.78); } }
+    .pouch img { animation: wiggle 1.2s ease-in-out infinite; }
+    @keyframes wiggle { 0%, 60%, 100% { transform: rotate(0); } 70% { transform: rotate(-8deg); } 85% { transform: rotate(8deg); } }
+    .sebae-money .bills { animation: starpop 0.6s cubic-bezier(0.3, 1.8, 0.5, 1); }
+    .song-plate.steaming::after { animation: puff 0.8s ease-out infinite alternate; }
+    @keyframes puff { from { opacity: 0.4; transform: translateY(6px); } to { opacity: 1; transform: translateY(-6px); } }
+    .wish-fly.go { animation: wishup 1.4s ease-in forwards; }
+    @keyframes wishup { to { transform: translate(-50%, -90px) scale(0.6); opacity: 0; } }
   }
 
   /* 내 가게 */
@@ -959,7 +1014,34 @@
     <p class="muted" id="cookStep" aria-live="polite"></p>
     <div class="cook-hand" id="cookHand"></div>
   </div>
+  <div class="bank-pane" id="songPlay" hidden>
+    <b class="cook-title" id="songTitle">송편 빚기</b>
+    <div class="song-plate" id="songPlate" aria-hidden="true"></div>
+    <div class="song-board" id="songBoard"><button class="dough none" id="dough" type="button" aria-label="반죽 꾹 누르기"><i class="filling" id="filling" hidden></i></button></div>
+    <p class="muted" id="songStep" aria-live="polite"></p>
+    <div class="cook-hand" id="songHand"></div>
+  </div>
   <button class="btn soft" id="cookBack" type="button">닫기</button>
+</div>
+
+<div class="sheet" id="sebaeSheet" hidden>
+  <div class="row-head"><h2>세배하기</h2><span class="muted" id="sebaeCount"></span></div>
+  <div class="sebae-stage">
+    <div class="sebae-who"><p class="sebae-say" id="sebaeMe"></p><img id="sebaeMePic" alt=""><b>나</b></div>
+    <div class="sebae-who"><p class="sebae-say" id="sebaeThem"></p><img id="sebaeThemPic" alt=""><b id="sebaeName"></b></div>
+  </div>
+  <p class="muted" id="sebaeStep" aria-live="polite"></p>
+  <div class="sebae-act" id="sebaeAct"></div>
+  <button class="btn soft" id="sebaeClose" type="button">닫기</button>
+</div>
+
+<div class="sheet" id="wishSheet" hidden>
+  <div class="row-head"><h2>보름달 소원</h2><span class="muted">추석 밤</span></div>
+  <div class="wish-sky" id="wishSky"><div class="wish-moon"></div><p class="wish-fly" id="wishFly" hidden></p></div>
+  <p class="muted" id="wishStep" aria-live="polite"></p>
+  <div class="wish-list" id="wishList" role="radiogroup" aria-label="소원"></div>
+  <button class="btn" id="wishGo" type="button" disabled>소원 빌기</button>
+  <button class="btn soft" id="wishClose" type="button">닫기</button>
 </div>
 
 <div class="sheet" id="stallSheet" hidden>
@@ -1212,6 +1294,8 @@
     hwachae:      { ko: '과일 화채', en: 'Fruit punch', price: 9000, color: '#f6b8c4', taste: '시원하고 알록달록해요' },
     grilledfish:  { ko: '생선구이', en: 'Grilled fish', price: 9000, color: '#d9954a', taste: '겉은 바삭, 속은 촉촉해요' },
     strawjam:     { ko: '딸기잼', en: 'Strawberry jam', price: 15000, color: '#c0283a', taste: '빵에 발라 먹으면 최고예요' },
+    tteokguk:     { ko: '떡국', en: 'Rice cake soup', price: 9000, color: '#f3ead6', taste: '뜨끈하고 든든해요' },
+    songpyeon:    { ko: '송편', en: 'Songpyeon', price: 1000, color: '#f6c6cf', taste: '쫄깃하고 고소해요' },
     hangangramen: { ko: '한강라면', en: 'Riverside ramen', price: 4000, color: '#e0703f', taste: '강바람 맞으며 먹으니 더 맛있어요' },
   };
   const FOOD_KEYS = Object.keys(FOODS);
@@ -1283,6 +1367,7 @@
     stamps: 0, quizDay: 0,
     plan: null, stocks: null, // 적금 and 주식 at 동글은행
     stall: null, // 내 가게: what is on the counter and at what price
+    holi: null, wishes: [], // 명절: this year's 세뱃돈, the 송편 shared, wishes on the full moon
     tips: { planted: false, fished: false, room: false },
   };
   function rollPrices() {
@@ -1292,7 +1377,7 @@
   rollPrices(); G.prev = { ...G.prices };
 
   function save() {
-    return { v: 2, won: 1, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, stats: G.stats, notes: G.notes, track: G.track, stamps: G.stamps, quizDay: G.quizDay, plan: G.plan, stocks: G.stocks, stall: G.stall, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
+    return { v: 2, won: 1, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, stats: G.stats, notes: G.notes, track: G.track, stamps: G.stamps, quizDay: G.quizDay, plan: G.plan, stocks: G.stocks, stall: G.stall, holi: G.holi, wishes: G.wishes, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
   }
   function load(s) {
     if (!s || s.v !== 2) return false;
@@ -1304,7 +1389,7 @@
       if (s.stats && s.stats.total) { sc(s.stats.total.in); sc(s.stats.total.out); s.stats.total.save = (s.stats.total.save || 0) * W; for (const d of Object.values(s.stats.days || {})) { sc(d.in); sc(d.out); d.save = (d.save || 0) * W; } }
       s.prices = {}; s.prev = {}; s.mprices = {};
     }
-    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home, acct: s.acct || 0, jobDay: s.jobDay || 0, mprices: s.mprices || {}, haggle: s.haggle || null, reqs: s.reqs || null, words: s.words || {}, stats: { ...G.stats, ...(s.stats || {}) }, notes: Array.isArray(s.notes) ? s.notes : [], track: s.track || 'musicbox', stamps: s.stamps || 0, quizDay: s.quizDay || 0, plan: s.plan || null, stocks: s.stocks && s.stocks.hist ? s.stocks : null, stall: s.stall || null });
+    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home, acct: s.acct || 0, jobDay: s.jobDay || 0, mprices: s.mprices || {}, haggle: s.haggle || null, reqs: s.reqs || null, words: s.words || {}, stats: { ...G.stats, ...(s.stats || {}) }, notes: Array.isArray(s.notes) ? s.notes : [], track: s.track || 'musicbox', stamps: s.stamps || 0, quizDay: s.quizDay || 0, plan: s.plan || null, stocks: s.stocks && s.stocks.hist ? s.stocks : null, stall: s.stall || null, holi: s.holi || null, wishes: Array.isArray(s.wishes) ? s.wishes : [] });
     (s.plots || []).forEach((p, i) => { if (plots[i]) Object.assign(plots[i], p); });
     (s.trees || []).forEach(([n, r], i) => { if (trees[i] && trees[i].fruit) { trees[i].n = n; trees[i].regrow = r; } });
     return true;
@@ -1620,8 +1705,8 @@
   function syncHud() {
     const tn = timeName(G.time);
     const place = { city: ['동글시내', 'Downtown'], park: ['한강공원', 'Riverside'], market: ['동글시장', 'Market'], cafe: ['몽글카페', 'Café'], ride: ['이동 중', 'On the way'] }[scene];
-    const se = SEASONS[season()];
-    ui.clock.textContent = place ? `${G.en ? place[1] : place[0]} · ${G.en ? tn[1] : tn[0]}` : G.en ? `${se.en} · Day ${G.day} · ${tn[1]}` : `${se.ko} ${G.day}일째 · ${tn[0]}`;
+    const se = SEASONS[season()], hol = holiday();
+    ui.clock.textContent = place ? `${G.en ? place[1] : place[0]} · ${G.en ? tn[1] : tn[0]}` : hol ? `${G.en ? HOLIDAYS[hol].en : HOLIDAYS[hol].ko} · ${G.en ? tn[1] : tn[0]}` : G.en ? `${se.en} · Day ${G.day} · ${tn[1]}` : `${se.ko} ${G.day}일째 · ${tn[0]}`;
     ui.coins.textContent = wonShort(G.coins);
     ui.bagN.textContent = `${G.en ? 'Bag' : '가방'} ${sum(G.inv, BAG_KEYS)}`;
     ui.dexN.textContent = `${G.en ? 'Book' : '도감'} ${DEX_ALL.filter(found).length}/${DEX_ALL.length}`;
@@ -1842,22 +1927,24 @@
     G.day++; rollPrices(); rollMarket();
     const later = [];
     if ((G.day - 1) % DAYS_PER_SEASON === 0) later.push([SEASONS[season()].hello, `${SEASONS[season()].en} is here!`]);
+    const hol = holiday(), eve = holidayOn(G.day + 1);
+    if (eve) later.unshift(HOLIDAYS[eve].eve);
     const planMsg = runPlan(); if (planMsg) later.push(planMsg);
     const divMsg = rollStocks(); if (divMsg) later.push(divMsg);
     if (myStocks().length) {
       const best = myStocks().map((id) => [id, pct(sharePrice(id), prevShare(id))]).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0];
       later.push([`주식 소식: ${STOCKS[best[0]].ko} ${best[1] >= 0 ? '▲' : '▼'}${Math.abs(best[1]).toFixed(1)}%. 은행에서 확인해 보세요.`, 'Your stocks moved overnight.']);
     }
-    later.forEach((m, i) => setTimeout(() => toast(m[0], m[1]), 3600 * (i + 1)));
     const acctInterest = G.acct >= ACCT_MIN ? interestOn(G.acct, ACCT_RATE) : 0;
     if (acctInterest > 0) { G.acct += acctInterest; addLedger('은행 이자', acctInterest, 'interest'); }
     const interest = interestOn(G.bank, BANK_RATE);
-    if (interest > 0) {
-      G.bank += interest; addLedger(`저금통 이자`, interest, 'interest');
-      toast(`${G.day}일째 아침이에요. 저금통에 이자 ${won(interest)}이 붙었어요!`, `Day ${G.day}. You earned ₩${interest.toLocaleString()} of interest!`);
-    } else {
-      toast(`${G.day}일째 아침이에요. 오늘의 시세가 새로 정해졌어요.`, `Day ${G.day}. New prices today!`);
-    }
+    if (interest > 0) { G.bank += interest; addLedger(`저금통 이자`, interest, 'interest'); }
+    const morning = interest > 0
+      ? [`${G.day}일째 아침이에요. 저금통에 이자 ${won(interest)}이 붙었어요!`, `Day ${G.day}. You earned ₩${interest.toLocaleString()} of interest!`]
+      : [`${G.day}일째 아침이에요. 오늘의 시세가 새로 정해졌어요.`, `Day ${G.day}. New prices today!`];
+    // on a holiday the greeting comes first; the interest news waits its turn
+    if (hol) { toast(...HOLIDAYS[hol].hello); if (interest > 0) later.unshift(morning); } else toast(...morning);
+    later.forEach((m, i) => setTimeout(() => toast(m[0], m[1]), 3600 * (i + 1)));
     persist();
   }
 
@@ -2062,7 +2149,8 @@
     closeupEat(k, () => {
       player.emote = { t: 1.4 };
       burst(player.x, player.y - 40, 12, info(k).color, { up: 90 }); sfx.harvest();
-      toast(`${info(k).ko}, ${taste}. 30초 동안 신나게 걸어요.`, 'Yum! You feel bouncy for 30 seconds.');
+      if (k === 'tteokguk') toast('떡국 한 그릇 뚝딱! 한 살 더 먹었어요. 30초 동안 신나게 걸어요.', 'Tteokguk! One year older. You feel bouncy.');
+      else toast(`${info(k).ko}, ${taste}. 30초 동안 신나게 걸어요.`, 'Yum! You feel bouncy for 30 seconds.');
     });
   }
   $('bagPill').addEventListener('click', () => { if (!G.started) return; openSheet('bagSheet'); renderBag(); });
@@ -2371,7 +2459,7 @@
   function talkTo(n) {
     n.dir = Math.sign(player.x - n.x) || 1;
     if (n.shopkeeper) { say(n, pick(LINES_SHOP)); }
-    else { say(n, pick(isNight() ? LINES_NIGHT : LINES_DAY)); n.wait = Math.max(n.wait, 3); n.target = null; }
+    else { say(n, pick(chatter())); n.wait = Math.max(n.wait, 3); n.target = null; }
     n.emote = { t: 1.4 }; sfx.talk();
   }
 
@@ -2398,6 +2486,7 @@
     try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
     if (scene === 'room') { roomTap(e.clientX - r.left, e.clientY - r.top); return; }
     if (scene === 'ride') { if (ride && ride.t > 1.2) arrive(); return; }
+    if (scene === 'village' && !player.fishing && moonHit(e.clientX - r.left, e.clientY - r.top)) { openWish(); return; }
     const w = toWorld(e.clientX - r.left, e.clientY - r.top);
     if (player.fishing) { reel(); return; }
     if (scene === 'city') { cityTap(w); return; }
@@ -2407,6 +2496,7 @@
 
     for (const b of bugs) if (b.flee <= 0 && b.a > 0.4 && Math.hypot(w.x - b.x, w.y - (b.y - b.alt)) < 26) { chaseBug(b); return; }
     for (const n of npcs) if (Math.hypot(w.x - n.x, w.y - (n.y - 42)) < 30) {
+      if (holidayWants(n)) { visitNeighbor(n); return; }
       if (n.shopkeeper) { goTo(shop.spot, () => { openSheet('shopSheet'); renderShop(); talkTo(n); }); return; }
       talkTo(n); return;
     }
@@ -2445,7 +2535,7 @@
     opts.push([STALL.spot, openStall]);
     opts.push([house.door, enterRoom]);
     opts.push([pier.tip, () => startFishing(pier.bob)]);
-    npcs.forEach((n) => opts.push([n, () => talkTo(n)]));
+    npcs.forEach((n) => opts.push([n, () => (holidayWants(n) ? holidayVisit(n) : talkTo(n))]));
     const e2 = pondEdge(player.x, player.y); opts.push([e2.stand, () => startFishing(e2.bob)]);
     let best = null, bd = 60;
     for (const [pt, fn] of opts) { const d = Math.hypot(pt.x - player.x, pt.y - player.y); if (d < bd) { bd = d; best = fn; } }
@@ -3658,7 +3748,7 @@
   }
   function drawFoodShape(k) {
     if (['hotteok', 'kkultteok', 'sikhye', 'misu', 'bingsu'].includes(k)) return drawMoreFood(k);
-    if (['carrotjuice', 'flowertea', 'tomatosoup', 'hwachae', 'grilledfish', 'strawjam'].includes(k)) return drawDish(k);
+    if (['carrotjuice', 'flowertea', 'tomatosoup', 'hwachae', 'grilledfish', 'strawjam', 'tteokguk', 'songpyeon'].includes(k)) return drawDish(k);
     const ink = '#2b2420';
     if (k === 'tteokbokki') {
       ctx.fillStyle = clayGrad(0, 4, 13, '#9fd0a8', '#6fb07f', '#4f8f5f'); ctx.beginPath(); ctx.ellipse(0, 4, 13, 6, 0, 0, 7); ctx.fill();
@@ -4128,7 +4218,7 @@
   }
 
   // ---------- 보호자 화면: what the child earned, spent, saved and learned ----------
-  const MONEY_IN = { sell: '팔기', job: '알바', interest: '이자', errand: '영어 심부름·놀이', gift: '칭찬 선물', stock: '주식 수익·배당' };
+  const MONEY_IN = { sell: '팔기', job: '알바', interest: '이자', errand: '영어 심부름·놀이', gift: '칭찬 선물', stock: '주식 수익·배당', sebae: '세뱃돈' };
   const MONEY_OUT = { seed: '씨앗', food: '간식', home: '집 꾸미기', ride: '버스·지하철', stock: '주식 손해' };
   const LESSONS = [
     ['sell', '처음 팔아 보기', '키운 것을 팔아서 돈을 벌었어요.'],
@@ -4143,6 +4233,8 @@
     ['shop', '값 정하기', '내 가게에서 내가 정한 값으로 팔아 봤어요. 비싸면 손님이 줄고, 싸면 금방 팔려요.'],
     ['plan', '적금', '5일 동안 꾸준히 넣어서 적금 만기 이자를 받았어요.'],
     ['invest', '주식', '회사의 작은 조각(주식)을 사 봤어요. 값은 오르기도 내리기도 해요.'],
+    ['sebae', '세뱃돈 나누기', '설날 세뱃돈을 쓸 돈과 모을 돈으로 나눠 봤어요.'],
+    ['share', '나눔', '추석에 송편을 이웃과 나눴어요. 나누면 고마운 마음이 돌아와요.'],
   ];
   const learn = (k) => { if (!G.stats.learn[k]) G.stats.learn[k] = G.day; };
   function track(cat, amount) {
@@ -4283,6 +4375,13 @@
 
     // something to talk about tonight
     const tips = [];
+    const hs = G.holi && G.day - G.holi.day <= 6 ? G.holi : null;
+    if (hs && hs.kind === 'seol' && Object.keys(hs.sebae).length) {
+      const got = Object.values(hs.sebae).reduce((a, b) => a + b, 0);
+      tips.push(hs.saved ? `“세뱃돈 ${won(got)} 중에 ${won(hs.saved)}을 저금통에 넣었네. 모은 돈으로 나중에 뭘 하고 싶어?”` : `“세뱃돈 ${won(got)}을 모두 지갑에 넣었네. 어디에 쓰고 싶어? 조금 모아 두면 어떨까?”`);
+    }
+    if (hs && hs.wish) tips.push(`“보름달에 ‘${hs.wish}’ 소원을 빌었구나. 왜 그 소원을 골랐어?”`);
+    else if (hs && hs.kind === 'chuseok' && Object.keys(hs.shared).length) tips.push('“송편을 나눠 줬을 때 이웃이 뭐라고 했어? 나눌 때 기분이 어땠어?”');
     if (!S.learn.save) tips.push('“저금통에 1만원을 넣으면 내일은 얼마가 될까?”');
     if (G.stocks && myStocks().length) tips.push('“주식 값이 내려가면 어떤 기분이 들어? 바로 팔까, 기다려 볼까?”');
     else if (G.plan) tips.push('“적금이 다 차면 그 돈으로 뭘 하고 싶어?”');
@@ -5057,7 +5156,7 @@
   // ---------- eating up close: 와구와구 ----------
   // =====================================================================
   const DRINKS = new Set(['hotchoco', 'strawlatte', 'bananamilk', 'sikhye', 'misu', 'carrotjuice', 'flowertea', 'hwachae']);
-  const SLURP = new Set(['cupramen', 'hangangramen', 'eomuk', 'tomatosoup']);
+  const SLURP = new Set(['cupramen', 'hangangramen', 'eomuk', 'tomatosoup', 'tteokguk']);
   const BITES = [0.55, 0.95, 1.35, 1.75];
   let munch = null;
   function closeupEat(k, after) {
@@ -5362,13 +5461,26 @@
     return out;
   }
   let cook = null;
-  function openKitchen() { cook = null; openSheet('cookSheet'); renderKitchen(); sfx.talk(); }
+  function openKitchen() { cook = null; song = null; openSheet('cookSheet'); renderKitchen(); sfx.talk(); }
   function renderKitchen() {
-    $('cookList').hidden = !!cook; $('cookPlay').hidden = !cook;
+    $('cookList').hidden = !!cook || !!song; $('cookPlay').hidden = !cook; $('songPlay').hidden = !song;
     if (cook) return renderPot();
-    const ready = RECIPES.filter(canCook).length;
+    if (song) return renderSong();
+    const hol = holiday(), made = hol && holiState().cooked;
+    const ready = RECIPES.filter(canCook).length + (hol && !made ? 1 : 0);
     $('cookCount').textContent = ready ? `지금 만들 수 있는 요리 ${ready}개` : '';
     const list = $('cookList'); list.innerHTML = '';
+    if (hol) {
+      // 명절 special: the 방앗간 sends what it needs, once
+      const k = hol === 'seol' ? 'tteokguk' : 'songpyeon', f = FOODS[k];
+      const card = el('div', 'recipe holi' + (made ? ' off' : ''));
+      const im = el('img', 'recipe-pic'); im.src = iconURL(k); im.alt = '';
+      const body = el('div', 'recipe-body');
+      body.append(el('b', null, f.ko), el('span', 'holi-tag', `${HOLIDAYS[hol].ko} 특별 요리`), el('span', 'muted', hol === 'seol' ? '방앗간에서 떡을 보내 줬어요. 설날 아침엔 떡국 한 그릇!' : `방앗간에서 반죽을 보내 줬어요. 송편 ${SONG_N}개를 빚어 이웃과 나눠요.`));
+      const go = el('button', 'btn small', made ? '다 만들었어요' : hol === 'seol' ? '끓이기' : '빚기'); go.type = 'button'; go.disabled = !!made;
+      go.addEventListener('click', () => (hol === 'seol' ? startCook({ k, need: [], special: true }) : startSong()));
+      card.append(im, body, go); list.append(card);
+    }
     for (const r of RECIPES) {
       const f = FOODS[r.k], ok = canCook(r), take = ok ? takeFor(r) : null;
       const card = el('div', 'recipe' + (ok ? '' : ' off'));
@@ -5404,7 +5516,7 @@
   function renderPot() {
     const c = cook, f = FOODS[c.r.k];
     $('cookTitle').textContent = c.done ? `${f.ko} 완성!` : `${f.ko} 만들기`;
-    $('potSoup').style.background = c.dropped ? f.color : '#eef1f3';
+    $('potSoup').style.background = c.dropped || !c.items.length ? f.color : '#eef1f3';
     if (c.shown !== c.dropped) {
       const inPot = $('potIn'); inPot.innerHTML = ''; c.shown = c.dropped;
       c.items.slice(0, c.dropped).forEach((k, i) => { const im = el('img'); im.src = iconURL(k); im.alt = ''; im.style.setProperty('--i', i); inPot.append(im); });
@@ -5438,7 +5550,7 @@
       });
       return;
     }
-    step.textContent = c.stir ? `보글보글… ${STIRS - c.stir}번 더 저어요!` : '이제 국자로 휘휘 저어요!';
+    step.textContent = c.stir ? `보글보글… ${STIRS - c.stir}번 더 저어요!` : c.r.special ? '방앗간에서 보내 준 떡을 넣었어요. 이제 휘휘 저어요!' : '이제 국자로 휘휘 저어요!';
     const bar = el('div', 'meter'); const fill = el('i'); fill.style.width = `${(c.stir / STIRS) * 100}%`; bar.append(fill);
     const stirB = el('button', 'btn stir', '휘휘 젓기'); stirB.type = 'button';
     stirB.addEventListener('click', () => {
@@ -5454,10 +5566,351 @@
     G.inv[c.r.k] = (G.inv[c.r.k] || 0) + 1;
     const rec = G.dex[c.r.k] || { n: 0, best: 0 }; rec.n = Math.max(rec.n, 1); G.dex[c.r.k] = rec;
     c.done = true; learn('cook');
+    if (c.r.special) holiState().cooked = true;
     sfx.harvest(); persist(); renderPot();
   }
-  $('cookBack').addEventListener('click', () => { if (cook && !cook.done) { cook = null; renderKitchen(); } else closeSheet(); });
+  $('cookBack').addEventListener('click', () => { if (cook && !cook.done) { cook = null; renderKitchen(); } else if (song && !song.done) { song = null; renderKitchen(); } else closeSheet(); });
   $('cookBtn').addEventListener('click', openKitchen);
+
+  // =====================================================================
+  // ---------- 명절: 추석 (가을 셋째 날) and 설날 (겨울 셋째 날) ----------
+  // 세뱃돈 is money to decide about (쓰기·모으기), 송편 is food to give away (나누기).
+  // =====================================================================
+  const HOLIDAYS = {
+    chuseok: { season: 2, ko: '추석', en: 'Chuseok',
+      hello: ['오늘은 추석이에요! 집 부엌에서 송편을 빚어 이웃에게 나눠 줘요. 밤에는 보름달이 떠요.', "It's Chuseok! Make songpyeon at home and share them. A full moon rises tonight."],
+      eve: ['내일은 추석이에요. 자고 일어나면 한가위예요!', 'Tomorrow is Chuseok!'] },
+    seol: { season: 3, ko: '설날', en: 'New Year',
+      hello: ['새해 복 많이 받으세요! 오늘은 설날이에요. 이웃에게 세배하고, 집 부엌에서 떡국도 끓여요.', 'Happy Lunar New Year! Bow to your neighbors and make tteokguk.'],
+      eve: ['내일은 설날이에요. 자고 일어나면 새해예요!', 'Tomorrow is Lunar New Year!'] },
+  };
+  const HOLIDAY_DAY = 3; // the third day of its season
+  function holidayOn(day) {
+    if (((day - 1) % DAYS_PER_SEASON) + 1 !== HOLIDAY_DAY) return null;
+    const s = Math.floor((day - 1) / DAYS_PER_SEASON) % 4;
+    return Object.keys(HOLIDAYS).find((k) => HOLIDAYS[k].season === s) || null;
+  }
+  const holiday = () => holidayOn(G.day);
+  // kept after the day ends, so the grown-up screen can still talk about it
+  function holiState() {
+    const h = holiday();
+    if (h && (!G.holi || G.holi.day !== G.day)) G.holi = { day: G.day, kind: h, sebae: {}, saved: 0, shared: {}, cooked: false, wish: null };
+    return G.holi || { sebae: {}, shared: {} };
+  }
+  const callName = (nm) => { const c = nm.charCodeAt(nm.length - 1) - 0xac00; return c >= 0 && c < 11172 && c % 28 ? nm + '이' : nm; };
+  const LINES_SEOL = [
+    ['새해 복 많이 받아!', 'Happy New Year!'],
+    ['떡국 먹었어? 한 살 더 먹는 날이야.', 'Had your tteokguk? You turn a year older today.'],
+    ['세배하면 세뱃돈 줄게~', 'Bow to me for some New Year money~'],
+    ['올해도 잘 부탁해!', "Let's have a good year!"],
+  ];
+  const LINES_CHUSEOK = [
+    ['추석 잘 보내!', 'Happy Chuseok!'],
+    ['송편 빚어 봤어? 부엌에서 만들 수 있대.', 'Made songpyeon yet? Try the kitchen.'],
+    ['오늘 밤엔 보름달이 뜬대!', 'A full moon rises tonight!'],
+    ['햇과일이 맛있는 계절이야.', 'Fresh fruit tastes best now.'],
+  ];
+  const LINES_MOON = [
+    ['강강술래~', 'Ganggangsullae~'],
+    ['보름달에 소원 빌었어?', 'Did you make a wish?'],
+    ['달이 정말 밝다!', 'The moon is so bright!'],
+  ];
+  function chatter() {
+    const h = holiday();
+    if (h === 'seol') return LINES_SEOL;
+    if (h === 'chuseok') return isNight() ? LINES_MOON : LINES_CHUSEOK;
+    return isNight() ? LINES_NIGHT : LINES_DAY;
+  }
+  // a neighbor has something holiday-shaped for you
+  function holidayWants(n) {
+    const h = holiday(); if (!h || scene !== 'village') return false;
+    const st = holiState();
+    return h === 'seol' ? !(n.name in st.sebae) : G.inv.songpyeon > 0 && !st.shared[n.name];
+  }
+  function visitNeighbor(n) {
+    n.wait = Math.max(n.wait, 8); n.target = null; n.moving = false;
+    const spot = n.shopkeeper ? shop.spot : { x: n.x + (player.x < n.x ? -40 : 40), y: n.y + 4 };
+    if (Math.hypot(player.x - spot.x, player.y - spot.y) < 30) holidayVisit(n); else goTo(spot, () => holidayVisit(n));
+  }
+  function holidayVisit(n) {
+    n.dir = Math.sign(player.x - n.x) || 1; player.dir = -n.dir;
+    if (holiday() === 'seol') openSebae(n); else shareSongpyeon(n);
+  }
+
+  // ---------- 설날: 세배, then 세뱃돈 to spend or keep ----------
+  const SEBAE = {
+    동이: [10000, '올해도 건강하게 쑥쑥 자라렴.', 'Grow up healthy this year.'],
+    글이: [5000, '하고 싶은 일 다 이루는 한 해 되렴.', 'May your wishes come true.'],
+    포포: [5000, '올해도 같이 많이 놀자!', "Let's play lots this year!"],
+    말랑: [10000, '맛있는 거 많이 먹고 많이 웃으렴.', 'Eat well and laugh a lot.'],
+    도담: [10000, '조금씩 모으면 큰돈이 된단다.', 'Little by little becomes a lot.'],
+  };
+  let sebae = null;
+  function openSebae(n) {
+    sebae = { n, step: 'bow' };
+    $('sebaeMePic').src = `assets/dongle/base-${G.look}.png`;
+    $('sebaeThemPic').src = `assets/dongle/base-${n.look}.png`;
+    $('sebaeName').textContent = callName(n.name);
+    openSheet('sebaeSheet'); renderSebae(); sfx.talk();
+  }
+  function bubbleIn(id, text) { $(id).textContent = text || ''; }
+  function renderSebae() {
+    const s = sebae, st = holiState(), [amt, wish] = SEBAE[s.n.name] || [5000, '새해 복 많이 받으렴.'];
+    const who = callName(s.n.name), act = $('sebaeAct'); act.innerHTML = '';
+    const got = Object.values(st.sebae).reduce((a, b) => a + b, 0);
+    $('sebaeCount').textContent = `세배 ${Object.keys(st.sebae).length} / ${npcs.length}`;
+    if (s.step === 'bow') {
+      bubbleIn('sebaeMe', ''); bubbleIn('sebaeThem', '');
+      $('sebaeStep').textContent = `${who}에게 세배해요. 두 손을 모으고 공손하게 절해요.`;
+      const b = el('button', 'btn', '세배하기'); b.type = 'button';
+      b.addEventListener('click', () => {
+        if (s.step !== 'bow') return;
+        s.step = 'bowing'; b.disabled = true;
+        const me = $('sebaeMePic'); me.classList.remove('bowing'); void me.offsetWidth; me.classList.add('bowing');
+        player.bow = 1.2;
+        bubbleIn('sebaeMe', '새해 복 많이 받으세요!');
+        tone(392, 0.2, 'sine', 0.04); tone(523, 0.3, 'sine', 0.04, 0, 0.25);
+        setTimeout(() => { if (sebae === s) { s.step = 'pouch'; renderSebae(); } }, 1100);
+      });
+      act.append(b);
+    } else if (s.step === 'pouch') {
+      bubbleIn('sebaeThem', wish);
+      s.n.emote = { t: 1.4 };
+      $('sebaeStep').textContent = `${who}가 덕담과 함께 복주머니를 줬어요. 눌러서 열어 봐요!`;
+      const p = el('button', 'pouch'); p.type = 'button'; p.setAttribute('aria-label', '복주머니 열기');
+      const im = el('img'); im.src = iconURL('pouch'); im.alt = '';
+      p.append(im, el('span', null, '복주머니 열기'));
+      p.addEventListener('click', () => {
+        if (s.step !== 'pouch') return;
+        st.sebae[s.n.name] = amt; s.amt = amt; s.step = 'open';
+        G.coins += amt; addLedger(`${who}에게 받은 세뱃돈`, amt, 'sebae');
+        sfx.coin(); setTimeout(sfx.harvest, 160); persist(); renderSebae();
+      });
+      act.append(p);
+    } else if (s.step === 'open') {
+      $('sebaeStep').textContent = '세뱃돈을 어떻게 할까요? 모아 두면 저금통 이자도 붙어요.';
+      const money = el('div', 'sebae-money');
+      const bills = el('div', 'bills');
+      for (let left = amt, i = 0; left > 0 && i < 4; i++) { const c = left >= 10000 ? 10000 : 5000; bills.append(el('span', `coin c${c}`, moneyLabel(c))); left -= c; }
+      money.append(bills, el('b', null, `${won(amt)}!`));
+      act.append(money);
+      const half = Math.floor(amt / 2 / 100) * 100;
+      const extra = (put) => interestOn(G.bank + put, BANK_RATE) - interestOn(G.bank, BANK_RATE);
+      for (const [label, put] of [['모두 지갑에', 0], ['반은 저금통에', half], ['모두 저금통에', amt]]) {
+        const b = el('button', 'split'); b.type = 'button';
+        const detail = put === 0 ? `지갑 +${won(amt)} · 오늘 바로 쓸 수 있어요` : put === amt ? `저금통 +${won(amt)} · 내일 이자 +${won(extra(put))}` : `지갑 +${won(amt - put)} · 저금통 +${won(put)} · 내일 이자 +${won(extra(put))}`;
+        b.append(el('b', null, label), el('span', 'muted', detail));
+        b.addEventListener('click', () => splitSebae(put));
+        act.append(b);
+      }
+    } else {
+      const all = Object.keys(st.sebae).length >= npcs.length;
+      $('sebaeStep').textContent = all ? `모든 이웃에게 세배했어요! 세뱃돈 모두 ${won(got)}, 그중 ${won(st.saved)}을 모았어요.` : `지금까지 받은 세뱃돈 ${won(got)}. 다른 이웃에게도 세배하러 가요.`;
+      const b = el('button', 'btn', all ? '새해 복 많이 받으세요!' : '다른 이웃 찾아가기'); b.type = 'button';
+      b.addEventListener('click', closeSebae);
+      act.append(b);
+    }
+  }
+  function splitSebae(put) {
+    const s = sebae, st = holiState(); if (!s || s.step !== 'open') return;
+    if (put > 0) {
+      put = Math.min(put, G.coins);
+      G.coins -= put; G.bank += put; st.saved += put;
+      addLedger(`세뱃돈 ${won(put)} 저금통에 저축`, -put, 'save'); learn('sebae');
+    }
+    toast(put === 0 ? `세뱃돈 ${won(s.amt)}을 지갑에 넣었어요.` : put === s.amt ? `세뱃돈 ${won(s.amt)}을 모두 저금통에 넣었어요. 내일 이자가 붙어요!` : `${won(s.amt - put)}은 지갑에, ${won(put)}은 저금통에 넣었어요.`, put ? 'Saved some for later!' : 'Into your wallet.');
+    s.step = 'done'; sfx.coin(); persist(); renderSebae();
+  }
+  function closeSebae() {
+    const s = sebae; sebae = null; closeSheet();
+    if (s && s.step === 'done') { s.n.wait = 2; say(s.n, ['새해 복 많이 받아!', 'Happy New Year!']); }
+  }
+  $('sebaeClose').addEventListener('click', closeSebae);
+
+  // ---------- 추석: give a 송편, get a little something back ----------
+  const THANKS = { 동이: 'pear', 글이: 'apple', 포포: 'pear', 말랑: 'apple', 도담: 'pear' };
+  function shareSongpyeon(n) {
+    const st = holiState(); if (G.inv.songpyeon <= 0 || st.shared[n.name]) return talkTo(n);
+    G.inv.songpyeon--; st.shared[n.name] = true;
+    const gift = THANKS[n.name] || 'apple';
+    G.inv[gift] = (G.inv[gift] || 0) + 1;
+    const rec = G.dex[gift] || { n: 0, best: 0 }; rec.n = Math.max(rec.n, 1); G.dex[gift] = rec;
+    player.hold = 'food'; player.holdCrop = 'songpyeon'; player.holdT = 1.2;
+    say(n, ['고마워! 우리 집 햇과일도 가져가.', 'Thank you! Take some fresh fruit too.']);
+    n.emote = { t: 1.4 }; learn('share');
+    burst(n.x, n.y - 50, 10, '#f6c6cf', { up: 70 }); sfx.harvest();
+    const who = callName(n.name);
+    toast(`${who}에게 송편을 나눠 줬어요. ${who}가 고맙다며 ${eul(info(gift).ko)} 줬어요!`, `You shared songpyeon. ${n.name} gave you fruit back!`);
+    persist();
+  }
+
+  // ---------- 추석: 송편 빚기 (pick a color, pick a filling, press it into a half moon) ----------
+  const SONG_N = 5;
+  const DOUGH = [['흰색', '#fbf6ec'], ['분홍', '#f6c6cf'], ['쑥', '#b5d39a'], ['노랑', '#f3dc8f']];
+  const FILL = [['깨', '#8a6a4a'], ['콩', '#c9a86a'], ['밤', '#e7b866']];
+  let song = null;
+  function startSong() { song = { made: [], cur: {}, steamed: false, done: false }; cook = null; renderKitchen(); }
+  function renderSong() {
+    const s = song, cur = s.cur;
+    const plate = $('songPlate'); plate.innerHTML = '';
+    s.made.forEach((m) => { const p = el('i', 'song-piece'); p.style.background = m.c; plate.append(p); });
+    for (let i = s.made.length; i < SONG_N; i++) plate.append(el('i', 'song-piece empty'));
+    plate.classList.toggle('steaming', s.steaming === true);
+    const dough = $('dough');
+    $('songBoard').hidden = s.made.length >= SONG_N;
+    dough.className = 'dough' + (cur.c ? '' : ' none') + (cur.press ? ` p${cur.press}` : '');
+    dough.style.backgroundColor = cur.c || '';
+    $('filling').hidden = !cur.f || cur.press > 0;
+    $('filling').style.backgroundColor = cur.f || '';
+    const hand = $('songHand'); hand.innerHTML = '';
+    const step = $('songStep');
+    if (s.done) {
+      $('songTitle').textContent = `송편 ${SONG_N}개 완성!`;
+      step.textContent = '쫄깃하고 고소해요. 마을 이웃을 누르면 송편을 하나씩 나눠 줄 수 있어요.';
+      const row = el('div', 'trade');
+      const eatB = el('button', 'btn', '하나 먹어 보기'); eatB.type = 'button';
+      eatB.addEventListener('click', () => { song = null; renderKitchen(); eat('songpyeon'); });
+      const keepB = el('button', 'btn soft', '가방에 넣기'); keepB.type = 'button';
+      keepB.addEventListener('click', () => { toast(`송편 ${SONG_N}개를 가방에 넣었어요. 이웃에게 나눠 줘요!`, 'Into your bag. Share them!'); song = null; renderKitchen(); });
+      row.append(eatB, keepB); hand.append(row);
+      return;
+    }
+    $('songTitle').textContent = '송편 빚기';
+    if (s.made.length >= SONG_N) {
+      step.textContent = s.steaming ? '찜기에서 김이 폴폴… 솔잎 향이 나요.' : `${SONG_N}개를 다 빚었어요! 이제 찜기에 쪄요.`;
+      const b = el('button', 'btn stir', s.steaming ? '찌는 중…' : '찜기에 찌기'); b.type = 'button'; b.disabled = !!s.steaming;
+      b.addEventListener('click', () => {
+        s.steaming = true; renderSong();
+        for (let i = 0; i < 5; i++) tone(rand(700, 900), 0.18, 'sine', 0.015, -300, i * 0.25);
+        setTimeout(() => { if (song === s) finishSong(); }, 1700);
+      });
+      hand.append(b);
+      return;
+    }
+    const n = s.made.length + 1;
+    const chips = (list, onPick, cls) => list.forEach(([ko, c]) => {
+      const b = el('button', 'song-chip ' + cls); b.type = 'button';
+      const sw = el('i'); sw.style.backgroundColor = c; b.append(sw, el('span', null, ko));
+      b.addEventListener('click', () => onPick(c));
+      hand.append(b);
+    });
+    if (!cur.c) {
+      step.textContent = `${n}번째 송편: 반죽 색을 골라요.`;
+      chips(DOUGH, (c) => { cur.c = c; tone(520, 0.1, 'sine', 0.04); renderSong(); }, 'dough-c');
+    } else if (!cur.f) {
+      step.textContent = '반죽 가운데에 넣을 소를 골라요.';
+      chips(FILL, (c) => { cur.f = c; tone(620, 0.1, 'sine', 0.04); renderSong(); }, 'fill-c');
+    } else {
+      step.textContent = cur.press ? '한 번 더 꾹! 반달 모양으로 오므려요.' : '꾹꾹 눌러서 소를 감싸요.';
+      const b = el('button', 'btn stir', '꾹꾹 빚기'); b.type = 'button';
+      b.addEventListener('click', pressSong);
+      hand.append(b);
+    }
+  }
+  function pressSong() {
+    const s = song; if (!s || !s.cur.f || s.cur.press >= 2) return;
+    s.cur.press = (s.cur.press || 0) + 1;
+    tone(330 + s.cur.press * 90, 0.09, 'triangle', 0.04);
+    renderSong();
+    if (s.cur.press >= 2) setTimeout(() => { if (song !== s) return; s.made.push(s.cur); s.cur = {}; sfx.plant(); renderSong(); }, 450);
+  }
+  $('dough').addEventListener('click', () => { if (song && song.cur.f) pressSong(); });
+  function finishSong() {
+    const s = song;
+    s.done = true; s.steaming = false;
+    G.inv.songpyeon = (G.inv.songpyeon || 0) + SONG_N;
+    const rec = G.dex.songpyeon || { n: 0, best: 0 }; rec.n = Math.max(rec.n, 1); G.dex.songpyeon = rec;
+    holiState().cooked = true; learn('cook');
+    sfx.harvest(); persist(); renderSong();
+  }
+
+  // ---------- 추석 밤: the full moon hangs over the village; tap it to make a wish ----------
+  const WISHES = ['가족 모두 건강하기를', '친구랑 사이좋게 지내기를', '저금통이 가득 차기를', '키가 쑥쑥 크기를', '영어를 술술 말하기를', '동글마을이 늘 평화롭기를'];
+  const moonUp = () => scene === 'village' && holiday() === 'chuseok' && nightAmount() > 0.5;
+  const moonAt = () => ({ x: canvas.clientWidth - 70, y: 150, r: 34 });
+  function moonHit(cx, cy) { if (!moonUp()) return false; const m = moonAt(); return Math.hypot(cx - m.x, cy - m.y) < m.r + 14; }
+  function drawMoon(a) {
+    const m = moonAt(), k = dpr, x = m.x * k, y = m.y * k, r = m.r * k;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = a;
+    const gr = ctx.createRadialGradient(x, y, r * 0.6, x, y, r * 2.6);
+    gr.addColorStop(0, 'rgba(255,240,180,0.55)'); gr.addColorStop(1, 'rgba(255,240,180,0)');
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(x, y, r * 2.6, 0, 7); ctx.fill();
+    ctx.fillStyle = clayGrad(x, y, r, '#fffbea', '#f8e7a8', '#e9c96f'); ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+    // the rabbit pounding rice cakes, faintly
+    ctx.fillStyle = 'rgba(205,170,90,0.35)';
+    ctx.beginPath(); ctx.ellipse(x - r * 0.18, y + r * 0.12, r * 0.24, r * 0.2, 0, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x - r * 0.28, y - r * 0.22, r * 0.06, r * 0.2, -0.3, 0, 7); ctx.ellipse(x - r * 0.14, y - r * 0.24, r * 0.06, r * 0.2, 0.2, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x + r * 0.3, y + r * 0.3, r * 0.14, r * 0.09, 0, 0, 7); ctx.fill();
+    ctx.fillRect(x + r * 0.08, y - r * 0.05, r * 0.06, r * 0.36);
+    ctx.globalAlpha = 1;
+    if (!holiState().wish) { ctx.fillStyle = `rgba(255,250,241,${0.6 + 0.4 * Math.sin(G.t * 3)})`; ctx.font = `700 ${12 * k}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillText(G.en ? 'Tap to wish' : '눌러서 소원 빌기', x, y + r + 8 * k); }
+  }
+  let wishPick = null;
+  function openWish() {
+    wishPick = null; openSheet('wishSheet'); renderWish(); sfx.chime();
+  }
+  function renderWish() {
+    const st = holiState(), done = st.wish;
+    $('wishSky').classList.toggle('lit', !!done);
+    $('wishStep').textContent = done ? `올해 소원: "${done}". 보름달이 꼭 들어줄 거예요.` : '보름달을 보며 소원을 하나 골라요.';
+    const list = $('wishList'); list.innerHTML = ''; list.hidden = !!done;
+    for (const w of WISHES) {
+      const b = el('button', 'wish' + (wishPick === w ? ' on' : ''), w); b.type = 'button';
+      b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(wishPick === w));
+      b.addEventListener('click', () => { wishPick = w; tone(660, 0.08, 'sine', 0.04); renderWish(); });
+      list.append(b);
+    }
+    $('wishGo').hidden = !!done; $('wishGo').disabled = !wishPick;
+  }
+  $('wishGo').addEventListener('click', () => {
+    const st = holiState(); if (!wishPick || st.wish) return;
+    st.wish = wishPick;
+    G.wishes = [{ day: G.day, text: wishPick }, ...(G.wishes || [])].slice(0, 5);
+    const fly = $('wishFly'); fly.textContent = wishPick; fly.hidden = false; fly.classList.remove('go'); void fly.offsetWidth; fly.classList.add('go');
+    sfx.chime(); persist();
+    setTimeout(() => { fly.hidden = true; renderWish(); toast('소원이 보름달까지 닿았어요.', 'Your wish reached the moon.'); }, 1500);
+    $('wishGo').disabled = true;
+  });
+  $('wishClose').addEventListener('click', closeSheet);
+
+  // ---------- 명절 in the village: 강강술래 under the moon, kites on 설날 ----------
+  const RING = { x: 775, y: 530, r: 120 };
+  function ringSpot(n) {
+    if (scene !== 'village' || holiday() !== 'chuseok' || !isNight() || n.shopkeeper) return null;
+    const i = npcs.indexOf(n), a = G.t * 0.45 + (i / 4) * Math.PI * 2;
+    return { x: RING.x + Math.cos(a) * RING.r, y: RING.y + Math.sin(a) * RING.r * 0.55 };
+  }
+  const KITES = [['포포', '#e58aa0'], ['말랑', '#7fb0d9']];
+  function drawKites() {
+    if (holiday() !== 'seol' || isNight()) return;
+    for (const [name, col] of KITES) {
+      const n = npcs.find((c) => c.name === name); if (!n) continue;
+      const sway = Math.sin(G.t * 1.3 + n.seed) * 10, kx = n.x + 70 + sway, ky = n.y - 190 + Math.cos(G.t * 1.1 + n.seed) * 6;
+      ctx.strokeStyle = 'rgba(80,60,40,0.45)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(n.x + 14, n.y - 34); ctx.quadraticCurveTo(n.x + 60, n.y - 80, kx, ky + 16); ctx.stroke();
+      // 방패연: a shield kite with a round hole in the middle, and a long tail
+      ctx.save(); ctx.translate(kx, ky); ctx.rotate(Math.sin(G.t * 1.7 + n.seed) * 0.12);
+      ctx.fillStyle = '#fffaf1'; rr(ctx, -15, -18, 30, 36, 3); ctx.fill();
+      ctx.fillStyle = col; ctx.fillRect(-15, -18, 30, 8);
+      ctx.fillStyle = shade(col, -0.1); ctx.fillRect(-15, 10, 30, 8);
+      ctx.fillStyle = 'rgba(157,189,124,0.9)'; ctx.beginPath(); ctx.arc(0, 0, 6, 0, 7); ctx.fill();
+      ctx.strokeStyle = col; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(0, 18); for (let i = 1; i <= 6; i++) ctx.lineTo(Math.sin(G.t * 4 + i) * 4, 18 + i * 7); ctx.stroke();
+      ctx.restore();
+    }
+  }
+  function drawPouch() {
+    // 복주머니: a round silk pouch gathered at the neck with a gold cord
+    ctx.fillStyle = clayGrad(0, 4, 14, '#f4a3b4', '#e0697f', '#b84a5f');
+    ctx.beginPath(); ctx.moveTo(-6, -6); ctx.bezierCurveTo(-16, -2, -15, 13, 0, 13); ctx.bezierCurveTo(15, 13, 16, -2, 6, -6); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-6, -6); ctx.quadraticCurveTo(-10, -13, -4, -12); ctx.quadraticCurveTo(0, -15, 4, -12); ctx.quadraticCurveTo(10, -13, 6, -6); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#f2c94c'; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-7, -6); ctx.lineTo(7, -6); ctx.stroke();
+    ctx.lineWidth = 1.3; ctx.beginPath(); ctx.moveTo(2, -6); ctx.quadraticCurveTo(7, 0, 5, 7); ctx.moveTo(-2, -6); ctx.quadraticCurveTo(-7, 0, -5, 7); ctx.stroke();
+    ctx.fillStyle = '#f7d774'; ctx.beginPath(); ctx.arc(0, 4, 4.6, 0, 7); ctx.fill();
+    ctx.fillStyle = '#b84a5f'; ctx.font = `800 5.4px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('복', 0, 4.4);
+    ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.beginPath(); ctx.ellipse(-7, 2, 2.2, 4, -0.4, 0, 7); ctx.fill();
+  }
 
   // ---------- pictures: home cooking ----------
   function drawDish(k) {
@@ -5492,6 +5945,25 @@
       ctx.fillStyle = '#e58aa0'; for (let i = -8; i < 9; i += 4) { ctx.beginPath(); ctx.arc(i, -7, 1.1, 0, 7); ctx.fill(); }
       ctx.fillStyle = '#fffaf1'; rr(ctx, -5, 2, 10, 5, 1.5); ctx.fill();
       ctx.fillStyle = '#c0283a'; ctx.beginPath(); ctx.arc(0, 4.5, 1.6, 0, 7); ctx.fill();
+    } else if (k === 'tteokguk') {
+      ctx.fillStyle = clayGrad(0, 4, 14, '#ffffff', '#f4efe6', '#d9cfbf'); ctx.beginPath(); ctx.moveTo(-13, -2); ctx.lineTo(13, -2); ctx.quadraticCurveTo(12, 11, 0, 11); ctx.quadraticCurveTo(-12, 11, -13, -2); ctx.fill();
+      ctx.fillStyle = '#efe4cc'; ctx.beginPath(); ctx.ellipse(0, -2, 12.4, 3.6, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = '#fffdf8'; ctx.strokeStyle = 'rgba(190,170,140,0.8)'; ctx.lineWidth = 0.5;
+      for (const [x, y, a] of [[-7, -2.2, 0.3], [-2, -3.2, -0.2], [3.6, -2.8, 0.4], [7.6, -1.8, -0.1], [-3.6, -1, 0.6], [2, -1.2, 0]]) { ctx.beginPath(); ctx.ellipse(x, y, 2.6, 1.3, a, 0, 7); ctx.fill(); ctx.stroke(); }
+      ctx.fillStyle = '#f2cf4a'; for (const [x, y, a] of [[-1, -3.9, 0.2], [5, -3.8, -0.4], [-6, -3.4, 0.5]]) { ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.fillRect(-2.2, -0.4, 4.4, 0.8); ctx.restore(); }
+      ctx.fillStyle = '#3c4634'; for (const [x, y] of [[0.4, -2.2], [6, -3], [-5.4, -1.4]]) ctx.fillRect(x - 1.2, y - 0.35, 2.4, 0.7);
+      ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(-4, -7); ctx.quadraticCurveTo(-6, -10, -4, -13); ctx.moveTo(4, -7); ctx.quadraticCurveTo(2, -10, 4, -13); ctx.stroke();
+    } else if (k === 'songpyeon') {
+      ctx.fillStyle = clayGrad(0, 6, 14, '#ffffff', '#f4efe6', '#d9cfbf'); ctx.beginPath(); ctx.ellipse(0, 6, 14, 5, 0, 0, 7); ctx.fill();
+      ctx.strokeStyle = '#7f9b6b'; ctx.lineWidth = 0.7; for (let i = 0; i < 7; i++) { ctx.beginPath(); ctx.moveTo(-10 + i * 3.2, 8); ctx.lineTo(-8 + i * 3.2, 4); ctx.stroke(); }
+      const half = (x, y, c, a) => {
+        ctx.save(); ctx.translate(x, y); ctx.rotate(a);
+        ctx.fillStyle = clayGrad(0, -2, 7, shade(c, 0.08), c, shade(c, -0.12));
+        ctx.beginPath(); ctx.moveTo(-6, 2); ctx.quadraticCurveTo(-6, -5, 0, -5.4); ctx.quadraticCurveTo(6, -5, 6, 2); ctx.quadraticCurveTo(0, 3.2, -6, 2); ctx.fill();
+        ctx.strokeStyle = 'rgba(0,0,0,0.08)'; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(-5, 1.2); ctx.quadraticCurveTo(0, 2.4, 5, 1.2); ctx.stroke();
+        ctx.restore();
+      };
+      half(-6, 4, '#b5d39a', -0.15); half(6, 4, '#f6c6cf', 0.15); half(0, 0, '#fbf6ec', 0);
     } else if (k === 'hwachae') {
       ctx.fillStyle = 'rgba(232,240,244,0.85)'; ctx.beginPath(); ctx.moveTo(-12, -4); ctx.lineTo(12, -4); ctx.quadraticCurveTo(11, 10, 0, 10); ctx.quadraticCurveTo(-11, 10, -12, -4); ctx.fill();
       ctx.fillStyle = '#f6b8c4'; ctx.beginPath(); ctx.moveTo(-11, -1); ctx.lineTo(11, -1); ctx.quadraticCurveTo(10, 9, 0, 9); ctx.quadraticCurveTo(-10, 9, -11, -1); ctx.fill();
@@ -5531,8 +6003,11 @@
     opts.push([pier.tip, ['낚시하기', 'Go fishing', 'crucian'], () => startFishing(pier.bob)]);
     const e2 = pondEdge(player.x, player.y);
     opts.push([e2.stand, ['낚시하기', 'Go fishing', 'crucian'], () => startFishing(e2.bob)]);
+    // 명절 visits come first, so standing at the shop on 설날 offers 세배 before shopping
+    for (const n of npcs) if (holidayWants(n)) opts.unshift([n.shopkeeper ? shop.spot : n, holiday() === 'seol' ? [`${callName(n.name)}에게 세배하기`, `Bow to ${n.name}`, 'pouch'] : [`${callName(n.name)}에게 송편 주기`, `Give ${n.name} songpyeon`, 'songpyeon'], () => holidayVisit(n)]);
     let best = null, bd = 56;
     for (const o of opts) { const d = Math.hypot(o[0].x - player.x, o[0].y - player.y); if (d < bd) { bd = d; best = o; } }
+    if (!best && moonUp() && !holiState().wish) return [player, ['소원 빌기', 'Make a wish', 'moon'], openWish];
     return best;
   }
   function syncCtxChip() {
@@ -5579,7 +6054,10 @@
       const before = G.time;
       G.time += dt / DAY_LEN;
       if (G.time >= 1) { G.time -= 1; newDay(); }
-      if (before < 0.7 && G.time >= 0.7) toast('밤이 되었어요. 집에서 자면 다음 날이 돼요.', 'Night falls. Sleep at home to start a new day.');
+      if (before < 0.7 && G.time >= 0.7) {
+        if (holiday() === 'chuseok') toast('추석 보름달이 떴어요! 하늘의 달을 누르면 소원을 빌 수 있어요.', 'The full moon is up! Tap it to make a wish.');
+        else toast('밤이 되었어요. 집에서 자면 다음 날이 돼요.', 'Night falls. Sleep at home to start a new day.');
+      }
     }
 
     // player
@@ -5624,6 +6102,7 @@
       }
     } else p.moving = false;
     if (p.holdT > 0) { p.holdT -= dt; if (p.holdT <= 0) p.hold = null; }
+    if (p.bow > 0) p.bow -= dt;
     if (scene === 'room' && p.y > FH + 6) exitRoom();
     ctxT -= dt; if (ctxT <= 0) { ctxT = 0.15; syncCtxChip(); }
 
@@ -5653,9 +6132,11 @@
       if (n.bubble) { n.bubble.t -= dt; if (n.bubble.t <= 0) n.bubble = null; }
       if (n.emote) { n.emote.t -= dt; if (n.emote.t <= 0) n.emote = null; }
       n.greetCd -= dt; n.chatCd -= dt;
-      if (n.chatCd <= 0) { n.chatCd = rand(9, 20); if (!n.bubble && Math.random() < 0.55) say(n, n.shopkeeper ? pick(LINES_SHOP) : pick(isNight() ? LINES_NIGHT : LINES_DAY)); }
+      if (n.chatCd <= 0) { n.chatCd = rand(9, 20); if (!n.bubble && Math.random() < 0.55) say(n, n.shopkeeper && !holiday() ? pick(LINES_SHOP) : pick(chatter())); }
       if (G.started && scene === 'village' && n.greetCd <= 0 && Math.hypot(n.x - p.x, n.y - p.y) < 70) { n.greetCd = 40; say(n, ['안녕!', 'Hi!'], 2); n.dir = Math.sign(p.x - n.x) || 1; }
       if (n.shopkeeper) { n.moving = false; continue; }
+      const ring = ringSpot(n); // 강강술래 under the 추석 moon
+      if (ring) { n.target = null; moveChar(n, ring.x, ring.y, n.speed * 1.5, dt); continue; }
       if (n.target) {
         const arrived = moveChar(n, n.target.x, n.target.y, n.speed, dt);
         if (arrived || (n.lastMoved || 0) < 0.02) { n.target = null; n.moving = false; n.wait = rand(2, 7); }
@@ -5796,6 +6277,8 @@
       ctx.restore(); ball(13.5, by, 4.8);
     } else if (c.hold === 'crop') {
       drawProduce(c.holdCrop, 17, by - 12, 1, c.holdColor); ball(13.5, by - 1, 4.8);
+    } else if (c.hold === 'food') {
+      ctx.save(); ctx.translate(18, by - 12); ctx.scale(0.8, 0.8); drawFoodShape(c.holdCrop); ctx.restore(); ball(13.5, by - 1, 4.8);
     } else if (c.hold === 'net') {
       const swing = 1 - clamp(c.holdT / 0.55, 0, 1);
       ctx.save(); ctx.translate(14, by - 2); ctx.rotate(-1.3 + swing * 1.9);
@@ -5833,6 +6316,7 @@
     ctx.save();
     ctx.rotate(tilt);
     ctx.scale(1 + squash * 0.6, 1 - squash); // never mirrored: the photo's light would flip too
+    if (c.bow > 0) { const b = Math.sin(Math.PI * clamp(1 - c.bow / 1.2, 0, 1)); ctx.scale(1 + b * 0.06, 1 - b * 0.2); } // 세배
     ctx.drawImage(img, -w / 2, -h + 2, w, h); // feet sink a touch into the grass
     ctx.restore();
     ctx.save(); ctx.scale(c.dir < 0 ? -1 : 1, 1); drawHeld(c, -24); ctx.restore();
@@ -6057,6 +6541,8 @@
       }
       else if (kind === 'coin') drawCoin();
       else if (kind === 'seed') drawSeedBag();
+      else if (kind === 'pouch') drawPouch();
+      else if (kind === 'moon') { ctx.fillStyle = clayGrad(0, 0, 12, '#fffbea', '#f8e7a8', '#e9c96f'); ctx.beginPath(); ctx.arc(0, 0, 12, 0, 7); ctx.fill(); ctx.fillStyle = 'rgba(205,170,90,0.35)'; ctx.beginPath(); ctx.ellipse(-2, 2, 3, 2.4, 0, 0, 7); ctx.ellipse(4, -3, 2, 1.6, 0, 0, 7); ctx.fill(); }
     } finally { ctx = main; }
     return (iconCache[key] = c.toDataURL());
   }
@@ -6629,6 +7115,7 @@
     [player, ...npcs].forEach((c) => list.push([c.y, () => { drawMong(c); if (!c.player) drawName(c); }]));
     bugs.forEach((b) => list.push([b.y + 0.5, () => drawBug(b)]));
     list.sort((a, b) => a[0] - b[0]).forEach(([, fn]) => fn());
+    drawKites();
 
     drawFishing();
     for (const d of drops) if (d.t >= d.delay) drawProduce(d.k, d.x, d.y - 6, 0.9);
@@ -6652,6 +7139,7 @@
 
     [player, ...npcs].forEach(drawBubble);
     seasonFall();
+    if (holiday() === 'chuseok' && night > 0.02) drawMoon(night);
 
     if (sleepFade > 0) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = `rgba(42,38,70,${clamp(1 - Math.abs(sleepFade - 0.8) / 0.8, 0, 1)})`; ctx.fillRect(0, 0, canvas.width, canvas.height); }
   }
