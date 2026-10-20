@@ -47,6 +47,9 @@
   }
   #world { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
   #world3d { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .clock-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .clock-inputs label { display: flex; flex-direction: column; gap: 4px; }
+  .clock-inputs input { height: 44px; padding: 0 10px; border: 0; border-radius: 12px; background: var(--surface); color: var(--ink); font: 600 16px var(--font); }
   .look3d-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .look3d { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 6px 10px; border: 0; border-radius: 16px; background: var(--grouped); color: var(--ink); font-family: var(--font); cursor: pointer; }
   .look3d img { width: 112px; height: 112px; }
@@ -765,7 +768,7 @@
 
 <div class="hud">
   <div class="pills">
-    <span class="pill" id="clock">1일째 · 아침</span>
+    <button class="pill tap" id="clock" type="button" aria-label="마을 시계 맞추기">1일째 · 아침</button>
     <span class="pill" title="가진 돈"><img class="pico" data-icon="coin" alt="가진 돈"><span id="coins">0원</span></span>
     <button class="pill tap" id="bagPill" type="button" aria-label="가방 열기"><img class="pico" data-icon="bag" alt=""><span id="bagN">가방 0</span></button>
     <button class="pill tap" id="dexPill" type="button" aria-label="도감 열기"><img class="pico" data-icon="book" alt=""><span id="dexN">도감 0</span></button>
@@ -841,7 +844,7 @@
       </div>
     </div>
     <div class="card goal" id="goalCard"></div>
-    <p class="muted">자고 일어나면 다음 날 아침이 되고, 저금통에 이자가 붙고, 가게 시세가 새로 정해져요.</p>
+    <p class="muted" id="sleepNote">자고 일어나면 다음 날 아침이 되고, 저금통에 이자가 붙고, 가게 시세가 새로 정해져요.</p>
     <button class="btn" id="sleepBtn" type="button">잠자기</button>
   </div>
   <div class="bank-pane" id="goalPick" hidden>
@@ -1054,6 +1057,12 @@
     <p class="muted" id="pChatTxt"></p>
   </div>
 
+  <span class="label">마을 시계</span>
+  <div class="card">
+    <p class="card-t" id="pClockTxt"></p>
+    <button class="btn small soft" id="pClockBtn" type="button">마을 시계 맞추기</button>
+  </div>
+
   <span class="label">놀이 시간</span>
   <div class="card">
     <p class="card-t" id="pPlayTxt"></p>
@@ -1187,6 +1196,23 @@
   <div class="seg" id="look3dCam" role="radiogroup" aria-label="보는 각도"></div>
   <p class="muted">3D 마을에서 내 동글이를 누르면 언제든 다시 바꿀 수 있어요.</p>
   <button class="btn" id="look3dDone" type="button">이걸로 할게요</button>
+</div>
+
+<div class="sheet" id="clockSheet" hidden>
+  <div class="row-head"><h2>마을 시계</h2><span class="muted" id="clockNow"></span></div>
+  <p class="example" id="clockIntro" hidden>동글마을에도 시간이 흘러요. 먼저 마을 시계를 맞춰 볼까요? 나중에 왼쪽 위 시간을 누르면 다시 바꿀 수 있어요.</p>
+  <div class="seg" id="clockMode" role="radiogroup" aria-label="마을 시계"></div>
+  <p class="muted" id="clockTxt"></p>
+  <div class="card" id="clockCustom" hidden>
+    <div class="clock-inputs">
+      <label><span class="muted">날짜</span><input type="date" id="clockDate"></label>
+      <label><span class="muted">시간</span><input type="time" id="clockTime"></label>
+    </div>
+    <span class="muted">정한 시간부터 진짜 시계처럼 흘러가요.</span>
+  </div>
+  <p class="muted" id="clockGate"></p>
+  <button class="btn" id="clockOk" type="button">이대로 할게요</button>
+  <button class="btn soft" id="clockClose" type="button">닫기</button>
 </div>
 
 <div class="sheet" id="wishSheet" hidden>
@@ -1532,6 +1558,7 @@
     fund: null, // 마을 모금: what is being raised, and what has been built
     pet: null, // 반려동물: { k, name, day, food, love, fedDay, patDay, playDay, mealDay }
     view3d: false, look3d: null, // 3D 마을 시험판으로 보기, and how everyone looks there
+    clock: 'real', dayKey: null, clockOffset: 0, clockSet: false, // 마을 시계: Korean time ('real', maybe nudged) or 4-minute days ('fast')
     tips: { planted: false, fished: false, room: false },
   };
   function rollPrices() {
@@ -1541,7 +1568,7 @@
   rollPrices(); G.prev = { ...G.prices };
 
   function save() {
-    return { v: 2, won: 1, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, stats: G.stats, notes: G.notes, track: G.track, stamps: G.stamps, quizDay: G.quizDay, plan: G.plan, stocks: G.stocks, stall: G.stall, holi: G.holi, wishes: G.wishes, give: G.give, goal: G.goal, goalsDone: G.goalsDone, fund: G.fund, pet: G.pet, view3d: G.view3d, look3d: G.look3d, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
+    return { v: 2, won: 1, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, stats: G.stats, notes: G.notes, track: G.track, stamps: G.stamps, quizDay: G.quizDay, plan: G.plan, stocks: G.stocks, stall: G.stall, holi: G.holi, wishes: G.wishes, give: G.give, goal: G.goal, goalsDone: G.goalsDone, fund: G.fund, pet: G.pet, view3d: G.view3d, look3d: G.look3d, clock: G.clock, dayKey: G.dayKey, clockOffset: G.clockOffset, clockSet: G.clockSet, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
   }
   function load(s) {
     if (!s || s.v !== 2) return false;
@@ -1553,7 +1580,7 @@
       if (s.stats && s.stats.total) { sc(s.stats.total.in); sc(s.stats.total.out); s.stats.total.save = (s.stats.total.save || 0) * W; for (const d of Object.values(s.stats.days || {})) { sc(d.in); sc(d.out); d.save = (d.save || 0) * W; } }
       s.prices = {}; s.prev = {}; s.mprices = {};
     }
-    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home, acct: s.acct || 0, jobDay: s.jobDay || 0, mprices: s.mprices || {}, haggle: s.haggle || null, reqs: s.reqs || null, words: s.words || {}, stats: { ...G.stats, ...(s.stats || {}) }, notes: Array.isArray(s.notes) ? s.notes : [], track: s.track || 'musicbox', stamps: s.stamps || 0, quizDay: s.quizDay || 0, plan: s.plan || null, stocks: s.stocks && s.stocks.hist ? s.stocks : null, stall: s.stall || null, holi: s.holi || null, wishes: Array.isArray(s.wishes) ? s.wishes : [], give: s.give || 0, goal: s.goal || null, goalsDone: s.goalsDone || 0, fund: s.fund && s.fund.built ? s.fund : null, pet: s.pet && PETS[s.pet.k] ? s.pet : null, view3d: !!s.view3d, look3d: s.look3d || null });
+    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home, acct: s.acct || 0, jobDay: s.jobDay || 0, mprices: s.mprices || {}, haggle: s.haggle || null, reqs: s.reqs || null, words: s.words || {}, stats: { ...G.stats, ...(s.stats || {}) }, notes: Array.isArray(s.notes) ? s.notes : [], track: s.track || 'musicbox', stamps: s.stamps || 0, quizDay: s.quizDay || 0, plan: s.plan || null, stocks: s.stocks && s.stocks.hist ? s.stocks : null, stall: s.stall || null, holi: s.holi || null, wishes: Array.isArray(s.wishes) ? s.wishes : [], give: s.give || 0, goal: s.goal || null, goalsDone: s.goalsDone || 0, fund: s.fund && s.fund.built ? s.fund : null, pet: s.pet && PETS[s.pet.k] ? s.pet : null, view3d: !!s.view3d, look3d: s.look3d || null, clock: s.clock === 'fast' ? 'fast' : 'real', dayKey: s.dayKey || null, clockOffset: +s.clockOffset || 0, clockSet: !!s.clockSet });
     (s.plots || []).forEach((p, i) => { if (plots[i]) Object.assign(plots[i], p); });
     (s.trees || []).forEach(([n, r], i) => { if (trees[i] && trees[i].fruit) { trees[i].n = n; trees[i].regrow = r; } });
     return true;
@@ -1870,7 +1897,10 @@
     const tn = timeName(G.time);
     const place = { city: ['동글시내', 'Downtown'], park: ['한강공원', 'Riverside'], market: ['동글시장', 'Market'], cafe: ['몽글카페', 'Café'], ride: ['이동 중', 'On the way'] }[scene];
     const se = SEASONS[season()], hol = holiday();
-    ui.clock.textContent = place ? `${G.en ? place[1] : place[0]} · ${G.en ? tn[1] : tn[0]}` : hol ? `${G.en ? HOLIDAYS[hol].en : HOLIDAYS[hol].ko} · ${G.en ? tn[1] : tn[0]}` : G.en ? `${se.en} · Day ${G.day} · ${tn[1]}` : `${se.ko} ${G.day}일째 · ${tn[0]}`;
+    // with real time the pill shows the clock itself (the light outside already says day or night)
+    const when = realClock() ? clockLabel() : G.en ? tn[1] : tn[0];
+    ui.clock.textContent = place ? `${G.en ? place[1] : place[0]} · ${when}` : hol ? `${G.en ? HOLIDAYS[hol].en : HOLIDAYS[hol].ko} · ${when}` : realClock() ? (G.en ? `${se.en} ${G.day} · ${when}` : `${se.ko} ${G.day}일 · ${when}`) : G.en ? `${se.en} · Day ${G.day} · ${tn[1]}` : `${se.ko} ${G.day}일째 · ${tn[0]}`;
+    ui.clock.setAttribute('aria-label', `마을 시계 맞추기. 지금 ${se.ko} ${G.day}일째 ${tn[0]}`);
     ui.coins.textContent = wonShort(G.coins);
     ui.bagN.textContent = `${G.en ? 'Bag' : '가방'} ${sum(G.inv, BAG_KEYS)}`;
     ui.dexN.textContent = `${G.en ? 'Book' : '도감'} ${DEX_ALL.filter(found).length}/${DEX_ALL.length}`;
@@ -2039,6 +2069,8 @@
   function setFill(id, f) { $(id).style.height = `${Math.round(clamp(f, 0, 1) * 100)}%`; }
   function renderHouse() {
     $('jarMain').hidden = goalPicking; $('goalPick').hidden = !goalPicking;
+    $('sleepNote').textContent = realClock() ? '마을은 한국 시간을 따라가요. 매일 새벽 5시에 새날이 되면서 저금통에 이자가 붙고 가게 시세가 새로 정해져요.' : '자고 일어나면 다음 날 아침이 되고, 저금통에 이자가 붙고, 가게 시세가 새로 정해져요.';
+    $('sleepBtn').textContent = realClock() ? (G.time >= 0.7 ? '잘 자요' : '낮잠 자기') : '잠자기';
     $('jarTotal').textContent = `모두 ${won(G.coins + G.bank + G.give)}`;
     if (goalPicking) return renderGoalPick();
     const g = goalItem(), cap = Math.max(G.coins, G.bank, G.give, 20000);
@@ -2150,12 +2182,22 @@
 
   $('startBtn').addEventListener('click', () => {
     G.started = true; closeSheet(); tone(523, 0.2); startMusic();
+    if (!G.clockSet) setTimeout(() => openClock(true), 450);
     persist();
     if (!G.tips.planted) setTimeout(() => toast('집 앞 밭을 눌러 씨앗을 심어보세요.', 'Tap the garden to plant a seed.'), 600);
   });
   $('shopClose').addEventListener('click', () => { closeSheet(); say(npcs[4], ['또 와요!', 'Come again!']); });
   $('houseClose').addEventListener('click', () => { if (goalPicking) { goalPicking = false; renderHouse(); } else closeSheet(); });
   $('sleepBtn').addEventListener('click', () => {
+    if (realClock()) {
+      closeSheet(); sleepFade = 1.6;
+      const night = G.time >= 0.7;
+      setTimeout(() => {
+        if (night) toast('잘 자요! 진짜 아침이 오면 마을에도 새날이 시작돼요. 내일 또 만나요.', 'Good night! A new day comes with the real morning.');
+        else { boost = 30; toast('쿨쿨 낮잠을 잤어요. 개운해서 30초 동안 신나게 걸어요! 새날은 진짜 내일 아침에 와요.', 'A refreshing nap!'); }
+      }, 900);
+      return;
+    }
     closeSheet(); sleepFade = 1.6;
     setTimeout(() => { newDay(); G.time = 0.03; if (scene === 'village') { player.x = house.door.x; player.y = house.door.y + 10; } }, 700);
   });
@@ -2189,7 +2231,89 @@
     try { if (document.hidden) ac.suspend(); else ac.resume(); } catch (e) {}
   });
 
-  function newDay() {
+
+  // =====================================================================
+  // ---------- 마을 시계: the village keeps Korean time ----------
+  // 밖이 저녁 7시면 마을도 저녁 7시. A new day starts at 5 in the morning (KST); days you were
+  // away still happen (interest, prices, 적금, the pet getting hungry), at most a week at once.
+  // A grown-up can switch back to quick days (4분에 하루) for a child who only plays at night.
+  // =====================================================================
+  const KST = 9 * 3600 * 1000, DAY_STARTS = 5;
+  const realClock = () => G.clock !== 'fast';
+  const kst = () => new Date(Date.now() + KST + (G.clockOffset || 0)); // read it with getUTC*
+  // the clock's hours → the village's 0..1 day, so 아침·낮·저녁·밤·새벽 fall where they do outside
+  const CLOCK_H = [6, 10, 17, 19.5, 29, 30], CLOCK_T = [0, 0.22, 0.55, 0.7, 0.94, 1];
+  function clockTime() {
+    const d = kst(); let h = d.getUTCHours() + d.getUTCMinutes() / 60 + d.getUTCSeconds() / 3600;
+    if (h < 6) h += 24;
+    for (let i = 0; i < CLOCK_H.length - 1; i++) if (h <= CLOCK_H[i + 1]) return lerp(CLOCK_T[i], CLOCK_T[i + 1], (h - CLOCK_H[i]) / (CLOCK_H[i + 1] - CLOCK_H[i]));
+    return 0;
+  }
+  // which village day it is: the Korean date, turning over at 5 in the morning
+  function dayKey() { const d = new Date(Date.now() + KST + (G.clockOffset || 0) - DAY_STARTS * 3600 * 1000); return d.toISOString().slice(0, 10); }
+  const daysBetween = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
+  function clockLabel() { const d = kst(), h = d.getUTCHours(), m = String(d.getUTCMinutes()).padStart(2, '0'); return `${h % 12 || 12}:${m}`; }
+  let dayCheck = 0;
+  function tickClock(dt) {
+    G.time = clockTime();
+    dayCheck -= dt; if (dayCheck > 0) return;
+    dayCheck = 1;
+    const key = dayKey();
+    if (!G.dayKey) { G.dayKey = key; persist(); return; }
+    if (key === G.dayKey) return;
+    const n = daysBetween(G.dayKey, key);
+    G.dayKey = key;
+    if (n <= 0) { persist(); return; } // the device's clock went backwards; just carry on
+    const k = Math.min(n, 7);
+    for (let i = 0; i < k - 1; i++) newDay(true);
+    newDay();
+    if (n > 1) setTimeout(() => toast(`마을을 ${n}일 동안 비웠어요. 그사이 시세가 바뀌고 이자가 붙었어요.`, `You were away ${n} days.`), 3600 * 4);
+  }
+  // ---------- setting the clock: first thing in a new village, then by tapping the time ----------
+  // Changing it never hands out days: the village just picks up the new date from here on.
+  let clockDraft = null;
+  function openClock(first, trusted) {
+    clockDraft = { mode: G.clock === 'fast' ? 'fast' : G.clockOffset ? 'custom' : 'kr', first: !!first, trusted: !!trusted, filled: false };
+    openSheet('clockSheet'); renderClock();
+  }
+  const villageNow = () => { const d = kst(); return `${d.getUTCMonth() + 1}월 ${d.getUTCDate()}일 ${timeName(clockTime())[0]} ${clockLabel()}`; };
+  function renderClock() {
+    const D = clockDraft; if (!D) return;
+    $('clockIntro').hidden = !D.first;
+    $('clockNow').textContent = G.clock === 'fast' ? `빠른 하루 · ${G.day}일째` : `지금 ${villageNow()}`;
+    segRow($('clockMode'), { kr: '한국 시간', custom: '직접 맞추기', fast: '빠른 하루' }, D.mode, (k) => { D.mode = k; renderClock(); });
+    $('clockTxt').textContent = {
+      kr: '밖이 저녁 7시면 마을도 저녁 7시예요. 새날은 매일 새벽 5시에 시작돼요.',
+      custom: '다른 나라에 살거나 기기 시계가 맞지 않을 때, 마을 날짜와 시간을 직접 정해요.',
+      fast: '4분이 마을의 하루예요. 밤에만 노는 아이에게 좋아요. 침대에서 자면 바로 다음 날이 돼요.',
+    }[D.mode];
+    $('clockCustom').hidden = D.mode !== 'custom';
+    if (D.mode === 'custom' && !D.filled) { const d = kst().toISOString(); $('clockDate').value = d.slice(0, 10); $('clockTime').value = d.slice(11, 16); D.filled = true; }
+    $('clockGate').textContent = D.first || D.trusted ? '' : '바꿀 때는 어른 확인이 필요해요.';
+    $('clockOk').textContent = D.first ? '이대로 시작할게요' : '바꿀게요';
+    $('clockClose').hidden = D.first;
+  }
+  function applyClock() {
+    const D = clockDraft; if (!D) return;
+    const want = D.mode === 'custom' ? Date.parse(`${$('clockDate').value}T${$('clockTime').value || '12:00'}:00Z`) : NaN;
+    const go = () => {
+      if (D.mode === 'fast') G.clock = 'fast';
+      else {
+        G.clock = 'real';
+        // the wall-clock time you picked, read as if it were UTC, against Korean time now
+        G.clockOffset = D.mode === 'custom' && !isNaN(want) ? Math.round((want - (Date.now() + KST)) / 60000) * 60000 : 0;
+        G.dayKey = dayKey(); G.time = clockTime();
+      }
+      G.clockSet = true; clockDraft = null; persist(); syncHud(); closeSheet();
+      toast(G.clock === 'fast' ? '빠른 하루로 맞췄어요. 4분이 마을의 하루예요.' : `마을 시계를 맞췄어요. 지금 마을은 ${villageNow()}이에요.`, 'The village clock is set.');
+    };
+    if (D.first || D.trusted) go(); else askGrownup(go);
+  }
+  $('clockOk').addEventListener('click', applyClock);
+  $('clockClose').addEventListener('click', () => { clockDraft = null; closeSheet(); });
+  $('clock').addEventListener('click', () => { if (G.started && !modal) openClock(false); });
+
+  function newDay(quiet) {
     G.day++; rollPrices(); rollMarket();
     const later = [];
     if ((G.day - 1) % DAYS_PER_SEASON === 0) later.push([SEASONS[season()].hello, `${SEASONS[season()].en} is here!`]);
@@ -2210,12 +2334,15 @@
     const reached = goalReached(), g = goalItem();
     if (reached) later.unshift([`저금통이 목표만큼 찼어요! 집 저금통에서 ${eul(reached.ko)} 살 수 있어요.`, 'You reached your savings goal!']);
     else if (g && G.bank < g.price) later.push([`목표 ${g.ko}까지 ${won(g.price - G.bank)} 남았어요. 조금씩 모아 봐요!`, 'Keep saving toward your goal.']);
+    const today = realClock() ? `새날이에요! 오늘은 ${G.day}일째예요.` : `${G.day}일째 아침이에요.`;
     const morning = interest > 0
-      ? [`${G.day}일째 아침이에요. 저금통에 이자 ${won(interest)}이 붙었어요!`, `Day ${G.day}. You earned ₩${interest.toLocaleString()} of interest!`]
-      : [`${G.day}일째 아침이에요. 오늘의 시세가 새로 정해졌어요.`, `Day ${G.day}. New prices today!`];
+      ? [`${today} 저금통에 이자 ${won(interest)}이 붙었어요!`, `Day ${G.day}. You earned ₩${interest.toLocaleString()} of interest!`]
+      : [`${today} 오늘의 시세가 새로 정해졌어요.`, `Day ${G.day}. New prices today!`];
     // on a holiday the greeting comes first; the interest news waits its turn
-    if (hol) { toast(...HOLIDAYS[hol].hello); if (interest > 0) later.unshift(morning); } else toast(...morning);
-    later.forEach((m, i) => setTimeout(() => toast(m[0], m[1]), 3600 * (i + 1)));
+    if (!quiet) {
+      if (hol) { toast(...HOLIDAYS[hol].hello); if (interest > 0) later.unshift(morning); } else toast(...morning);
+      later.forEach((m, i) => setTimeout(() => toast(m[0], m[1]), 3600 * (i + 1)));
+    }
     persist();
   }
 
@@ -2664,7 +2791,7 @@
     const item = sel.wall ? DECOR[k] : FURN[k];
     $('furnPic').src = iconURL((sel.wall ? 'd:' : 'f:') + k);
     $('furnName').textContent = item.ko + (G.en ? ` · ${item.en}` : '');
-    $('furnInfo').textContent = k === 'bed' ? '자고 일어나면 다음 날 아침이 돼요.' : '옮기거나 넣어둘 수 있어요. 넣어둔 가구는 다시 꺼낼 수 있어요.';
+    $('furnInfo').textContent = k === 'bed' ? (realClock() ? '포근한 침대예요. 새날은 진짜 아침이 오면 시작돼요.' : '자고 일어나면 다음 날 아침이 돼요.') : '옮기거나 넣어둘 수 있어요. 넣어둔 가구는 다시 꺼낼 수 있어요.';
     $('furnSleep').hidden = k !== 'bed';
     openSheet('furnSheet'); syncRoomUI();
   }
@@ -4686,6 +4813,8 @@
     const tl = $('pTips'); tl.innerHTML = '';
     tips.slice(0, 3).forEach((t) => tl.append(el('div', 'job-bubble', t)));
 
+    // the village clock
+    $('pClockTxt').textContent = !realClock() ? '빠른 하루: 4분이 마을의 하루예요. 침대에서 자면 바로 다음 날이 돼요.' : G.clockOffset ? `직접 맞춘 시간: 지금 마을은 ${villageNow()}이에요.` : `한국 시간: 지금 마을은 ${villageNow()}이에요. 새날은 매일 새벽 5시에 시작돼요.`;
     // play time and the break reminder
     const keys7 = Object.keys(S.play).sort().slice(-7);
     const week = Math.floor(keys7.reduce((a, k) => a + S.play[k], 0) / 60);
@@ -7132,6 +7261,7 @@
     if (ch.style || ch.eyes) v3.makePeople();
     tone(660, 0.08, 'sine', 0.04); persist(); renderLook3d();
   }
+  $('pClockBtn').addEventListener('click', () => openClock(false, true));
   $('look3dDone').addEventListener('click', () => { closeSheet(); toast('내 동글이를 누르면 언제든 다시 바꿀 수 있어요.', 'Tap yourself any time to change.'); });
   function hitSelf3d(cx, cy) {
     const V = v3, m = V && V.people.get(player); if (!m) return false;
@@ -7491,10 +7621,11 @@
     if (resting) return;
     if (G.started) {
       const before = G.time;
-      G.time += dt / DAY_LEN;
-      if (G.time >= 1) { G.time -= 1; newDay(); }
+      if (realClock()) tickClock(dt);
+      else { G.time += dt / DAY_LEN; if (G.time >= 1) { G.time -= 1; newDay(); } }
       if (before < 0.7 && G.time >= 0.7) {
         if (holiday() === 'chuseok') toast('추석 보름달이 떴어요! 하늘의 달을 누르면 소원을 빌 수 있어요.', 'The full moon is up! Tap it to make a wish.');
+        else if (realClock()) toast('밤이 되었어요. 오늘도 수고했어요! 푹 자고 내일 아침에 또 만나요.', 'Night has come. Sleep well, see you tomorrow!');
         else toast('밤이 되었어요. 집에서 자면 다음 날이 돼요.', 'Night falls. Sleep at home to start a new day.');
       }
     }
