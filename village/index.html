@@ -46,6 +46,9 @@
     -webkit-tap-highlight-color: transparent;
   }
   #world { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #world3d { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .pill.view3d { min-width: 44px; justify-content: center; font-weight: 800; }
+  .pill.view3d[aria-pressed="true"] { background: var(--accent); color: #fff; }
 
   .hud {
     position: fixed; top: 0; left: 0; right: 0;
@@ -771,9 +774,12 @@
       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9.2v5.6h3.8L13 19V5L7.8 9.2H4z" fill="currentColor"/><path d="M16.2 8.6a5 5 0 0 1 0 6.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
     </button>
    </div>
+   <div class="tool-row">
+    <button class="pill tap view3d" id="viewBtn" type="button" aria-pressed="false" aria-label="3D로 보기">3D</button>
     <button class="pill tap grown" id="parentBtn" type="button" aria-label="보호자 화면 열기 (어른 확인)">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.6" fill="currentColor"/><path d="M8.2 10.5V8a3.8 3.8 0 0 1 7.6 0v2.5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg>보호자
     </button>
+   </div>
   </div>
 </div>
 
@@ -1508,6 +1514,7 @@
     give: 0, goal: null, goalsDone: 0, // 나눔 통, and what the 저금통 is saving up for
     fund: null, // 마을 모금: what is being raised, and what has been built
     pet: null, // 반려동물: { k, name, day, food, love, fedDay, patDay, playDay, mealDay }
+    view3d: false, // 3D 마을 시험판으로 보기
     tips: { planted: false, fished: false, room: false },
   };
   function rollPrices() {
@@ -1517,7 +1524,7 @@
   rollPrices(); G.prev = { ...G.prices };
 
   function save() {
-    return { v: 2, won: 1, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, stats: G.stats, notes: G.notes, track: G.track, stamps: G.stamps, quizDay: G.quizDay, plan: G.plan, stocks: G.stocks, stall: G.stall, holi: G.holi, wishes: G.wishes, give: G.give, goal: G.goal, goalsDone: G.goalsDone, fund: G.fund, pet: G.pet, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
+    return { v: 2, won: 1, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, stats: G.stats, notes: G.notes, track: G.track, stamps: G.stamps, quizDay: G.quizDay, plan: G.plan, stocks: G.stocks, stall: G.stall, holi: G.holi, wishes: G.wishes, give: G.give, goal: G.goal, goalsDone: G.goalsDone, fund: G.fund, pet: G.pet, view3d: G.view3d, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
   }
   function load(s) {
     if (!s || s.v !== 2) return false;
@@ -1529,7 +1536,7 @@
       if (s.stats && s.stats.total) { sc(s.stats.total.in); sc(s.stats.total.out); s.stats.total.save = (s.stats.total.save || 0) * W; for (const d of Object.values(s.stats.days || {})) { sc(d.in); sc(d.out); d.save = (d.save || 0) * W; } }
       s.prices = {}; s.prev = {}; s.mprices = {};
     }
-    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home, acct: s.acct || 0, jobDay: s.jobDay || 0, mprices: s.mprices || {}, haggle: s.haggle || null, reqs: s.reqs || null, words: s.words || {}, stats: { ...G.stats, ...(s.stats || {}) }, notes: Array.isArray(s.notes) ? s.notes : [], track: s.track || 'musicbox', stamps: s.stamps || 0, quizDay: s.quizDay || 0, plan: s.plan || null, stocks: s.stocks && s.stocks.hist ? s.stocks : null, stall: s.stall || null, holi: s.holi || null, wishes: Array.isArray(s.wishes) ? s.wishes : [], give: s.give || 0, goal: s.goal || null, goalsDone: s.goalsDone || 0, fund: s.fund && s.fund.built ? s.fund : null, pet: s.pet && PETS[s.pet.k] ? s.pet : null });
+    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home, acct: s.acct || 0, jobDay: s.jobDay || 0, mprices: s.mprices || {}, haggle: s.haggle || null, reqs: s.reqs || null, words: s.words || {}, stats: { ...G.stats, ...(s.stats || {}) }, notes: Array.isArray(s.notes) ? s.notes : [], track: s.track || 'musicbox', stamps: s.stamps || 0, quizDay: s.quizDay || 0, plan: s.plan || null, stocks: s.stocks && s.stocks.hist ? s.stocks : null, stall: s.stall || null, holi: s.holi || null, wishes: Array.isArray(s.wishes) ? s.wishes : [], give: s.give || 0, goal: s.goal || null, goalsDone: s.goalsDone || 0, fund: s.fund && s.fund.built ? s.fund : null, pet: s.pet && PETS[s.pet.k] ? s.pet : null, view3d: !!s.view3d });
     (s.plots || []).forEach((p, i) => { if (plots[i]) Object.assign(plots[i], p); });
     (s.trees || []).forEach(([n, r], i) => { if (trees[i] && trees[i].fruit) { trees[i].n = n; trees[i].regrow = r; } });
     return true;
@@ -2714,7 +2721,7 @@
 
   // ---------- input ----------
   let cam = { x: player.x, y: player.y }, zoom = 1, dpr = 1, vw = 0, vh = 0;
-  function toWorld(cx, cy) { return { x: cam.x - vw / 2 + cx / zoom, y: cam.y - vh / 2 + cy / zoom }; }
+  function toWorld(cx, cy) { if (use3d()) return pick3d(cx, cy); return { x: cam.x - vw / 2 + cx / zoom, y: cam.y - vh / 2 + cy / zoom }; }
 
   // a finger held on the ground keeps walking toward it; lifting it stops
   let press = null;
@@ -6621,6 +6628,541 @@
     ctx.restore();
   }
 
+  // =====================================================================
+  // ---------- 3D 마을 (시험판): the same village, drawn with three.js ----------
+  // Nothing about the game changes. Everyone still lives in the 2D village's pixels
+  // (40px = 1 unit here), and a tap on the 3D picture is turned back into the 2D point the
+  // tap code already understands. The 2D canvas stays on top, cleared, for names, speech
+  // bubbles, the time-of-day tint, falling petals and the moon.
+  // =====================================================================
+  const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js';
+  const U = 1 / 40;
+  let three = null, v3 = null;
+  const use3d = () => !!(G.view3d && v3 && scene === 'village');
+  async function load3d() {
+    if (v3) return true;
+    try { three = three || (await import(THREE_URL)); v3 = build3d(); return true; }
+    catch (e) { console.warn('3D 마을을 열지 못했어요', e); v3 = null; return false; }
+  }
+  function sync3d() {
+    const b = $('viewBtn');
+    b.textContent = G.view3d ? '2D' : '3D';
+    b.setAttribute('aria-pressed', String(!!G.view3d));
+    b.setAttribute('aria-label', G.view3d ? '원래 그림으로 보기' : '3D로 보기');
+  }
+  $('viewBtn').addEventListener('click', async () => {
+    if (G.view3d) { G.view3d = false; sync3d(); persist(); toast('원래 그림으로 돌아왔어요.', 'Back to 2D.'); return; }
+    const b = $('viewBtn'); b.disabled = true;
+    if (!v3) toast('3D 마을을 불러오는 중이에요…', 'Loading the 3D village…');
+    const ok = await load3d(); b.disabled = false;
+    if (!ok) { toast('3D 마을을 불러오지 못했어요. 인터넷 연결을 확인해 주세요.', 'Could not load 3D.'); return; }
+    G.view3d = true; sync3d(); persist();
+    toast('3D 마을이에요! 손가락으로 땅을 눌러 걸어 봐요. 2D를 누르면 돌아가요.', 'The 3D village! Tap 2D to go back.');
+  });
+
+  function build3d() {
+    const X = three;
+    const renderer = new X.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+    renderer.shadowMap.enabled = true; renderer.shadowMap.type = X.PCFSoftShadowMap;
+    const el3 = renderer.domElement; el3.id = 'world3d'; el3.setAttribute('aria-hidden', 'true'); el3.style.visibility = 'hidden';
+    canvas.before(el3);
+    const sc = new X.Scene(); sc.background = new X.Color('#9dbd7c');
+    const camera = new X.PerspectiveCamera(32, 1, 0.5, 260);
+    const hemi = new X.HemisphereLight('#fff6e8', '#a7bf8a', 1.2); sc.add(hemi);
+    const sun = new X.DirectionalLight('#fff0d8', 1.8);
+    sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024);
+    Object.assign(sun.shadow.camera, { left: -15, right: 15, top: 15, bottom: -15, near: 1, far: 80 });
+    sun.shadow.bias = -0.0006; sun.shadow.normalBias = 0.03;
+    sc.add(sun, sun.target);
+
+    // ---------- building blocks: soft clay spheres, cylinders and rounded boxes ----------
+    const mats = {};
+    const M = (c, o) => { const k = c + (o ? JSON.stringify(o) : ''); return mats[k] || (mats[k] = new X.MeshStandardMaterial({ color: c, roughness: 0.86, metalness: 0, ...o })); };
+    const SPH = new X.SphereGeometry(1, 20, 14), CYL = new X.CylinderGeometry(1, 1, 1, 16), CIRC = new X.CircleGeometry(1, 48);
+    const put = (o, x, y, z, cast = true) => { o.position.set(x, y, z); o.castShadow = cast; o.receiveShadow = true; return o; };
+    const mesh = (geo, m, sx, sy, sz, x = 0, y = 0, z = 0, cast = true) => { const o = new X.Mesh(geo, m); o.scale.set(sx, sy, sz); return put(o, x, y, z, cast); };
+    const ball = (r, c, x, y, z, sy = 1) => mesh(SPH, typeof c === 'string' ? M(c) : c, r, r * sy, r, x, y, z);
+    const post = (r, h, c, x, z, y0 = 0) => mesh(CYL, M(c), r, h, r, x, y0 + h / 2, z);
+    const rgeo = {};
+    function rbox(w, h, d, r) {
+      const key = [w, h, d, r].map((v) => v.toFixed(2)).join();
+      if (rgeo[key]) return rgeo[key];
+      const b = Math.min(r, w / 2 - 0.01, h / 2 - 0.01, d / 2 - 0.01) * 0.7;
+      const iw = w - 2 * b, ih = h - 2 * b, k = Math.max(0.002, Math.min(r * 0.6, iw / 2 - 0.001, ih / 2 - 0.001));
+      const s = new X.Shape(), x0 = -iw / 2, y0 = -ih / 2;
+      s.moveTo(x0 + k, y0); s.lineTo(x0 + iw - k, y0); s.quadraticCurveTo(x0 + iw, y0, x0 + iw, y0 + k);
+      s.lineTo(x0 + iw, y0 + ih - k); s.quadraticCurveTo(x0 + iw, y0 + ih, x0 + iw - k, y0 + ih);
+      s.lineTo(x0 + k, y0 + ih); s.quadraticCurveTo(x0, y0 + ih, x0, y0 + ih - k);
+      s.lineTo(x0, y0 + k); s.quadraticCurveTo(x0, y0, x0 + k, y0);
+      const g = new X.ExtrudeGeometry(s, { depth: Math.max(0.002, d - 2 * b), bevelEnabled: true, bevelThickness: b, bevelSize: b, bevelSegments: 3, curveSegments: 5 });
+      g.translate(0, 0, -(d - 2 * b) / 2);
+      return (rgeo[key] = g);
+    }
+    const block = (w, h, d, c, x, y, z, r = 0.12) => put(new X.Mesh(rbox(w, h, d, r), typeof c === 'string' ? M(c) : c), x, y, z);
+    // a word on a little cream board, always turned toward you
+    function board(text, w = 2.2, opts = {}) {
+      const c = document.createElement('canvas'), px = 64, wpx = Math.round(w * px), hpx = Math.round((opts.h || 0.55) * px);
+      c.width = wpx * 2; c.height = hpx * 2;
+      const g = c.getContext('2d'); g.scale(2, 2);
+      const draw = (t, frac) => {
+        g.clearRect(0, 0, wpx, hpx);
+        g.fillStyle = opts.bg || '#fffaf1'; rr(g, 2, 2, wpx - 4, hpx - 4, hpx / 2.6); g.fill();
+        g.fillStyle = opts.fg || '#8d5f45'; g.font = `800 ${Math.round(hpx * (frac == null ? 0.5 : 0.36))}px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.fillText(t, wpx / 2, frac == null ? hpx / 2 + 1 : hpx * 0.34);
+        if (frac != null) {
+          g.fillStyle = '#efe5d8'; rr(g, 10, hpx * 0.62, wpx - 20, hpx * 0.18, hpx * 0.09); g.fill();
+          if (frac > 0.02) { g.fillStyle = '#ec9fb2'; rr(g, 10, hpx * 0.62, (wpx - 20) * frac, hpx * 0.18, hpx * 0.09); g.fill(); }
+        }
+      };
+      draw(text, opts.frac);
+      const tex = new X.CanvasTexture(c); tex.colorSpace = X.SRGBColorSpace;
+      const sp = new X.Sprite(new X.SpriteMaterial({ map: tex, transparent: true }));
+      sp.scale.set(w, opts.h || 0.55, 1);
+      sp.userData.redraw = (t, frac) => { draw(t, frac); tex.needsUpdate = true; };
+      return sp;
+    }
+    const pickables = [];
+    const pickable = (o, tap) => { o.userData.tap = tap; pickables.push(o); sc.add(o); return o; };
+
+    // ---------- the ground: the 2D village's own painted ground, laid flat ----------
+    const gtex = new X.CanvasTexture(ground); gtex.colorSpace = X.SRGBColorSpace; gtex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    const groundMat = new X.MeshStandardMaterial({ map: gtex, roughness: 1, emissive: '#ffffff', emissiveIntensity: 0 });
+    const gnd = new X.Mesh(new X.PlaneGeometry(W * U, H * U), groundMat);
+    gnd.rotation.x = -Math.PI / 2; gnd.position.set((W * U) / 2, 0, (H * U) / 2); gnd.receiveShadow = true; sc.add(gnd);
+    const outer = new X.Mesh(new X.PlaneGeometry(400, 400), M('#9dbd7c', { roughness: 1 }));
+    outer.rotation.x = -Math.PI / 2; outer.position.set((W * U) / 2, -0.03, (H * U) / 2); outer.receiveShadow = true; sc.add(outer);
+    // a soft hedge of round bushes around the edge
+    const hedgeM = M('#86ad68');
+    for (let x = 0; x <= W; x += 70) for (const y of [-10, H + 10]) sc.add(ball(1.1 + ((x * 7) % 5) * 0.08, hedgeM, x * U, 0.4, y * U, 0.8));
+    for (let y = 60; y <= H - 60; y += 70) for (const x of [-10, W + 10]) sc.add(ball(1.1 + ((y * 7) % 5) * 0.08, hedgeM, x * U, 0.4, y * U, 0.8));
+    // and a soft wood beyond it, so the far edge of the view is never empty
+    const woodM = [M('#8fb873'), M('#9cc27e'), M('#7fa866')], trunkM = M('#9a6c48'), wr = mulberry32(21);
+    const woodTree = (x, z) => { const s = 0.9 + wr() * 0.6, c = woodM[Math.floor(wr() * 3)]; sc.add(mesh(CYL, trunkM, 0.18 * s, 1.1 * s, 0.18 * s, x, 0.55 * s, z)); sc.add(mesh(SPH, c, 1.0 * s, 0.95 * s, 1.0 * s, x, 1.7 * s, z)); sc.add(mesh(SPH, c, 0.7 * s, 0.7 * s, 0.7 * s, x + 0.5 * s, 2.3 * s, z - 0.2)); };
+    for (let x = -2; x <= W * U + 2; x += 2.4) { woodTree(x + wr(), -2.2 - wr()); woodTree(x + 1.2 + wr(), -4.6 - wr()); }
+    for (let z = 0; z <= H * U; z += 2.4) { woodTree(-2.4 - wr(), z + wr()); woodTree(W * U + 2.4 + wr(), z + wr()); }
+
+    // ---------- the pond and the pier ----------
+    {
+      const cx = pond.cx * U, cz = pond.cy * U;
+      const flat = (m, rx, rz, x, y, z) => { const o = mesh(CIRC, m, rx, rz, 1, x, y, z, false); o.rotation.x = -Math.PI / 2; return o; };
+      sc.add(flat(M('#e7dcc4'), (pond.rx + 14) * U, (pond.ry + 12) * U, cx, 0.01, cz + 0.1));
+      const water = flat(M('#8fc6c0', { roughness: 0.18, metalness: 0.05 }), pond.rx * U, pond.ry * U, cx, 0.035, cz);
+      sc.add(water);
+      const sr = mulberry32(3);
+      for (let i = 0; i < 26; i++) {
+        const a = (i / 26) * Math.PI * 2 + sr() * 0.1;
+        sc.add(ball(0.24 + sr() * 0.08, sr() < 0.5 ? '#d8cbb1' : '#cdbf9f', cx + Math.cos(a) * (pond.rx + 8) * U, 0.06, cz + Math.sin(a) * (pond.ry + 7) * U, 0.45));
+      }
+      for (const [lx, lz, s] of [[-80, 20, 1], [70, -30, 0.8], [20, 50, 0.9]]) sc.add(mesh(CYL, M('#8fbf6a'), 0.28 * s, 0.03, 0.28 * s, cx + lx * U, 0.06, cz + lz * U, false));
+      sc.add(ball(0.12, '#f6c7d3', cx + 74 * U, 0.12, cz - 33 * U, 0.6));
+      const pierG = new X.Group();
+      pierG.add(block(pier.w * U, 0.12, pier.h * U, '#b58a5e', (pier.x + pier.w / 2) * U, 0.2, (pier.y + pier.h / 2) * U, 0.04));
+      for (const px of [pier.x + 10, pier.x + pier.w - 10]) for (const pz of [pier.y + 2, pier.y + pier.h - 2]) pierG.add(post(0.06, 0.4, '#8d5f45', px * U, pz * U, -0.1));
+      pierG.add(post(0.05, 1.2, '#8d5f45', (pier.x - 20) * U, (pier.y - 14) * U));
+      const ps = board(G.en ? 'Fishing' : '낚시터', 1.4, { bg: '#c08a5a', fg: '#fffaf1' }); ps.position.set((pier.x - 20) * U, 1.35, (pier.y - 14) * U); pierG.add(ps);
+      pickable(pierG, () => ({ x: pier.x + 40, y: pier.y + 10 }));
+    }
+
+    // ---------- 우리 집 ----------
+    const winM = new X.MeshStandardMaterial({ color: '#cfe6ee', roughness: 0.3, emissive: '#ffcf86', emissiveIntensity: 0 });
+    {
+      const g = new X.Group(), hw = house.w * U, hd = house.h * U, hh = 2.4, cx = (house.x + house.w / 2) * U, cz = (house.y + house.h / 2) * U, front = cz + hd / 2;
+      g.add(block(hw, hh, hd, '#f1e1c4', cx, hh / 2, cz, 0.3));
+      g.add(mesh(new X.SphereGeometry(1, 32, 14, 0, Math.PI * 2, 0, Math.PI / 2), M('#cf7a58'), hw / 2 + 0.3, 1.15, hd / 2 + 0.3, cx, hh - 0.08, cz));
+      g.add(block(0.45, 1.1, 0.45, '#b8664a', cx + hw * 0.27, hh + 0.6, cz - 0.3, 0.1));
+      g.add(block(0.82, 1.25, 0.14, '#9a6c48', cx, 0.62, front + 0.02, 0.14));
+      g.add(ball(0.06, '#f0c35a', cx + 0.24, 0.6, front + 0.12));
+      for (const wx of [-1.18, 1.18]) {
+        const fr = mesh(new X.TorusGeometry(1, 0.2, 10, 28), M('#7f9b6b'), 0.36, 0.36, 0.36, cx + wx, 1.5, front + 0.02); g.add(fr);
+        const gl = mesh(CIRC, winM, 0.3, 0.3, 1, cx + wx, 1.5, front + 0.03, false); g.add(gl);
+        g.add(mesh(new X.BoxGeometry(1, 1, 1), M('#7f9b6b'), 0.6, 0.04, 0.03, cx + wx, 1.5, front + 0.05, false));
+        g.add(mesh(new X.BoxGeometry(1, 1, 1), M('#7f9b6b'), 0.04, 0.6, 0.03, cx + wx, 1.5, front + 0.05, false));
+      }
+      g.add(block(0.9, 0.24, 0.28, '#9a6c48', cx - 1.25, 0.45, front + 0.18, 0.06));
+      g.add(ball(0.1, '#f2a7b8', cx - 1.45, 0.62, front + 0.2)); g.add(ball(0.1, '#f4d35e', cx - 1.15, 0.64, front + 0.2)); g.add(ball(0.09, '#f2a7b8', cx - 0.95, 0.6, front + 0.22));
+      pickable(g, () => ({ x: house.x + house.w / 2, y: house.y + house.h / 2 }));
+    }
+
+    // ---------- shops with striped awnings: 도담이네 가게 and 내 가게 ----------
+    function stand(x2, y2, w2, h2, cols, label, depth = 0.7) {
+      const g = new X.Group(), w = w2 * U, cx = (x2 + w2 / 2) * U, front = (y2 + h2) * U;
+      g.add(block(w, 0.95, depth, '#c99a6b', cx, 0.48, front - depth / 2, 0.12));
+      for (const sx of [-w / 2 + 0.12, w / 2 - 0.12]) { g.add(post(0.07, 2.5, '#9a6c48', cx + sx, front - depth + 0.08)); g.add(post(0.07, 2.5, '#9a6c48', cx + sx, front - 0.08)); }
+      const n = 7, sw = (w + 0.4) / n;
+      for (let i = 0; i < n; i++) {
+        const st = block(sw + 0.01, 0.1, depth + 0.6, cols[i % 2], cx - (w + 0.4) / 2 + sw * (i + 0.5), 2.55, front - depth / 2 + 0.1, 0.04);
+        st.rotation.x = 0.28; g.add(st);
+        g.add(ball(sw / 2, cols[i % 2], cx - (w + 0.4) / 2 + sw * (i + 0.5), 2.42, front + 0.12, 0.55));
+      }
+      const sign = board(label, Math.max(1.4, label.length * 0.42), {}); sign.position.set(cx, 3.15, front - depth / 2); g.add(sign);
+      return { g, cx, front, w, depth };
+    }
+    {
+      const s = stand(shop.x, shop.y, shop.w, shop.h, ['#c95b45', '#fbf3e4'], G.en ? 'Shop' : '가게');
+      for (let i = 0; i < 4; i++) s.g.add(ball(0.13, FLOWER_COLORS[i], s.cx - 1.1 + i * 0.36, 1.05, s.front - 0.35));
+      s.g.add(ball(0.22, '#9cc7d3', s.cx + 0.9, 1.02, s.front - 0.35, 0.45));
+      pickable(s.g, () => ({ x: shop.x + shop.w / 2, y: shop.y + shop.h / 2 }));
+    }
+    const stallG = stand(STALL.x, STALL.y, STALL.w, STALL.h, ['#e58aa0', '#fffaf1'], '내 가게', 0.75);
+    const stallGoods = new X.Group(); stallG.g.add(stallGoods);
+    pickable(stallG.g, () => ({ x: STALL.x + STALL.w / 2, y: STALL.y + 10 }));
+
+    // ---------- trees, with fruit to pick and seasons in their crowns ----------
+    const treeObjs = trees.map((t) => {
+      const g = new X.Group(); g.position.set(t.x * U, 0, t.y * U); g.scale.setScalar(t.s);
+      g.add(post(0.2, 1.3, '#9a6c48', 0, 0));
+      const crownM = new X.MeshStandardMaterial({ color: '#a5cf7c', roughness: 0.9 });
+      const crown = new X.Group(); g.add(crown);
+      for (const [x, y, z, r] of [[-0.58, 1.75, 0.1, 0.7], [0.58, 1.8, -0.1, 0.7], [0, 2.45, 0, 0.8], [0, 1.65, 0.38, 0.72], [0.1, 1.95, -0.48, 0.68]]) crown.add(mesh(SPH, crownM, r, r * 0.92, r, x, y, z));
+      const fruits = [[-0.62, 1.5, 0.82], [0.45, 2.15, 0.78], [0.22, 1.32, 1.0]].map(([x, y, z]) => { const f = ball(0.16, t.fruit ? FRUITS[t.fruit].color : '#e0473b', x, y, z); crown.add(f); return f; });
+      pickable(g, () => ({ x: t.x, y: t.y - 40 }));
+      return { t, g, crown, crownM, fruits };
+    });
+    const lampM = new X.MeshStandardMaterial({ color: '#fff1d0', roughness: 0.4, emissive: '#ffcf86', emissiveIntensity: 0 });
+    for (const l of lamps) { sc.add(post(0.05, 1.9, '#6f5a49', l.x * U, l.y * U)); sc.add(ball(0.17, lampM, l.x * U, 2.0, l.y * U)); }
+
+    // ---------- the garden: six plots and what grows in them ----------
+    const soilDry = M('#a07a53'), soilWet = M('#7b5b40');
+    const plotObjs = plots.map((pl) => {
+      const soil = block(pl.w * U, 0.2, pl.h * U, soilDry, (pl.x + pl.w / 2) * U, 0.1, (pl.y + pl.h / 2) * U, 0.08);
+      const crop = new X.Group(); crop.position.set((pl.x + pl.w / 2) * U, 0.2, (pl.y + pl.h * 0.6) * U);
+      const g = new X.Group(); g.add(soil, crop);
+      pickable(g, () => ({ x: pl.x + pl.w / 2, y: pl.y + pl.h / 2 }));
+      return { pl, soil, crop, key: '' };
+    });
+    const leafM = M('#8fbf6a'), stemM = M('#6f9a58');
+    function growCrop(o) {
+      const pl = o.pl, g = o.crop; g.clear();
+      if (pl.stage === 1) { g.add(ball(0.22, '#6b4c33', 0, 0.02, 0, 0.35)); g.add(ball(0.04, '#e9d6ae', -0.07, 0.07, 0.05)); g.add(ball(0.04, '#e9d6ae', 0.07, 0.07, -0.02)); return; }
+      if (pl.stage < 2) return;
+      const k = pl.crop || 'flower', h = pl.stage === 2 ? 0.25 : k === 'strawberry' ? 0.35 : 0.55;
+      g.add(mesh(CYL, stemM, 0.03, h, 0.03, 0, h / 2, 0));
+      for (const [x, y, a] of [[-0.12, h * 0.5, 0.6], [0.12, h * 0.6, -0.6], [0, h * 0.75, 0]]) { const lf = ball(0.12, leafM, x, y, 0.02, 0.45); lf.rotation.z = a; g.add(lf); }
+      if (pl.stage < 4) return;
+      if (k === 'carrot') g.add(ball(0.17, CROPS.carrot.color, 0, 0.04, 0.04, 0.8));
+      else if (k === 'tomato') for (const [x, y] of [[-0.1, 0.32], [0.1, 0.38], [0, 0.22]]) g.add(ball(0.09, CROPS.tomato.color, x, y, 0.08));
+      else if (k === 'strawberry') for (const [x, y] of [[-0.1, 0.12], [0.1, 0.16]]) g.add(ball(0.08, CROPS.strawberry.color, x, y, 0.1, 1.15));
+      else { const col = FLOWER_COLORS[(pl.color || 0) % FLOWER_COLORS.length]; for (let i = 0; i < 5; i++) { const a = (i / 5) * Math.PI * 2; g.add(ball(0.08, col, Math.cos(a) * 0.1, h + 0.02, Math.sin(a) * 0.1, 0.5)); } g.add(ball(0.05, '#efb93f', 0, h + 0.05, 0)); }
+    }
+
+    // ---------- the picnic mat, the bus stop, the donation box, the shelter ----------
+    {
+      const mx = mat.x * U, mz = mat.y * U;
+      sc.add(block(0.75, 0.5, 0.5, '#c08a5a', mx + 41 * U, 0.25, mz + 40 * U, 0.1));
+      const hd = mesh(new X.TorusGeometry(1, 0.12, 8, 20, Math.PI), M('#9a6c48'), 0.28, 0.28, 0.28, mx + 41 * U, 0.5, mz + 40 * U); sc.add(hd);
+      sc.add(ball(0.25, '#f3ead8', mx + 120 * U, 0.25, mz + 62 * U));
+      for (const [x, z] of [[96, 84], [140, 86]]) sc.add(mesh(CYL, M('#fffdf6'), 0.09, 0.14, 0.09, mx + x * U, 0.07, mz + z * U));
+    }
+    {
+      const g = new X.Group(), x = VBUS.x * U, z = VBUS.y * U;
+      g.add(block(2.9, 1.6, 0.08, M('#cfe6ee', { transparent: true, opacity: 0.55, roughness: 0.2 }), x, 0.95, z - 0.35, 0.03));
+      g.add(block(3.2, 0.12, 1.0, '#5b7aa0', x, 1.82, z - 0.1, 0.05));
+      for (const sx of [-1.45, 1.45]) g.add(post(0.05, 1.8, '#5b7aa0', x + sx, z - 0.3));
+      g.add(block(2.1, 0.12, 0.4, '#9a6c48', x, 0.45, z - 0.15, 0.05));
+      const s = board('동글마을 정류장', 2.6, { bg: '#5b7aa0', fg: '#fffaf1', h: 0.45 }); s.position.set(x, 2.15, z - 0.1); g.add(s);
+      g.add(post(0.04, 2.2, '#6f7a85', x + 1.9, z + 0.2));
+      const s7 = board('7', 0.5, { bg: '#7fb069', fg: '#fffaf1', h: 0.5 }); s7.position.set(x + 1.9, 2.45, z + 0.2); g.add(s7);
+      pickable(g, () => ({ x: VBUS.x, y: VBUS.y - 40 }));
+    }
+    const fundG = new X.Group(), fx = FUNDBOX.x * U, fz = FUNDBOX.y * U;
+    fundG.add(post(0.07, 0.9, '#8d5f45', fx, fz));
+    fundG.add(block(1.0, 0.7, 0.6, '#c99a6b', fx, 1.15, fz, 0.12));
+    fundG.add(block(0.45, 0.06, 0.1, '#5a3d2b', fx, 1.5, fz, 0.02));
+    fundG.add(ball(0.1, '#ec9fb2', fx - 0.07, 1.15, fz + 0.31, 0.9)); fundG.add(ball(0.1, '#ec9fb2', fx + 0.07, 1.15, fz + 0.31, 0.9));
+    const fundSign = board('마을 모금', 2.2, { h: 0.85, frac: 0 }); fundSign.position.set(fx, 2.15, fz); fundG.add(fundSign);
+    pickable(fundG, () => ({ x: FUNDBOX.x, y: FUNDBOX.y - 40 }));
+
+    // ---------- clay pets (the shelter's and yours) ----------
+    function petModel(k) {
+      const P = PETS[k], g = new X.Group(), body = new X.Group(); g.add(body);
+      const fur = M(P.color), dark = M(P.ear || P.stripe || shade(P.color, -0.12));
+      body.add(mesh(SPH, fur, 0.3, 0.26, 0.42, 0, 0.36, 0));
+      const head = new X.Group(); head.position.set(0, 0.66, 0.36); body.add(head);
+      head.add(mesh(SPH, fur, 0.27, 0.25, 0.25, 0, 0, 0));
+      if (P.cat) for (const s of [-1, 1]) { const e = mesh(new X.ConeGeometry(1, 1, 4), dark, 0.09, 0.18, 0.06, s * 0.14, 0.24, -0.02); e.rotation.z = -s * 0.25; head.add(e); }
+      else for (const s of [-1, 1]) { const e = ball(0.1, dark, s * 0.24, -0.04, 0, 1.6); e.rotation.z = s * 0.3; head.add(e); }
+      if (!P.cat) head.add(ball(0.11, shade(P.color, 0.12), 0, -0.07, 0.2, 0.75));
+      const eyes = [ball(0.035, '#2b2420', -0.09, 0.04, 0.22), ball(0.035, '#2b2420', 0.09, 0.04, 0.22)]; head.add(...eyes);
+      head.add(ball(0.035, P.cat ? '#e98c9a' : '#3a2e28', 0, -0.05, P.cat ? 0.25 : 0.3));
+      for (const s of [-1, 1]) head.add(ball(0.05, M('#f2a3a3', { transparent: true, opacity: 0.6 }), s * 0.16, -0.06, 0.19, 0.6));
+      const tail = mesh(CYL, dark, 0.05, 0.4, 0.05, 0, 0.6, -0.42); tail.rotation.x = -0.7; body.add(tail);
+      const legs = [[-0.15, 0.22], [0.15, 0.22], [-0.15, -0.22], [0.15, -0.22]].map(([x, z]) => { const l = ball(0.09, fur, x, 0.09, z, 1.1); body.add(l); return l; });
+      return { g, body, head, eyes, tail, legs };
+    }
+    const shelterG = new X.Group(), shx = SHELTER.x * U, shz = SHELTER.y * U;
+    {
+      for (let i = 0; i < 7; i++) shelterG.add(post(0.06, 0.5, '#e9dcc6', shx - 1.45 + i * 0.48, shz + 0.1));
+      shelterG.add(block(3.1, 0.08, 0.08, '#e9dcc6', shx, 0.35, shz + 0.1, 0.03));
+      shelterG.add(block(0.8, 0.65, 0.7, '#c99a6b', shx + 0.7, 0.33, shz - 0.6, 0.08));
+      for (const s of [-1, 1]) { const r = block(0.55, 0.06, 0.8, '#c8714f', shx + 0.7 + s * 0.2, 0.82, shz - 0.6, 0.02); r.rotation.z = -s * 0.75; shelterG.add(r); }
+      shelterG.add(post(0.05, 1.5, '#8d5f45', shx - 1.65, shz + 0.2));
+    }
+    const shelterSign = board('새 가족을 찾아요', 2.6, { h: 0.5, fg: '#c8714f' }); shelterSign.position.set(shx - 1.65, 1.7, shz + 0.2); shelterG.add(shelterSign);
+    const waiting = Object.keys(PETS).map((k, i) => { const m = petModel(k); m.g.position.set(shx - 1.0 + i * 0.6, 0, shz - 0.25 + (i % 2) * 0.15); m.g.scale.setScalar(0.8); m.body.rotation.x = -0.35; shelterG.add(m.g); return { k, m }; });
+    pickable(shelterG, () => ({ x: SHELTER.x - 20, y: SHELTER.y - 20 }));
+
+    // ---------- 동글이: a clay ball person, feet at the origin, facing +z ----------
+    const skin = M(CLAY.mid), hairM = M('#2b2420', { roughness: 0.55 }), blushM = M('#f2a3a3', { transparent: true, opacity: 0.55 });
+    function dongle(shirt, sprout) {
+      const g = new X.Group(), body = new X.Group(); g.add(body);
+      const feet = [ball(0.2, skin, -0.22, 0.13, 0.06, 0.7), ball(0.2, skin, 0.22, 0.13, 0.06, 0.7)];
+      body.add(...feet, mesh(SPH, skin, 0.42, 0.42, 0.38, 0, 0.66, 0));
+      const band = mesh(new X.TorusGeometry(1, 0.2, 10, 24), M(shirt), 0.34, 0.34, 0.34, 0, 0.98, 0); band.rotation.x = Math.PI / 2; body.add(band);
+      const hands = [ball(0.17, skin, -0.42, 0.72, 0.16), ball(0.17, skin, 0.42, 0.72, 0.16)]; body.add(...hands);
+      const head = new X.Group(); head.position.set(0, 1.5, 0); body.add(head);
+      head.add(mesh(SPH, skin, 0.7, 0.66, 0.68, 0, 0, 0));
+      for (const s of [-1, 1]) {
+        const eye = mesh(new X.TorusGeometry(1, 0.26, 6, 14, Math.PI), hairM, 0.075, 0.075, 0.075, s * 0.23, 0.02, 0.63); eye.rotation.y = s * 0.33; head.add(eye);
+        const bl = ball(0.11, blushM, s * 0.38, -0.13, 0.53, 0.6); bl.rotation.y = s * 0.6; head.add(bl);
+      }
+      const smile = mesh(new X.TorusGeometry(1, 0.26, 6, 14, Math.PI), hairM, 0.06, 0.06, 0.06, 0, -0.17, 0.66); smile.rotation.z = Math.PI; head.add(smile);
+      // a few soft strands from the crown down over the forehead
+      for (let i = -2; i <= 2; i++) {
+        const pts = [0.1, 0.3, 0.5, 0.68, 0.8].map((th, j) => { const ph = i * 0.3 + (j > 2 ? i * 0.06 : 0), R = 0.7 * (j === 4 ? 1.0 : 1.02); return new X.Vector3(R * Math.sin(th) * Math.sin(ph), (0.66 / 0.7) * R * Math.cos(th), (0.68 / 0.7) * R * Math.sin(th) * Math.cos(ph)); });
+        head.add(put(new X.Mesh(new X.TubeGeometry(new X.CatmullRomCurve3(pts), 12, 0.02, 5), hairM), 0, 0, 0));
+      }
+      if (sprout) {
+        head.add(mesh(CYL, M('#6f9a58'), 0.025, 0.28, 0.025, 0, 0.78, 0));
+        for (const s of [-1, 1]) { const lf = ball(0.12, '#8fbf6a', s * 0.1, 0.94, 0, 0.45); lf.rotation.z = -s * 0.5; head.add(lf); }
+      }
+      sc.add(g);
+      return { g, body, head, feet, hands, lx: null, ly: null, heading: 0 };
+    }
+    const people = new Map();
+    people.set(player, dongle(player.shirt, true));
+    // neighbors can be tapped too: the tap lands where the 2D code looks for their head
+    for (const n of npcs) { const m = dongle(n.shirt, false); people.set(n, m); m.g.userData.tap = () => ({ x: n.x, y: n.y - 42 }); pickables.push(m.g); }
+
+    // the pet you adopted, and its ball
+    let myPet = null, myPetK = null;
+    const petBall = ball(0.12, '#e2553f', 0, 0, 0); petBall.visible = false; sc.add(petBall);
+    // a bug is a dot of color with two fluttering wings
+    const bugM = {}, wingGeo = new X.PlaneGeometry(1, 1);
+    const bugObjs = [];
+    function bugObj(i) {
+      if (bugObjs[i]) return bugObjs[i];
+      const g = new X.Group(), wings = [0, 1].map((s) => { const w = new X.Mesh(wingGeo, new X.MeshStandardMaterial({ color: '#ffffff', side: X.DoubleSide, transparent: true, opacity: 0.85, roughness: 0.6 })); w.scale.set(0.22, 0.16, 1); w.position.x = s ? 0.1 : -0.1; g.add(w); return w; });
+      const dot = new X.Mesh(SPH, M('#ffffff')); dot.scale.setScalar(0.07); g.add(dot);
+      sc.add(g);
+      return (bugObjs[i] = { g, wings, dot });
+    }
+    // fishing: a rod, a line and a bobber
+    const rod = mesh(CYL, M('#9a6c48'), 0.03, 1.3, 0.03); rod.visible = false; sc.add(rod);
+    const lineGeo = new X.BufferGeometry().setFromPoints([new X.Vector3(), new X.Vector3()]);
+    const line = new X.Line(lineGeo, new X.LineBasicMaterial({ color: '#fffaf1' })); line.visible = false; sc.add(line);
+    const bobber = ball(0.09, '#e2553f', 0, 0, 0); bobber.visible = false; sc.add(bobber);
+    // winter's snowman
+    const snowman = new X.Group();
+    snowman.add(ball(0.45, '#f6f8f9', 0, 0.42, 0), ball(0.32, '#f6f8f9', 0, 1.05, 0), ball(0.04, '#2b2420', -0.1, 1.12, 0.29), ball(0.04, '#2b2420', 0.1, 1.12, 0.29));
+    const nose = mesh(new X.ConeGeometry(1, 1, 10), M('#e8873a'), 0.05, 0.22, 0.05, 0, 1.04, 0.38); nose.rotation.x = Math.PI / 2; snowman.add(nose);
+    const scarf = mesh(new X.TorusGeometry(1, 0.25, 8, 20), M('#c95b45'), 0.3, 0.3, 0.3, 0, 0.8, 0); scarf.rotation.x = Math.PI / 2; snowman.add(scarf);
+    snowman.position.set(600 * U, 0, 600 * U); sc.add(snowman);
+
+    // ---------- what 마을 모금 builds ----------
+    const builtObjs = {};
+    function buildProject(k) {
+      const g = new X.Group();
+      if (k === 'flowers') {
+        for (const [x, y, c] of PATH_FLOWERS) { g.add(mesh(CYL, stemM, 0.02, 0.22, 0.02, x * U, 0.11, y * U, false)); for (let i = 0; i < 5; i++) { const a = (i / 5) * Math.PI * 2; g.add(ball(0.06, c, x * U + Math.cos(a) * 0.08, 0.24, y * U + Math.sin(a) * 0.08, 0.5)); } g.add(ball(0.04, '#efb93f', x * U, 0.26, y * U)); }
+        sc.add(g);
+      } else if (k === 'play') {
+        const x = PLAY.x * U, z = PLAY.y * U;
+        const sand = mesh(CIRC, M('#f1dfb8'), 2.9, 1.1, 1, x - 0.05, 0.02, z - 0.1, false); sand.rotation.x = -Math.PI / 2; g.add(sand);
+        for (const fx2 of [x - 2.6, x - 0.1]) for (const s of [-1, 1]) { const leg = mesh(CYL, M('#9a6c48'), 0.07, 2.3, 0.07, fx2, 1.1, z + s * 0.35); leg.rotation.x = s * 0.3; g.add(leg); }
+        g.add(block(2.7, 0.14, 0.16, '#b58a5e', x - 1.35, 2.2, z, 0.05));
+        g.userData.seats = [x - 1.75, x - 0.85].map((sx, i) => { const seat = new X.Group(); seat.position.set(sx, 2.15, z); seat.add(mesh(CYL, M('#8a8278'), 0.012, 1.55, 0.012, -0.25, -0.78, 0, false), mesh(CYL, M('#8a8278'), 0.012, 1.55, 0.012, 0.25, -0.78, 0, false)); seat.add(block(0.6, 0.08, 0.3, i ? '#7fb0d9' : '#e58aa0', 0, -1.56, 0, 0.03)); g.add(seat); return seat; });
+        const sx2 = x + 0.9;
+        for (const s of [0, 0.45]) g.add(post(0.05, 1.7, '#9a6c48', sx2 + s, z - 0.3));
+        for (let r = 1; r < 5; r++) g.add(block(0.5, 0.05, 0.06, '#9a6c48', sx2 + 0.22, r * 0.34, z - 0.3, 0.02));
+        g.add(block(0.6, 0.1, 0.6, '#b58a5e', sx2 + 0.22, 1.7, z - 0.1, 0.04));
+        const sl = new X.Group(); sl.position.set(sx2 + 1.2, 0.95, z - 0.1); sl.rotation.z = -0.75; const chute = block(2.2, 0.08, 0.6, '#f1cf63', 0, 0, 0, 0.04); sl.add(chute); g.add(sl);
+        pickable(g, () => ({ x: PLAY.x - 60, y: PLAY.y - 40 }));
+      } else if (k === 'jeong') {
+        const x = JEONG.x * U, z = (JEONG.y - 12) * U;
+        g.add(block(3.6, 0.3, 1.6, '#cfc6ba', x, 0.15, z, 0.08));
+        g.add(block(3.3, 0.18, 1.35, '#c99a6b', x, 0.38, z, 0.06));
+        for (const px of [-1.4, 1.4]) for (const pz of [-0.55, 0.55]) g.add(post(0.09, 1.9, '#b5533c', x + px, z + pz, 0.45));
+        g.add(block(3.3, 0.16, 1.4, '#5fa58a', x, 2.38, z, 0.04));
+        const roof = mesh(new X.ConeGeometry(1, 1, 4), M('#5d6b7a'), 2.7, 0.8, 1.45, x, 2.85, z); roof.rotation.y = Math.PI / 4; g.add(roof);
+        g.add(block(1.8, 0.14, 0.18, '#3e4852', x, 3.4, z, 0.06));
+        pickable(g, () => ({ x: JEONG.x, y: JEONG.y - 40 }));
+      }
+      return (builtObjs[k] = g);
+    }
+
+    const vp = new X.Vector3(), ray = new X.Raycaster(), ndc = new X.Vector2(), floor = new X.Plane(new X.Vector3(0, 1, 0), 0), hit = new X.Vector3();
+    return { X, renderer, el: el3, sc, camera, hemi, sun, groundMat, winM, lampM, treeObjs, plotObjs, soilDry, soilWet, growCrop, stallGoods, fundSign, shelterSign, waiting, people, petModel, myPet, myPetK, petBall, bugObj, bugObjs, rod, line, lineGeo, bobber, snowman, builtObjs, buildProject, pickables, bugM, woodM, vp, ray, ndc, floor, hit, last: performance.now(), on: false, fundKey: '', stallKey: '', shelterKey: '', season: -1, w: 0, h: 0, tx: null, tz: null, ball };
+  }
+
+  // ---------- turning a tap on the 3D picture back into a point in the 2D village ----------
+  function pick3d(cx, cy) {
+    const V = v3, w = canvas.clientWidth, h = canvas.clientHeight;
+    V.ndc.set((cx / w) * 2 - 1, -(cy / h) * 2 + 1);
+    V.ray.setFromCamera(V.ndc, V.camera);
+    for (const hitObj of V.ray.intersectObjects(V.pickables, true)) {
+      let o = hitObj.object; while (o && !o.userData.tap) o = o.parent;
+      if (o && o.visible !== false) return o.userData.tap();
+    }
+    if (!V.ray.ray.intersectPlane(V.floor, V.hit)) return { x: player.x, y: player.y };
+    return { x: V.hit.x / U, y: V.hit.z / U };
+  }
+  function toScreen3(x2, y2, h) {
+    const p = v3.vp.set(x2 * U, h, y2 * U).project(v3.camera);
+    return { x: ((p.x + 1) / 2) * canvas.clientWidth, y: ((1 - p.y) / 2) * canvas.clientHeight };
+  }
+  const turn = (a, b, k) => { let d = ((b - a + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI; return a + d * k; };
+
+  // ---------- every frame: move the clay people, follow the camera, light the hour ----------
+  function pose(m, c, dt, opts = {}) {
+    const moving = c.moving, p = c.walkP || 0;
+    if (m.lx != null) {
+      const dx = c.x - m.lx, dy = c.y - m.ly;
+      if (Math.hypot(dx, dy) > 0.3) m.want = Math.atan2(dx, dy), m.idle = 0;
+      else m.idle = (m.idle || 0) + dt;
+    }
+    m.lx = c.x; m.ly = c.y;
+    if (!moving && (m.idle || 0) > 0.9 && !opts.keepFacing) m.want = 0;
+    m.heading = turn(m.heading, m.want || 0, Math.min(1, dt * 9));
+    m.g.rotation.y = m.heading;
+    const hop = moving ? Math.abs(Math.sin(p)) * 0.13 : 0;
+    m.g.position.set(c.x * U, hop, c.y * U);
+    const sq = moving ? (1 - Math.abs(Math.sin(p))) * 0.06 : Math.sin(G.t * 2 + (c.seed || 0)) * 0.012;
+    let sy = 1 - sq;
+    let bowK = 0;
+    if (c.bow > 0) { bowK = Math.sin(Math.PI * clamp(1 - c.bow / 1.2, 0, 1)); sy *= 1 - bowK * 0.12; }
+    m.body.scale.set(1 + sq * 0.6, sy, 1 + sq * 0.6);
+    m.head.rotation.x = bowK * 0.55;
+    if (m.feet) {
+      m.feet[0].position.y = 0.13 + Math.max(0, Math.sin(p)) * (moving ? 0.1 : 0);
+      m.feet[1].position.y = 0.13 + Math.max(0, -Math.sin(p)) * (moving ? 0.1 : 0);
+      m.hands[0].position.z = 0.16 + (moving ? Math.sin(p) * 0.1 : 0);
+      m.hands[1].position.z = 0.16 - (moving ? Math.sin(p) * 0.1 : 0);
+    }
+  }
+  function render3d() {
+    const V = v3, X = V.X, now = performance.now(), dt = Math.min(0.05, (now - V.last) / 1000); V.last = now;
+    // size and camera: the same width of village as the 2D view, seen from above and in front
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (w !== V.w || h !== V.h) { V.w = w; V.h = h; V.renderer.setSize(w, h, false); V.camera.aspect = w / h; V.camera.updateProjectionMatrix(); }
+    const aspect = w / h, visW = aspect < 1 ? 11.5 : 17;
+    const hf = 2 * Math.atan(Math.tan((V.camera.fov * Math.PI) / 360) * aspect), dist = visW / 2 / Math.tan(hf / 2), el = 0.8;
+    const tx = clamp(player.x * U, 4, W * U - 4), tz = clamp(player.y * U, 3, H * U - 3);
+    V.tx = V.tx == null ? tx : lerp(V.tx, tx, Math.min(1, dt * 6)); V.tz = V.tz == null ? tz : lerp(V.tz, tz, Math.min(1, dt * 6));
+    V.camera.position.set(V.tx, dist * Math.sin(el), V.tz + dist * Math.cos(el));
+    V.camera.lookAt(V.tx, 0.6, V.tz);
+    V.sun.position.set(V.tx - 7, 16, V.tz + 7); V.sun.target.position.set(V.tx, 0, V.tz);
+    // the hour: the 2D tint goes on top; here the sun dims and windows and lamps glow
+    const night = nightAmount();
+    V.sun.intensity = 1.8 - night * 1.25; V.hemi.intensity = 1.2 - night * 0.55;
+    V.winM.emissiveIntensity = night * 1.3; V.lampM.emissiveIntensity = night * 2;
+    // the seasons: crowns change color, winter whitens the ground, a snowman appears
+    const se = season();
+    if (se !== V.season) {
+      V.season = se;
+      for (const o of V.treeObjs) { const blossom = o.t.fruit || Math.round(o.t.x) % 3 === 0; o.crownM.color.set(se === 0 && !blossom ? '#a5cf7c' : CANOPY[se][1]); }
+      V.groundMat.emissiveIntensity = se === 3 ? 0.28 : 0;
+      const wood = [['#a9d08e', '#b9da9c', '#93c07a'], ['#8fb873', '#9cc27e', '#7fa866'], ['#e8a35a', '#d98a45', '#c9a04e'], ['#e9eef0', '#dfe6e9', '#cfd8dc']][se];
+      V.woodM.forEach((m, i) => m.color.set(wood[i]));
+      V.snowman.visible = se === 3;
+    }
+    for (const o of V.treeObjs) {
+      o.fruits.forEach((f, i) => { f.visible = !!o.t.fruit && i < o.t.n; });
+      o.crown.rotation.z = Math.sin(G.t * 0.8 + o.t.x) * 0.012 + (o.t.shake > 0 ? Math.sin(G.t * 46) * o.t.shake * 0.08 : 0);
+    }
+    for (const o of V.plotObjs) {
+      o.soil.material = o.pl.watered ? V.soilWet : V.soilDry;
+      const key = `${o.pl.stage}|${o.pl.crop}|${o.pl.color}`;
+      if (key !== o.key) { o.key = key; V.growCrop(o); }
+      o.crop.rotation.z = Math.sin(G.t * 1.6 + o.pl.x) * 0.05;
+    }
+    // what is on the counter at 내 가게
+    const sk = ((G.stall && G.stall.slots) || []).map((s) => s.k).join();
+    if (sk !== V.stallKey) {
+      V.stallKey = sk; V.stallGoods.clear();
+      ((G.stall && G.stall.slots) || []).slice(0, 3).forEach((s, i) => V.stallGoods.add(V.ball(0.17, info(s.k).color || '#e58aa0', (STALL.x + 22 + i * 30) * U, 1.08, (STALL.y + STALL.h) * U - 0.38)));
+    }
+    // the donation box's sign, the shelter's sign and who is still waiting there
+    const p = fundProject(), fk = p ? `${p.k}|${Math.round((fundState().raised / p.target) * 50)}` : 'done';
+    if (fk !== V.fundKey) { V.fundKey = fk; V.fundSign.userData.redraw(p ? `${p.ko} 모금` : '고마워요!', p ? clamp(fundState().raised / p.target, 0, 1) : undefined); }
+    for (const k of ['flowers', 'play', 'jeong']) if (built(k) && !V.builtObjs[k]) V.buildProject(k);
+    const shk = G.pet ? G.pet.k : '';
+    if (shk !== V.shelterKey) { V.shelterKey = shk; V.shelterSign.userData.redraw(G.pet ? '동글 보호소' : '새 가족을 찾아요'); V.waiting.forEach((o) => { o.m.g.visible = o.k !== shk; }); }
+    for (const o of V.waiting) o.m.head.rotation.z = Math.sin(G.t * 0.8 + o.m.g.position.x * 3) * 0.12;
+    // people
+    for (const [c, m] of V.people) pose(m, c, dt);
+    // the swing seat follows whoever is on it
+    const pg = V.builtObjs.play;
+    if (pg && pg.userData.seats) pg.userData.seats[0].rotation.x = player.swingT > 0 ? ((player.y - SWING.y) / 10) * 0.5 : Math.sin(G.t * 1.2) * 0.03;
+    // your pet
+    if (G.pet && G.pet.k !== V.myPetK) { if (V.myPet) V.sc.remove(V.myPet.g); V.myPet = V.petModel(G.pet.k); V.myPet.g.scale.setScalar(1.15); V.sc.add(V.myPet.g); V.myPetK = G.pet.k; V.myPet.lx = null; V.myPet.heading = 0; V.myPet.g.userData.tap = () => ({ x: pet.x, y: pet.y - 18 }); V.pickables.push(V.myPet.g); }
+    if (V.myPet) {
+      const m = V.myPet;
+      m.g.visible = !!G.pet;
+      if (G.pet) {
+        if (m.lx != null) { const dx = pet.x - m.lx, dy = pet.y - m.ly; if (Math.hypot(dx, dy) > 0.3) m.want = Math.atan2(dx, dy); }
+        m.lx = pet.x; m.ly = pet.y;
+        m.heading = turn(m.heading, m.want || 0, Math.min(1, dt * 9)); m.g.rotation.y = m.heading;
+        const sit = !pet.moving && pet.idle > 0.6, sleep = isNight() && !pet.moving && pet.idle > 5;
+        m.g.position.set(pet.x * U, pet.moving ? Math.abs(Math.sin(pet.walkP || 0)) * 0.08 : 0, pet.y * U);
+        m.body.rotation.x = sit && !sleep ? -0.4 : 0;
+        m.body.scale.y = sleep ? 0.7 : 1;
+        m.eyes.forEach((e) => { e.scale.y = sleep || pet.emote ? 0.012 : 0.035; });
+        m.tail.rotation.z = Math.sin(G.t * (pet.emote ? 16 : 5)) * 0.5;
+        m.legs.forEach((l, i) => { l.position.y = 0.09 + (pet.moving ? Math.max(0, Math.sin((pet.walkP || 0) + (i % 2) * Math.PI)) * 0.06 : 0); });
+      }
+      const t = pet.task;
+      V.petBall.visible = !!(G.pet && t && t.phase !== 'back');
+      if (V.petBall.visible) V.petBall.position.set(t.bx * U, 0.12 + (t.h || 0) * U, t.by * U);
+    }
+    // bugs
+    let bi = 0;
+    for (const b of bugs) {
+      if (b.a < 0.05) continue;
+      const o = V.bugObj(bi++), col = BUGS[b.k].color;
+      o.g.visible = true; o.g.position.set(b.x * U, 0.15 + b.alt * U * 1.4, b.y * U);
+      const bm = V.bugM[b.k] || (V.bugM[b.k] = new X.MeshStandardMaterial({ color: col, roughness: 0.6, emissive: b.k === 'firefly' ? '#e8ff7a' : '#000000' }));
+      if (b.k === 'firefly') bm.emissiveIntensity = night * 2;
+      o.dot.material = bm;
+      const flap = 0.4 + 0.6 * Math.abs(Math.sin(G.t * 11 + b.ph));
+      o.wings.forEach((wg, i) => { wg.material.color.set(col); wg.rotation.y = (i ? -1 : 1) * (1 - flap) * 1.2; wg.visible = !['ladybug', 'grasshopper', 'beetle', 'cicada'].includes(b.k); });
+    }
+    for (; bi < V.bugObjs.length; bi++) V.bugObjs[bi].g.visible = false;
+    // fishing
+    const f = player.fishing;
+    V.rod.visible = V.line.visible = V.bobber.visible = !!f;
+    if (f) {
+      const m = V.people.get(player), a = m.heading, hx = player.x * U + Math.sin(a) * 0.4, hz = player.y * U + Math.cos(a) * 0.4;
+      V.rod.position.set(hx + Math.sin(a) * 0.4, 1.2, hz + Math.cos(a) * 0.4); V.rod.rotation.set(Math.cos(a) * 0.9, 0, -Math.sin(a) * 0.9);
+      const dip = f.phase === 'reel' ? 0.05 + Math.sin(G.t * 30) * 0.03 : Math.sin(G.t * 3) * 0.02;
+      V.bobber.position.set(f.bob.x * U, 0.08 - dip, f.bob.y * U);
+      const tip = new X.Vector3(hx + Math.sin(a) * 0.95, 1.75, hz + Math.cos(a) * 0.95);
+      V.lineGeo.setFromPoints([tip, V.bobber.position.clone()]);
+    }
+    V.renderer.render(V.sc, V.camera);
+  }
+  // the words and weather that stay flat on top of the 3D picture
+  function drawOverlay3d() {
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const [r, g, b, a] = tint();
+    if (a > 0.005) { ctx.fillStyle = `rgba(${r | 0},${g | 0},${b | 0},${a * 0.8})`; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    for (const c of [player, ...npcs]) {
+      if (!c.player) { const ft = toScreen3(c.x, c.y, 0); drawName({ name: c.name, x: ft.x, y: ft.y }); }
+      const hd = toScreen3(c.x, c.y, 2.3);
+      if (c.emote) { ctx.save(); ctx.translate(hd.x - 18, hd.y + 8); drawEmote(c, 0); ctx.restore(); }
+      if (c.bubble) drawBubble({ x: hd.x, y: hd.y + 90, bubble: c.bubble });
+    }
+    if (G.pet) {
+      const hd = toScreen3(pet.x, pet.y, 1.25);
+      if (pet.emote) { ctx.save(); ctx.translate(hd.x - 18, hd.y + 8); drawEmote(pet, 0); ctx.restore(); }
+      if (pet.bubble) drawBubble({ x: hd.x, y: hd.y + 90, bubble: pet.bubble });
+    }
+    seasonFall();
+    if (holiday() === 'chuseok' && nightAmount() > 0.02) drawMoon(nightAmount());
+    if (sleepFade > 0) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = `rgba(42,38,70,${clamp(1 - Math.abs(sleepFade - 0.8) / 0.8, 0, 1)})`; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+  }
+
   // ---------- 명절 in the village: 강강술래 under the moon, kites on 설날 ----------
   const RING = { x: 775, y: 530, r: 120 };
   function ringSpot(n) {
@@ -7847,12 +8389,14 @@
   window.addEventListener('resize', resize);
 
   function draw() {
+    if (v3) { const on = use3d(); if (on !== v3.on) { v3.on = on; v3.el.style.visibility = on ? 'visible' : 'hidden'; } }
     if (scene === 'room') return drawRoom();
     if (scene === 'city') return drawCity();
     if (scene === 'park') return drawPark();
     if (scene === 'ride') return drawRide();
     if (scene === 'market') return drawMarket();
     if (scene === 'cafe') return drawCafe();
+    if (use3d()) { render3d(); return drawOverlay3d(); }
     const tx = clamp(player.x, Math.min(vw / 2, W / 2), Math.max(W - vw / 2, W / 2));
     const ty = clamp(player.y - 30, Math.min(vh / 2, H / 2), Math.max(H - vh / 2, H / 2));
     cam.x = lerp(cam.x, tx, 0.12); cam.y = lerp(cam.y, ty, 0.12);
@@ -7939,6 +8483,8 @@
     cam.x = player.x; cam.y = player.y;
     openSheet('startSheet');
     connect();
+    sync3d();
+    if (G.view3d) load3d().then((ok) => { if (!ok) G.view3d = false; sync3d(); });
     if (document.fonts && document.fonts.load) { document.fonts.load(`700 14px ${FONT}`).catch(() => {}); document.fonts.load(`500 13px ${FONT}`).catch(() => {}); }
     requestAnimationFrame(frame);
   }
