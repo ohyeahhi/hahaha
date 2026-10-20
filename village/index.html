@@ -570,6 +570,44 @@
     .cook-done img { animation: starpop 0.6s cubic-bezier(0.3, 1.8, 0.5, 1); }
   }
 
+  /* 세 개의 통과 목표 저축 */
+  .jars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; align-items: start; }
+  .jar { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; text-align: center; }
+  .jar-glass { position: relative; width: 62px; height: 74px; margin: 10px 0 6px; border-radius: 12px 12px 22px 22px; background: rgba(255, 255, 255, 0.7); box-shadow: inset 0 0 0 2.5px #e6ddd0; overflow: hidden; }
+  .jar-glass::before { content: ""; position: absolute; left: -4px; right: -4px; top: 0; height: 9px; border-radius: 6px; background: #d9cdbd; z-index: 1; }
+  .jar-glass::after { content: ""; position: absolute; left: 10px; top: 16px; width: 6px; height: 40px; border-radius: 3px; background: rgba(255, 255, 255, 0.6); z-index: 1; }
+  .jar-fill { position: absolute; left: 0; right: 0; bottom: 0; height: 0; transition: height 0.5s cubic-bezier(0.3, 1.3, 0.5, 1); background-image: radial-gradient(circle, rgba(255, 255, 255, 0.45) 2px, transparent 2.5px); background-size: 10px 8px; }
+  .jar.spend .jar-fill { background-color: #e2bd55; }
+  .jar.save .jar-fill { background-color: #8fbf7a; }
+  .jar.give .jar-fill { background-color: #ec9fb2; }
+  .jar-name { font-size: 15px; }
+  .jar .muted { font-size: 11px; }
+  .jar-amt { font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .jar-note { min-height: 30px; font-size: 11px; line-height: 1.35; color: var(--sub); word-break: keep-all; }
+  .jar-acts { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+  .jar-acts .btn.small { height: 32px; padding-inline: 4px; font-size: 13px; }
+  .jar-acts .btn.small.soft { background: var(--grouped); color: var(--ink); }
+  .jar-drop { position: absolute; left: 50%; top: -10px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #e2bd55 60%, #b8902f); z-index: 2; }
+  .goal-top { display: flex; align-items: center; gap: 10px; }
+  .goal-top img { width: 48px; height: 48px; flex: none; }
+  .goal-top div { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .goal-top b { font-size: 16px; }
+  .goal .meter { height: 12px; border-radius: 6px; }
+  .goal .meter i { border-radius: 6px; background: #8fbf7a; transition: width 0.5s; }
+  .goal.done { background: #f1f8ec; box-shadow: inset 0 0 0 1.5px #bfdcae; }
+  .goal-list { display: flex; flex-direction: column; gap: 8px; }
+  .goal-opt { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 0; border-radius: 16px; background: var(--grouped); color: var(--ink); font-family: var(--font); text-align: left; cursor: pointer; }
+  .goal-opt img { width: 44px; height: 44px; flex: none; }
+  .goal-opt div { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .goal-opt b { font-size: 15px; }
+  .goal-opt .muted { font-size: 12px; }
+  .goal-opt .price-t { font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .goal-opt.on { box-shadow: inset 0 0 0 2px #8fbf7a; }
+  @media (prefers-reduced-motion: no-preference) {
+    .jar-drop { animation: jardrop 0.5s ease-in forwards; }
+    @keyframes jardrop { to { transform: translateY(58px) scale(0.8); opacity: 0.2; } }
+  }
+
   /* 명절: 설날 세배, 추석 송편과 보름달 */
   .recipe.holi { background: #fff3f1; box-shadow: inset 0 0 0 1.5px #f6cfd6; }
   .holi-tag { align-self: flex-start; padding: 2px 8px; border-radius: 10px; background: #fde3e8; color: #c0485f; font-size: 12px; font-weight: 700; }
@@ -742,15 +780,35 @@
 </div>
 
 <div class="sheet" id="houseSheet" hidden>
-  <h2>저금통</h2>
-  <div class="item has-icon">
-    <img class="ico" data-icon="coin" alt="">
-    <div class="name"><b>저금통 <span class="en" data-en>Piggy bank</span></b><span class="muted" id="bankInfo"></span></div>
-    <div class="price"><b id="bankAmount">0원</b><span class="delta up">하루 이자 5%</span></div>
-    <div class="acts"><button class="btn small" id="depositBtn" type="button">10 넣기</button><button class="btn small soft" id="withdrawBtn" type="button">꺼내기</button></div>
+  <div class="row-head"><h2>세 개의 통</h2><span class="muted" id="jarTotal"></span></div>
+  <div class="bank-pane" id="jarMain">
+    <div class="jars">
+      <div class="jar spend">
+        <div class="jar-glass" aria-hidden="true"><i class="jar-fill" id="jarSpendFill"></i></div>
+        <b class="jar-name">쓰기</b><span class="muted">지갑</span><b class="jar-amt" id="jarSpend">0원</b>
+        <span class="jar-note">가게에서 바로 써요</span>
+      </div>
+      <div class="jar save">
+        <div class="jar-glass" aria-hidden="true"><i class="jar-fill" id="jarSaveFill"></i></div>
+        <b class="jar-name">모으기</b><span class="muted">저금통 · 하루 5%</span><b class="jar-amt" id="bankAmount">0원</b>
+        <span class="jar-note" id="bankInfo"></span>
+        <div class="jar-acts"><button class="btn small" id="depositBtn" type="button">1만원 넣기</button><button class="btn small soft" id="withdrawBtn" type="button">꺼내기</button></div>
+      </div>
+      <div class="jar give">
+        <div class="jar-glass" aria-hidden="true"><i class="jar-fill" id="jarGiveFill"></i></div>
+        <b class="jar-name">나누기</b><span class="muted">나눔 통</span><b class="jar-amt" id="jarGive">0원</b>
+        <span class="jar-note" id="giveInfo"></span>
+        <div class="jar-acts"><button class="btn small" id="giveBtn" type="button">1,000원 넣기</button></div>
+      </div>
+    </div>
+    <div class="card goal" id="goalCard"></div>
+    <p class="muted">자고 일어나면 다음 날 아침이 되고, 저금통에 이자가 붙고, 가게 시세가 새로 정해져요.</p>
+    <button class="btn" id="sleepBtn" type="button">잠자기</button>
   </div>
-  <p class="muted">자고 일어나면 다음 날 아침이 되고, 저금통에 이자가 붙고, 가게 시세가 새로 정해져요.</p>
-  <button class="btn" id="sleepBtn" type="button">잠자기</button>
+  <div class="bank-pane" id="goalPick" hidden>
+    <p class="example">갖고 싶은 걸 하나 골라요. 저금통에 모이는 만큼 막대가 차올라요.</p>
+    <div class="goal-list" id="goalList"></div>
+  </div>
   <button class="btn soft" id="houseClose" type="button">닫기</button>
 </div>
 
@@ -1368,6 +1426,7 @@
     plan: null, stocks: null, // 적금 and 주식 at 동글은행
     stall: null, // 내 가게: what is on the counter and at what price
     holi: null, wishes: [], // 명절: this year's 세뱃돈, the 송편 shared, wishes on the full moon
+    give: 0, goal: null, goalsDone: 0, // 나눔 통, and what the 저금통 is saving up for
     tips: { planted: false, fished: false, room: false },
   };
   function rollPrices() {
@@ -1377,7 +1436,7 @@
   rollPrices(); G.prev = { ...G.prices };
 
   function save() {
-    return { v: 2, won: 1, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, stats: G.stats, notes: G.notes, track: G.track, stamps: G.stamps, quizDay: G.quizDay, plan: G.plan, stocks: G.stocks, stall: G.stall, holi: G.holi, wishes: G.wishes, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
+    return { v: 2, won: 1, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, stats: G.stats, notes: G.notes, track: G.track, stamps: G.stamps, quizDay: G.quizDay, plan: G.plan, stocks: G.stocks, stall: G.stall, holi: G.holi, wishes: G.wishes, give: G.give, goal: G.goal, goalsDone: G.goalsDone, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
   }
   function load(s) {
     if (!s || s.v !== 2) return false;
@@ -1389,7 +1448,7 @@
       if (s.stats && s.stats.total) { sc(s.stats.total.in); sc(s.stats.total.out); s.stats.total.save = (s.stats.total.save || 0) * W; for (const d of Object.values(s.stats.days || {})) { sc(d.in); sc(d.out); d.save = (d.save || 0) * W; } }
       s.prices = {}; s.prev = {}; s.mprices = {};
     }
-    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home, acct: s.acct || 0, jobDay: s.jobDay || 0, mprices: s.mprices || {}, haggle: s.haggle || null, reqs: s.reqs || null, words: s.words || {}, stats: { ...G.stats, ...(s.stats || {}) }, notes: Array.isArray(s.notes) ? s.notes : [], track: s.track || 'musicbox', stamps: s.stamps || 0, quizDay: s.quizDay || 0, plan: s.plan || null, stocks: s.stocks && s.stocks.hist ? s.stocks : null, stall: s.stall || null, holi: s.holi || null, wishes: Array.isArray(s.wishes) ? s.wishes : [] });
+    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home, acct: s.acct || 0, jobDay: s.jobDay || 0, mprices: s.mprices || {}, haggle: s.haggle || null, reqs: s.reqs || null, words: s.words || {}, stats: { ...G.stats, ...(s.stats || {}) }, notes: Array.isArray(s.notes) ? s.notes : [], track: s.track || 'musicbox', stamps: s.stamps || 0, quizDay: s.quizDay || 0, plan: s.plan || null, stocks: s.stocks && s.stocks.hist ? s.stocks : null, stall: s.stall || null, holi: s.holi || null, wishes: Array.isArray(s.wishes) ? s.wishes : [], give: s.give || 0, goal: s.goal || null, goalsDone: s.goalsDone || 0 });
     (s.plots || []).forEach((p, i) => { if (plots[i]) Object.assign(plots[i], p); });
     (s.trees || []).forEach(([n, r], i) => { if (trees[i] && trees[i].fruit) { trees[i].n = n; trees[i].regrow = r; } });
     return true;
@@ -1861,24 +1920,126 @@
     persist();
   }
 
-  // piggy bank in the house
+  // =====================================================================
+  // ---------- 세 개의 통: 쓰기 (지갑), 모으기 (저금통), 나누기 (나눔 통) ----------
+  // The 저금통 can save up for something: a goal makes the jar's level mean something.
+  // =====================================================================
+  let goalPicking = false;
+  const goalOf = (it) => (it.wall ? DECOR : FURN)[it.k];
+  const goalIcon = (it) => iconURL((it.wall ? 'd:' : 'f:') + it.k);
+  function goalItem() { const g = G.goal, it = g && goalOf(g); return it ? { ...it, k: g.k, wall: !!g.wall } : null; }
+  function hasItem(k, wall) { return (G.home.owned[k] || 0) > 0 || (wall ? G.home.wall.includes(k) : G.home.placed.some((x) => x.k === k)); }
+  // how many mornings of putting in 1만원 (and taking the interest) until the goal
+  function daysTo(price) { let b = G.bank, d = 0; while (b < price && d < 99) { b += 10000; b += interestOn(b, BANK_RATE); d++; } return d; }
+  function setFill(id, f) { $(id).style.height = `${Math.round(clamp(f, 0, 1) * 100)}%`; }
   function renderHouse() {
-    $('bankAmount').textContent = won(G.bank);
+    $('jarMain').hidden = goalPicking; $('goalPick').hidden = !goalPicking;
+    $('jarTotal').textContent = `모두 ${won(G.coins + G.bank + G.give)}`;
+    if (goalPicking) return renderGoalPick();
+    const g = goalItem(), cap = Math.max(G.coins, G.bank, G.give, 20000);
+    $('jarSpend').textContent = won(G.coins); $('bankAmount').textContent = won(G.bank); $('jarGive').textContent = won(G.give);
+    setFill('jarSpendFill', G.coins / cap); setFill('jarSaveFill', g ? G.bank / g.price : G.bank / cap); setFill('jarGiveFill', G.give / cap);
     const next = interestOn(G.bank, BANK_RATE);
-    $('bankInfo').textContent = next > 0 ? `내일 아침 이자 +${won(next)}` : '200원 이상 모으면 이자가 붙어요';
+    $('bankInfo').textContent = next > 0 ? `내일 이자 +${won(next)}` : '200원부터 이자가 붙어요';
+    $('giveInfo').textContent = G.give ? '마을 모금에 낼 수 있어요' : '나눌 돈을 따로 모아요';
     $('depositBtn').disabled = G.coins <= 0;
-    $('depositBtn').textContent = G.coins >= 10000 ? '1만원 넣기' : `${won(G.coins)} 넣기`;
+    $('depositBtn').textContent = G.coins >= 10000 || G.coins <= 0 ? '1만원 넣기' : `${won(G.coins)} 넣기`;
     $('withdrawBtn').disabled = G.bank <= 0;
+    $('giveBtn').disabled = G.coins <= 0;
+    $('giveBtn').textContent = G.coins >= 1000 || G.coins <= 0 ? '1,000원 넣기' : `${won(G.coins)} 넣기`;
+    renderGoal(g);
+  }
+  function renderGoal(g) {
+    const card = $('goalCard'); card.innerHTML = ''; card.className = 'card goal';
+    if (!g) {
+      card.append(el('b', 'card-h', '목표 저축'), el('p', 'card-t', '갖고 싶은 걸 정하면 저금통이 얼마나 찼는지 막대로 보여줘요. 다 모으면 저금통에서 꺼내 바로 살 수 있어요.'));
+      const b = el('button', 'btn small', '목표 정하기'); b.type = 'button';
+      b.addEventListener('click', () => { goalPicking = true; renderHouse(); });
+      card.append(b);
+      return;
+    }
+    const rem = Math.max(0, g.price - G.bank), pct = Math.min(100, Math.floor((G.bank / g.price) * 100));
+    if (!rem) card.classList.add('done');
+    const top = el('div', 'goal-top');
+    const im = el('img'); im.src = goalIcon(g); im.alt = '';
+    const tx = el('div'); tx.append(el('span', 'muted', '목표'), el('b', null, `${g.ko} ${won(g.price)}`));
+    const ch = el('button', 'linkish', '바꾸기'); ch.type = 'button'; ch.addEventListener('click', () => { goalPicking = true; renderHouse(); });
+    top.append(im, tx, ch);
+    const bar = el('div', 'meter'); bar.setAttribute('role', 'progressbar'); bar.setAttribute('aria-valuenow', String(pct)); bar.setAttribute('aria-valuemin', '0'); bar.setAttribute('aria-valuemax', '100');
+    const fill = el('i'); fill.style.width = pct + '%'; bar.append(fill);
+    card.append(top, bar);
+    if (rem) {
+      const d = daysTo(g.price);
+      card.append(el('p', 'card-t', `${pct}% 모았어요 · 앞으로 ${won(rem)}`), el('span', 'muted', `매일 1만원씩 넣으면 이자까지 더해서 약 ${d}일이면 돼요.`));
+    } else {
+      card.append(el('p', 'card-t', `다 모았어요! 저금통에서 ${won(g.price)}을 꺼내 ${eul(g.ko)} 살 수 있어요.`));
+      const b = el('button', 'btn', '꺼내서 사기'); b.type = 'button'; b.addEventListener('click', buyGoal);
+      card.append(b);
+    }
+  }
+  function renderGoalPick() {
+    const list = $('goalList'); list.innerHTML = '';
+    const items = [...Object.keys(FURN).map((k) => ({ k, wall: false })), ...Object.keys(DECOR).map((k) => ({ k, wall: true }))]
+      .filter((it) => !hasItem(it.k, it.wall)).sort((a, b) => goalOf(a).price - goalOf(b).price);
+    if (!items.length) list.append(el('p', 'muted', '집에 놓을 가구를 모두 갖고 있어요!'));
+    for (const it of items) {
+      const f = goalOf(it), on = G.goal && G.goal.k === it.k && !!G.goal.wall === it.wall;
+      const b = el('button', 'goal-opt' + (on ? ' on' : '')); b.type = 'button';
+      const im = el('img'); im.src = goalIcon(it); im.alt = '';
+      const tx = el('div'); tx.append(el('b', null, f.ko), el('span', 'muted', G.bank >= f.price ? '지금 저금통으로 살 수 있어요' : `지금 저금통으로 ${Math.floor((G.bank / f.price) * 100)}%`));
+      b.append(im, tx, el('span', 'price-t', won(f.price)));
+      b.addEventListener('click', () => {
+        G.goal = { k: it.k, wall: it.wall, day: G.day, reached: G.bank >= f.price };
+        goalPicking = false; sfx.plant(); persist(); renderHouse();
+        toast(`목표: ${f.ko} ${won(f.price)}. 저금통에 조금씩 모아 봐요!`, `Goal set: ${f.en}.`);
+      });
+      list.append(b);
+    }
+    if (G.goal) {
+      const off = el('button', 'linkish', '목표 없애기'); off.type = 'button';
+      off.addEventListener('click', () => { G.goal = null; goalPicking = false; persist(); renderHouse(); });
+      list.append(off);
+    }
+  }
+  // the jar just filled up to the goal: say so once
+  function goalReached() {
+    const g = goalItem();
+    if (!g || G.goal.reached || G.bank < g.price) return null;
+    G.goal.reached = true;
+    return g;
+  }
+  function buyGoal() {
+    const g = goalItem(); if (!g || G.bank < g.price) return;
+    G.bank -= g.price; addLedger(`저금통에서 ${won(g.price)} 꺼냄`, g.price, 'unsave');
+    addLedger(`${g.ko} 구입 (목표 달성)`, -g.price, 'home');
+    G.home.owned[g.k] = (G.home.owned[g.k] || 0) + 1;
+    G.goal = null; G.goalsDone++; learn('goal');
+    sfx.chime(); persist();
+    toast(`목표 달성! 모은 돈으로 ${eul(g.ko)} 샀어요. 놓을 자리를 골라요.`, `Goal reached! You bought the ${g.en.toLowerCase()}.`);
+    startPlacing(g.k, g.wall);
+  }
+  function dropCoin(jar) {
+    const glass = document.querySelector(`.jar.${jar} .jar-glass`); if (!glass) return;
+    const c = el('i', 'jar-drop'); glass.append(c); setTimeout(() => c.remove(), 600);
   }
   $('depositBtn').addEventListener('click', () => {
     const n = Math.min(10000, G.coins); if (n <= 0) return;
     G.coins -= n; G.bank += n; addLedger(`저금통에 ${won(n)} 저축`, -n, 'save');
-    sfx.coin(); renderHouse(); persist();
+    sfx.coin(); dropCoin('save');
+    const g = goalReached();
+    if (g) { setTimeout(sfx.chime, 200); toast(`목표 달성! ${eul(g.ko)} 살 만큼 모았어요.`, 'You saved enough!'); }
+    renderHouse(); persist();
   });
   $('withdrawBtn').addEventListener('click', () => {
     const n = G.bank; if (n <= 0) return;
     G.bank = 0; G.coins += n; addLedger(`저금통에서 ${won(n)} 꺼냄`, n, 'unsave');
+    if (G.goal) G.goal.reached = false;
     sfx.coin(); renderHouse(); persist();
+  });
+  $('giveBtn').addEventListener('click', () => {
+    const n = Math.min(1000, G.coins); if (n <= 0) return;
+    G.coins -= n; G.give += n; addLedger(`나눔 통에 ${won(n)} 넣음`, -n, 'give');
+    sfx.coin(); dropCoin('give'); renderHouse(); persist();
   });
   $('seedClose').addEventListener('click', () => { pendingPlot = null; closeSheet(); });
 
@@ -1888,7 +2049,7 @@
     if (!G.tips.planted) setTimeout(() => toast('집 앞 밭을 눌러 씨앗을 심어보세요.', 'Tap the garden to plant a seed.'), 600);
   });
   $('shopClose').addEventListener('click', () => { closeSheet(); say(npcs[4], ['또 와요!', 'Come again!']); });
-  $('houseClose').addEventListener('click', closeSheet);
+  $('houseClose').addEventListener('click', () => { if (goalPicking) { goalPicking = false; renderHouse(); } else closeSheet(); });
   $('sleepBtn').addEventListener('click', () => {
     closeSheet(); sleepFade = 1.6;
     setTimeout(() => { newDay(); G.time = 0.03; if (scene === 'village') { player.x = house.door.x; player.y = house.door.y + 10; } }, 700);
@@ -1939,6 +2100,9 @@
     if (acctInterest > 0) { G.acct += acctInterest; addLedger('은행 이자', acctInterest, 'interest'); }
     const interest = interestOn(G.bank, BANK_RATE);
     if (interest > 0) { G.bank += interest; addLedger(`저금통 이자`, interest, 'interest'); }
+    const reached = goalReached(), g = goalItem();
+    if (reached) later.unshift([`저금통이 목표만큼 찼어요! 집 저금통에서 ${eul(reached.ko)} 살 수 있어요.`, 'You reached your savings goal!']);
+    else if (g && G.bank < g.price) later.push([`목표 ${g.ko}까지 ${won(g.price - G.bank)} 남았어요. 조금씩 모아 봐요!`, 'Keep saving toward your goal.']);
     const morning = interest > 0
       ? [`${G.day}일째 아침이에요. 저금통에 이자 ${won(interest)}이 붙었어요!`, `Day ${G.day}. You earned ₩${interest.toLocaleString()} of interest!`]
       : [`${G.day}일째 아침이에요. 오늘의 시세가 새로 정해졌어요.`, `Day ${G.day}. New prices today!`];
@@ -2453,7 +2617,7 @@
   ['furn', 'wall', 'room'].forEach((t) => $('tab-' + t).addEventListener('click', () => { decoTab = t; renderDeco(); }));
   $('decoBtn').addEventListener('click', () => { openSheet('decoSheet'); renderDeco(); syncRoomUI(); });
   $('decoClose').addEventListener('click', () => { closeSheet(); syncRoomUI(); });
-  $('bankBtn').addEventListener('click', () => { openSheet('houseSheet'); renderHouse(); syncRoomUI(); });
+  $('bankBtn').addEventListener('click', () => { goalPicking = false; openSheet('houseSheet'); renderHouse(); syncRoomUI(); });
   $('exitBtn').addEventListener('click', exitRoom);
 
   function talkTo(n) {
@@ -4233,6 +4397,7 @@
     ['shop', '값 정하기', '내 가게에서 내가 정한 값으로 팔아 봤어요. 비싸면 손님이 줄고, 싸면 금방 팔려요.'],
     ['plan', '적금', '5일 동안 꾸준히 넣어서 적금 만기 이자를 받았어요.'],
     ['invest', '주식', '회사의 작은 조각(주식)을 사 봤어요. 값은 오르기도 내리기도 해요.'],
+    ['goal', '목표 저축', '갖고 싶은 것을 정하고 저금통에 끝까지 모아서 샀어요.'],
     ['sebae', '세뱃돈 나누기', '설날 세뱃돈을 쓸 돈과 모을 돈으로 나눠 봤어요.'],
     ['share', '나눔', '추석에 송편을 이웃과 나눴어요. 나누면 고마운 마음이 돌아와요.'],
   ];
@@ -4241,6 +4406,7 @@
     const S = G.stats, a = Math.abs(amount);
     const d = S.days[G.day] || (S.days[G.day] = { in: {}, out: {}, save: 0 });
     if (cat === 'invest' || cat === 'divest') { if (cat === 'invest') learn('invest'); return; } // money moved into or out of stocks, not spent
+    if (cat === 'give') { S.total.give = (S.total.give || 0) + a; return; } // set aside in the 나눔 통, not spent yet
     if (cat === 'save' || cat === 'unsave') {
       const v = cat === 'save' ? a : -a;
       d.save += v; S.total.save += v;
@@ -4375,6 +4541,8 @@
 
     // something to talk about tonight
     const tips = [];
+    const gl = goalItem();
+    if (gl) tips.push(G.bank >= gl.price ? `“${eul(gl.ko)} 살 만큼 다 모았네! 모으는 동안 어떤 마음이었어?”` : `“${gl.ko}까지 ${won(gl.price - G.bank)} 남았네. 하루에 얼마씩 모으면 될까?”`);
     const hs = G.holi && G.day - G.holi.day <= 6 ? G.holi : null;
     if (hs && hs.kind === 'seol' && Object.keys(hs.sebae).length) {
       const got = Object.values(hs.sebae).reduce((a, b) => a + b, 0);
