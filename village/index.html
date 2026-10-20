@@ -608,6 +608,13 @@
     @keyframes jardrop { to { transform: translateY(58px) scale(0.8); opacity: 0.2; } }
   }
 
+  /* 마을 모금 */
+  #fundCheer { background: #fff3f1; box-shadow: inset 0 0 0 1.5px #f6cfd6; }
+  #fundCard .goal-top img { width: 56px; height: 56px; }
+  .fund-meter { height: 12px; border-radius: 6px; background: #f6e3e8; }
+  .fund-meter i { border-radius: 6px; background: #ec9fb2; transition: width 0.5s; }
+  #fundActs .linkish { align-self: center; }
+
   /* 명절: 설날 세배, 추석 송편과 보름달 */
   .recipe.holi { background: #fff3f1; box-shadow: inset 0 0 0 1.5px #f6cfd6; }
   .holi-tag { align-self: flex-start; padding: 2px 8px; border-radius: 10px; background: #fde3e8; color: #c0485f; font-size: 12px; font-weight: 700; }
@@ -1093,6 +1100,17 @@
   <button class="btn soft" id="sebaeClose" type="button">닫기</button>
 </div>
 
+<div class="sheet" id="fundSheet" hidden>
+  <div class="row-head"><h2>마을 모금함</h2><span class="muted" id="fundSub"></span></div>
+  <div class="card" id="fundCheer" hidden></div>
+  <div class="card" id="fundCard"></div>
+  <div class="bank-pane" id="fundActs"></div>
+  <span class="label" id="fundLogH">최근에 낸 사람</span>
+  <div class="log" id="fundLog"></div>
+  <div id="fundBuilt" hidden></div>
+  <button class="btn soft" id="fundClose" type="button">닫기</button>
+</div>
+
 <div class="sheet" id="wishSheet" hidden>
   <div class="row-head"><h2>보름달 소원</h2><span class="muted">추석 밤</span></div>
   <div class="wish-sky" id="wishSky"><div class="wish-moon"></div><p class="wish-fly" id="wishFly" hidden></p></div>
@@ -1249,6 +1267,10 @@
   const FRUIT_SPOTS = [[-26, -58], [20, -82], [12, -50]];
   trees.forEach((t, i) => { t.fruit = FRUIT_TREES[i]; t.n = t.fruit ? 2 : 0; t.regrow = 0; t.shake = 0; });
   const lamps = [{ x: 640, y: 450 }, { x: 940, y: 395 }, { x: 900, y: 690 }];
+  // 마을 모금: the donation box, and where the playground and the pavilion go once they are funded
+  const FUNDBOX = { x: 740, y: 352, spot: { x: 694, y: 372 } };
+  const PLAY = { x: 300, y: 790 }, SWING = { x: 230, y: 796 };
+  const JEONG = { x: 500, y: 250, spot: { x: 500, y: 270 } };
   const plots = [];
   for (let r = 0; r < 2; r++) for (let c = 0; c < 3; c++) plots.push({ x: 212 + c * 64, y: 345 + r * 56, w: 54, h: 40, stage: 0, watered: false, grow: 0, color: 0 });
   const PATH = [[310, 300], [470, 318], [620, 400], [770, 440], [905, 380], [1050, 340]];
@@ -1267,7 +1289,7 @@
     const dx = (x - pond.cx) / (pond.rx + 12), dy = (y - pond.cy) / (pond.ry + 10);
     if (dx * dx + dy * dy < 1) return true;
     for (const t of trees) if (Math.hypot(x - t.x, (y - t.y) * 1.6) < 15) return true;
-    return false;
+    return fundBlocked(x, y);
   }
 
   // ---------- inside the house: a floor of tiles with one back wall ----------
@@ -1427,6 +1449,7 @@
     stall: null, // 내 가게: what is on the counter and at what price
     holi: null, wishes: [], // 명절: this year's 세뱃돈, the 송편 shared, wishes on the full moon
     give: 0, goal: null, goalsDone: 0, // 나눔 통, and what the 저금통 is saving up for
+    fund: null, // 마을 모금: what is being raised, and what has been built
     tips: { planted: false, fished: false, room: false },
   };
   function rollPrices() {
@@ -1436,7 +1459,7 @@
   rollPrices(); G.prev = { ...G.prices };
 
   function save() {
-    return { v: 2, won: 1, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, stats: G.stats, notes: G.notes, track: G.track, stamps: G.stamps, quizDay: G.quizDay, plan: G.plan, stocks: G.stocks, stall: G.stall, holi: G.holi, wishes: G.wishes, give: G.give, goal: G.goal, goalsDone: G.goalsDone, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
+    return { v: 2, won: 1, day: G.day, time: G.time, coins: G.coins, bank: G.bank, seeds: G.seeds, inv: G.inv, prices: G.prices, prev: G.prev, ledger: G.ledger, shirt: G.shirt, look: G.look, en: G.en, muted: G.muted, music: G.music, tips: G.tips, dex: G.dex, home: G.home, acct: G.acct, jobDay: G.jobDay, mprices: G.mprices, haggle: G.haggle, reqs: G.reqs, words: G.words, stats: G.stats, notes: G.notes, track: G.track, stamps: G.stamps, quizDay: G.quizDay, plan: G.plan, stocks: G.stocks, stall: G.stall, holi: G.holi, wishes: G.wishes, give: G.give, goal: G.goal, goalsDone: G.goalsDone, fund: G.fund, trees: trees.map((t) => [t.n || 0, Math.round(t.regrow || 0)]), plots: plots.map((p) => ({ stage: p.stage, watered: p.watered, grow: p.grow, color: p.color, crop: p.crop })) };
   }
   function load(s) {
     if (!s || s.v !== 2) return false;
@@ -1448,7 +1471,7 @@
       if (s.stats && s.stats.total) { sc(s.stats.total.in); sc(s.stats.total.out); s.stats.total.save = (s.stats.total.save || 0) * W; for (const d of Object.values(s.stats.days || {})) { sc(d.in); sc(d.out); d.save = (d.save || 0) * W; } }
       s.prices = {}; s.prev = {}; s.mprices = {};
     }
-    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home, acct: s.acct || 0, jobDay: s.jobDay || 0, mprices: s.mprices || {}, haggle: s.haggle || null, reqs: s.reqs || null, words: s.words || {}, stats: { ...G.stats, ...(s.stats || {}) }, notes: Array.isArray(s.notes) ? s.notes : [], track: s.track || 'musicbox', stamps: s.stamps || 0, quizDay: s.quizDay || 0, plan: s.plan || null, stocks: s.stocks && s.stocks.hist ? s.stocks : null, stall: s.stall || null, holi: s.holi || null, wishes: Array.isArray(s.wishes) ? s.wishes : [], give: s.give || 0, goal: s.goal || null, goalsDone: s.goalsDone || 0 });
+    Object.assign(G, { day: s.day, time: s.time, coins: s.coins, bank: s.bank || 0, seeds: { ...G.seeds, ...s.seeds }, inv: { ...G.inv, ...s.inv }, prices: { ...G.prices, ...s.prices }, prev: { ...G.prev, ...s.prev }, ledger: s.ledger || [], shirt: s.shirt, look: s.look || 1, en: !!s.en, muted: !!s.muted, music: s.music !== false, tips: { ...G.tips, ...s.tips }, dex: s.dex || {}, home: s.home ? { ...G.home, ...s.home } : G.home, acct: s.acct || 0, jobDay: s.jobDay || 0, mprices: s.mprices || {}, haggle: s.haggle || null, reqs: s.reqs || null, words: s.words || {}, stats: { ...G.stats, ...(s.stats || {}) }, notes: Array.isArray(s.notes) ? s.notes : [], track: s.track || 'musicbox', stamps: s.stamps || 0, quizDay: s.quizDay || 0, plan: s.plan || null, stocks: s.stocks && s.stocks.hist ? s.stocks : null, stall: s.stall || null, holi: s.holi || null, wishes: Array.isArray(s.wishes) ? s.wishes : [], give: s.give || 0, goal: s.goal || null, goalsDone: s.goalsDone || 0, fund: s.fund && s.fund.built ? s.fund : null });
     (s.plots || []).forEach((p, i) => { if (plots[i]) Object.assign(plots[i], p); });
     (s.trees || []).forEach(([n, r], i) => { if (trees[i] && trees[i].fruit) { trees[i].n = n; trees[i].regrow = r; } });
     return true;
@@ -2092,6 +2115,7 @@
     if (eve) later.unshift(HOLIDAYS[eve].eve);
     const planMsg = runPlan(); if (planMsg) later.push(planMsg);
     const divMsg = rollStocks(); if (divMsg) later.push(divMsg);
+    const fundMsg = fundDaily(); if (fundMsg) later.push(fundMsg);
     if (myStocks().length) {
       const best = myStocks().map((id) => [id, pct(sharePrice(id), prevShare(id))]).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0];
       later.push([`주식 소식: ${STOCKS[best[0]].ko} ${best[1] >= 0 ? '▲' : '▼'}${Math.abs(best[1]).toFixed(1)}%. 은행에서 확인해 보세요.`, 'Your stocks moved overnight.']);
@@ -2670,6 +2694,9 @@
     if (w.x > shop.x - 10 && w.x < shop.x + shop.w + 10 && w.y > shop.y - 50 && w.y < shop.y + shop.h + 10) { goTo(shop.spot, () => { openSheet('shopSheet'); renderShop(); talkTo(npcs[4]); }); return; }
     if (w.x > house.x - 15 && w.x < house.x + house.w + 15 && w.y > house.y - 70 && w.y < house.y + house.h + 10) { goTo(house.door, enterRoom); return; }
     if (w.x > STALL.x - 10 && w.x < STALL.x + STALL.w + 10 && w.y > STALL.y - 90 && w.y < STALL.y + STALL.h + 10) { goTo(STALL.spot, openStall); return; }
+    if (Math.abs(w.x - FUNDBOX.x) < 46 && w.y > FUNDBOX.y - 112 && w.y < FUNDBOX.y + 10) { goTo(FUNDBOX.spot, openFund); return; }
+    if (built('play') && w.x > PLAY.x - 120 && w.x < PLAY.x && w.y > PLAY.y - 95 && w.y < PLAY.y + 20) { goTo(SWING, rideSwing); return; }
+    if (built('jeong') && Math.abs(w.x - JEONG.x) < 92 && w.y > JEONG.y - 140 && w.y < JEONG.y + 10) { goTo(JEONG.spot, restJeong); return; }
     if ((w.x > pier.x - 30 && w.x < pier.x + pier.w && w.y > pier.y - 60 && w.y < pier.y + pier.h + 8)) { goTo(pier.tip, () => startFishing(pier.bob)); return; }
     const dx = (w.x - pond.cx) / pond.rx, dy = (w.y - pond.cy) / pond.ry;
     if (dx * dx + dy * dy < 1.05) { const e2 = pondEdge(player.x, player.y); goTo(e2.stand, () => startFishing(e2.bob)); return; }
@@ -2697,6 +2724,9 @@
     plots.forEach((p) => opts.push([plotSpot(p), () => useplot(p)]));
     opts.push([shop.spot, openShop]);
     opts.push([STALL.spot, openStall]);
+    opts.push([FUNDBOX.spot, openFund]);
+    if (built('play')) opts.push([SWING, rideSwing]);
+    if (built('jeong')) opts.push([JEONG.spot, restJeong]);
     opts.push([house.door, enterRoom]);
     opts.push([pier.tip, () => startFishing(pier.bob)]);
     npcs.forEach((n) => opts.push([n, () => (holidayWants(n) ? holidayVisit(n) : talkTo(n))]));
@@ -4383,7 +4413,7 @@
 
   // ---------- 보호자 화면: what the child earned, spent, saved and learned ----------
   const MONEY_IN = { sell: '팔기', job: '알바', interest: '이자', errand: '영어 심부름·놀이', gift: '칭찬 선물', stock: '주식 수익·배당', sebae: '세뱃돈' };
-  const MONEY_OUT = { seed: '씨앗', food: '간식', home: '집 꾸미기', ride: '버스·지하철', stock: '주식 손해' };
+  const MONEY_OUT = { seed: '씨앗', food: '간식', home: '집 꾸미기', ride: '버스·지하철', stock: '주식 손해', donate: '마을 모금' };
   const LESSONS = [
     ['sell', '처음 팔아 보기', '키운 것을 팔아서 돈을 벌었어요.'],
     ['profit', '이익', '씨앗을 심어 키운 작물을 팔았어요. 씨앗값을 빼고 남는 게 이익이에요.'],
@@ -4398,6 +4428,7 @@
     ['plan', '적금', '5일 동안 꾸준히 넣어서 적금 만기 이자를 받았어요.'],
     ['invest', '주식', '회사의 작은 조각(주식)을 사 봤어요. 값은 오르기도 내리기도 해요.'],
     ['goal', '목표 저축', '갖고 싶은 것을 정하고 저금통에 끝까지 모아서 샀어요.'],
+    ['donate', '기부와 공공', '마을 모금에 돈을 보탰어요. 모두가 조금씩 모아 모두가 쓰는 걸 만들어요.'],
     ['sebae', '세뱃돈 나누기', '설날 세뱃돈을 쓸 돈과 모을 돈으로 나눠 봤어요.'],
     ['share', '나눔', '추석에 송편을 이웃과 나눴어요. 나누면 고마운 마음이 돌아와요.'],
   ];
@@ -4543,6 +4574,8 @@
     const tips = [];
     const gl = goalItem();
     if (gl) tips.push(G.bank >= gl.price ? `“${eul(gl.ko)} 살 만큼 다 모았네! 모으는 동안 어떤 마음이었어?”` : `“${gl.ko}까지 ${won(gl.price - G.bank)} 남았네. 하루에 얼마씩 모으면 될까?”`);
+    const given = G.fund ? Object.values(G.fund.my).reduce((a, b) => a + b, 0) : 0;
+    if (given) tips.push(G.fund.built.length ? `“마을에 ${iga(G.fund.built.map((k) => PROJECTS.find((x) => x.k === k).ko).join('·'))} 생겼네. 모두가 함께 모은 돈으로 만든 거야. 또 뭐가 생기면 좋을까?”` : `“마을 모금에 ${won(given)}을 냈네. 다 지어지면 뭘 하고 놀고 싶어?”`);
     const hs = G.holi && G.day - G.holi.day <= 6 ? G.holi : null;
     if (hs && hs.kind === 'seol' && Object.keys(hs.sebae).length) {
       const got = Object.values(hs.sebae).reduce((a, b) => a + b, 0);
@@ -6042,6 +6075,214 @@
   });
   $('wishClose').addEventListener('click', closeSheet);
 
+  // =====================================================================
+  // ---------- 마을 모금: everyone chips in, and the village gets something for everyone ----------
+  // The 나눔 통 finally has somewhere to go. Neighbors give a little every morning too,
+  // so the bar moves even on quiet days; what the child adds makes it move faster.
+  // =====================================================================
+  const PROJECTS = [
+    { k: 'flowers', ko: '꽃길', en: 'Flower path', target: 30000, desc: '집에서 가게까지 가는 길가에 꽃을 심어요.', done: '길마다 알록달록 꽃이 피었어요!' },
+    { k: 'play', ko: '놀이터', en: 'Playground', target: 100000, desc: '그네와 미끄럼틀이 있는 놀이터를 지어요. 다 지으면 그네를 탈 수 있어요.', done: '마을 남쪽에 그네와 미끄럼틀이 생겼어요!' },
+    { k: 'jeong', ko: '정자', en: 'Pavilion', target: 200000, desc: '누구나 앉아서 쉬어 가는 정자를 지어요.', done: '집 옆에 바람 솔솔 부는 정자가 생겼어요!' },
+  ];
+  const iga = (w) => { const c = w.charCodeAt(w.length - 1) - 0xac00; return w + (c >= 0 && c < 11172 && c % 28 ? '이' : '가'); };
+  function fundState() {
+    if (!G.fund) G.fund = { i: 0, raised: 0, my: {}, log: [], built: [] };
+    return G.fund;
+  }
+  const built = (k) => !!(G.fund && G.fund.built.includes(k));
+  const fundProject = () => PROJECTS[fundState().i] || null;
+  // money into the box; returns the projects this finished
+  function addRaise(who, n) {
+    const f = fundState(), done = [];
+    let p = PROJECTS[f.i]; if (!p || n <= 0) return done;
+    f.raised += n; f.log = [{ who, n, day: G.day }, ...f.log].slice(0, 6);
+    while (p && f.raised >= p.target) { f.raised -= p.target; f.built.push(p.k); f.i++; done.push(p); p = PROJECTS[f.i]; }
+    if (!p) f.raised = 0;
+    return done;
+  }
+  // every morning two or three neighbors put in a little
+  function fundDaily() {
+    const p = fundProject(); if (!p) return null;
+    const givers = [...npcs].sort(() => Math.random() - 0.5).slice(0, 2 + (Math.random() < 0.5 ? 1 : 0));
+    const done = [];
+    for (const n of givers) done.push(...addRaise(n.name, wonRound(p.target * rand(0.025, 0.045))));
+    return done.length ? [`마을 모금으로 ${iga(done.map((d) => d.ko).join('·'))} 생겼어요! 모두가 조금씩 모은 돈이에요.`, `The village built a ${done[0].en.toLowerCase()}!`] : null;
+  }
+  let fundCheer = null;
+  function openFund() { fundCheer = null; openSheet('fundSheet'); renderFund(); sfx.talk(); }
+  function renderFund() {
+    const f = fundState(), p = fundProject();
+    $('fundSub').textContent = f.built.length ? `완성 ${f.built.length} / ${PROJECTS.length}` : '모두 함께 모아요';
+    const cheer = $('fundCheer'); cheer.hidden = !fundCheer; cheer.innerHTML = '';
+    if (fundCheer) {
+      cheer.append(el('b', 'card-h', `${fundCheer.ko} 완성!`), el('p', 'card-t', fundCheer.done),
+        el('p', 'card-t muted', '이렇게 모두가 조금씩 내서 모두가 쓰는 걸 만드는 걸 "공공"이라고 해요. 어른들이 내는 세금도 이렇게 길, 공원, 도서관이 돼요.'));
+    }
+    const card = $('fundCard'); card.innerHTML = '';
+    const acts = $('fundActs'); acts.innerHTML = '';
+    if (!p) {
+      card.append(el('b', 'card-h', '모든 모금이 끝났어요'), el('p', 'card-t', '꽃길, 놀이터, 정자까지 모두 지었어요. 함께 모아 줘서 고마워요!'));
+    } else {
+      const mine = f.my[p.k] || 0, pct = Math.floor((f.raised / p.target) * 100);
+      const top = el('div', 'goal-top');
+      const im = el('img'); im.src = iconURL('fund:' + p.k); im.alt = '';
+      const tx = el('div'); tx.append(el('span', 'muted', '지금 모으는 중'), el('b', null, `${p.ko} ${won(p.target)}`));
+      top.append(im, tx);
+      const bar = el('div', 'meter fund-meter'); bar.setAttribute('role', 'progressbar'); bar.setAttribute('aria-valuenow', String(pct)); bar.setAttribute('aria-valuemin', '0'); bar.setAttribute('aria-valuemax', '100');
+      const fill = el('i'); fill.style.width = pct + '%'; bar.append(fill);
+      card.append(top, el('p', 'card-t', p.desc), bar, el('p', 'card-t', `모인 돈 ${won(f.raised)} · ${pct}%`), el('span', 'muted', mine ? `내가 낸 돈 ${won(mine)} · 앞으로 ${won(p.target - f.raised)}` : `앞으로 ${won(p.target - f.raised)} 더 모으면 지어요`));
+      const give = (box, n, text, cls) => {
+        const b = el('button', 'btn ' + cls, text); b.type = 'button';
+        b.addEventListener('click', () => donate(n, true));
+        box.append(b);
+      };
+      if (G.give > 0) {
+        const row = el('div', 'trade'); acts.append(row);
+        give(row, Math.min(1000, G.give), `나눔 통에서 ${won(Math.min(1000, G.give))}`, 'soft');
+        give(row, G.give, `나눔 통 모두 (${won(G.give)})`, '');
+      } else {
+        acts.append(el('p', 'example', '집 저금통 화면의 나눔 통에 모아 두면 여기서 낼 수 있어요.'));
+      }
+      if (G.coins > 0) { const w = el('button', 'linkish', `지갑에서 ${won(Math.min(1000, G.coins))} 내기`); w.type = 'button'; w.addEventListener('click', () => donate(Math.min(1000, G.coins), false)); acts.append(w); }
+    }
+    const log = $('fundLog'); log.innerHTML = '';
+    $('fundLogH').hidden = !f.log.length;
+    for (const e of f.log) {
+      const n = npcs.find((c) => c.name === e.who), row = el('div', 'shopper buy');
+      const face = el('img'); face.src = `assets/dongle/base-${n ? n.look : G.look}.png`; face.alt = '';
+      const tx = el('div'); tx.append(el('b', null, `${n ? callName(n.name) : '나'} ${won(e.n)}`), el('span', 'muted', `${e.day}일째`));
+      row.append(face, tx); log.append(row);
+    }
+    const bl = $('fundBuilt'); bl.innerHTML = ''; bl.hidden = !f.built.length;
+    if (f.built.length) bl.append(el('span', 'muted', `완성한 곳: ${f.built.map((k) => PROJECTS.find((x) => x.k === k).ko).join(' · ')}`));
+  }
+  function donate(n, fromGive) {
+    const f = fundState(), p = fundProject(); if (!p) return;
+    n = Math.min(n, fromGive ? G.give : G.coins); if (n <= 0) return;
+    if (fromGive) G.give -= n; else G.coins -= n;
+    f.my[p.k] = (f.my[p.k] || 0) + n;
+    addLedger(`마을 모금 (${p.ko}) ${won(n)}`, -n, 'donate'); learn('donate');
+    const done = addRaise('나', n);
+    sfx.coin();
+    if (done.length) {
+      fundCheer = done[done.length - 1]; sfx.chime();
+      toast(`${iga(done.map((d) => d.ko).join('·'))} 생겼어요! 모두가 함께 모은 돈으로 지었어요.`, `The ${done[0].en.toLowerCase()} is built!`);
+    } else toast(`${p.ko} 모금에 ${won(n)}을 냈어요. 고마워요!`, 'Thank you for giving!');
+    persist(); renderFund();
+  }
+  $('fundClose').addEventListener('click', closeSheet);
+
+  // ---------- 마을 모금: what got built ----------
+  function rideSwing() {
+    if (!built('play')) return;
+    player.swingT = 4.2; player.goal = null; player.dir = 1;
+    sfx.harvest(); toast('슝~ 그네가 높이 올라가요!', 'Wheee!');
+  }
+  function restJeong() {
+    if (!built('jeong')) return;
+    player.dir = 1; player.emote = { t: 1.4 }; sfx.chime();
+    toast(isNight() ? '정자에 앉아 별을 봐요. 오늘도 수고했어요.' : '정자에 앉아 바람을 쐬어요. 마음이 편안해져요.', 'A quiet rest in the pavilion.');
+  }
+  // the flowers along the path, worked out once
+  const PATH_FLOWERS = (() => {
+    const out = [], cols = ['#f2a7b8', '#f3dc8a', '#c9b3ec', '#fffaf1', '#f6c6cf'];
+    for (let i = 0; i < PATH.length - 1; i++) {
+      const [x0, y0] = PATH[i], [x1, y1] = PATH[i + 1], len = Math.hypot(x1 - x0, y1 - y0), nx = -(y1 - y0) / len, ny = (x1 - x0) / len;
+      for (let d = 18; d < len; d += 34) {
+        const side = (Math.floor(d / 34) + i) % 2 ? 1 : -1, px = x0 + ((x1 - x0) * d) / len + nx * 24 * side, py = y0 + ((y1 - y0) * d) / len + ny * 24 * side;
+        if (blocked(px, py) || (px > 460 && px < 600 && py > 370 && py < 485)) continue;
+        out.push([px, py, cols[out.length % cols.length]]);
+      }
+    }
+    return out;
+  })();
+  function drawFlowerPath() {
+    for (const [x, y, c] of PATH_FLOWERS) {
+      ctx.fillStyle = '#7fb069'; ctx.beginPath(); ctx.ellipse(x - 5, y + 3, 4, 1.8, -0.5, 0, 7); ctx.ellipse(x + 5, y + 3, 4, 1.8, 0.5, 0, 7); ctx.fill();
+      drawBloom(x, y - 2, c, 0.75);
+    }
+  }
+  function drawFundBox(x = FUNDBOX.x, y = FUNDBOX.y, sign = true) {
+    ctx.fillStyle = 'rgba(80,60,40,0.18)'; ctx.beginPath(); ctx.ellipse(x, y + 2, 22, 6, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#8d5f45'; ctx.fillRect(x - 3, y - 36, 6, 38);
+    ctx.fillStyle = woodGrad(x, y - 48, 40); rr(ctx, x - 20, y - 62, 40, 28, 6); ctx.fill();
+    ctx.fillStyle = 'rgba(255,240,220,0.3)'; rr(ctx, x - 16, y - 59, 32, 4, 2); ctx.fill();
+    ctx.fillStyle = '#5a3d2b'; rr(ctx, x - 9, y - 54, 18, 3.5, 1.7); ctx.fill();
+    ctx.fillStyle = '#ec9fb2'; ctx.beginPath(); ctx.moveTo(x, y - 37); ctx.bezierCurveTo(x - 9, y - 42, x - 6, y - 50, x, y - 45); ctx.bezierCurveTo(x + 6, y - 50, x + 9, y - 42, x, y - 37); ctx.fill();
+    const p = sign && fundProject(); if (!p) return;
+    const bw = 88, bx = x - bw / 2, by = y - 108, frac = clamp(fundState().raised / p.target, 0, 1);
+    ctx.fillStyle = '#8d5f45'; ctx.fillRect(x - 2, by + 30, 4, 18);
+    ctx.fillStyle = '#fffaf1'; rr(ctx, bx, by, bw, 34, 9); ctx.fill();
+    label(`${p.ko} 모금`, x, by + 11, 11, '#8d5f45');
+    ctx.fillStyle = '#efe5d8'; rr(ctx, bx + 9, by + 21, bw - 18, 7, 3.5); ctx.fill();
+    if (frac > 0.02) { ctx.fillStyle = '#ec9fb2'; rr(ctx, bx + 9, by + 21, (bw - 18) * frac, 7, 3.5); ctx.fill(); }
+  }
+  function drawPlayground(x = PLAY.x, y = PLAY.y) {
+    ctx.fillStyle = 'rgba(241,223,184,0.9)'; ctx.beginPath(); ctx.ellipse(x - 2, y - 4, 118, 42, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = 'rgba(214,190,146,0.45)'; for (let i = 0; i < 14; i++) { ctx.beginPath(); ctx.arc(x - 90 + ((i * 47) % 180), y - 20 + ((i * 29) % 34), 1.6, 0, 7); ctx.fill(); }
+    // slide: ladder, little deck and a butter-yellow chute
+    const sx = x + 36;
+    ctx.strokeStyle = '#9a6c48'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(sx, y - 6); ctx.lineTo(sx, y - 66); ctx.moveTo(sx + 18, y - 6); ctx.lineTo(sx + 18, y - 66); ctx.stroke();
+    ctx.lineWidth = 2.4; for (let r = 1; r < 5; r++) { ctx.beginPath(); ctx.moveTo(sx, y - 6 - r * 12); ctx.lineTo(sx + 18, y - 6 - r * 12); ctx.stroke(); }
+    ctx.fillStyle = woodGrad(sx + 9, y - 66, 24); rr(ctx, sx - 3, y - 70, 26, 8, 3); ctx.fill();
+    ctx.fillStyle = clayGrad(sx + 50, y - 36, 50, '#f8e29a', '#f1cf63', '#d4ab3c');
+    ctx.beginPath(); ctx.moveTo(sx + 20, y - 70); ctx.quadraticCurveTo(sx + 44, y - 64, sx + 62, y - 26); ctx.quadraticCurveTo(sx + 70, y - 8, sx + 86, y - 6); ctx.lineTo(sx + 86, y + 4); ctx.quadraticCurveTo(sx + 62, y + 2, sx + 52, y - 22); ctx.quadraticCurveTo(sx + 38, y - 54, sx + 20, y - 60); ctx.closePath(); ctx.fill();
+    // swings: an A-frame and two seats
+    const fx0 = x - 104, fx1 = x - 4, top = y - 86;
+    ctx.strokeStyle = '#9a6c48'; ctx.lineWidth = 5;
+    for (const fx of [fx0, fx1]) { ctx.beginPath(); ctx.moveTo(fx - 8, y + 2); ctx.lineTo(fx, top); ctx.lineTo(fx + 8, y + 2); ctx.stroke(); }
+    ctx.fillStyle = woodGrad((fx0 + fx1) / 2, top, fx1 - fx0); rr(ctx, fx0 - 6, top - 4, fx1 - fx0 + 12, 8, 4); ctx.fill();
+    for (const [i, cx] of [[0, x - 70], [1, x - 34]]) {
+      const riding = i === 0 && x === PLAY.x && player.swingT > 0 && scene === 'village';
+      const swayY = riding ? player.y - SWING.y : Math.sin(G.t * 1.2 + i) * 1.5, seatY = y - 22 + swayY * 0.6;
+      ctx.strokeStyle = 'rgba(120,110,100,0.8)'; ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.moveTo(cx - 10, top + 2); ctx.lineTo(cx - 10, seatY); ctx.moveTo(cx + 10, top + 2); ctx.lineTo(cx + 10, seatY); ctx.stroke();
+      ctx.fillStyle = i ? '#7fb0d9' : '#e58aa0'; rr(ctx, cx - 13, seatY - 3, 26, 6, 3); ctx.fill();
+    }
+  }
+  function drawJeongja(x = JEONG.x, y = JEONG.y) {
+    ctx.fillStyle = 'rgba(80,60,40,0.18)'; ctx.beginPath(); ctx.ellipse(x, y + 2, 78, 12, 0, 0, 7); ctx.fill();
+    // stone base and wooden floor
+    ctx.fillStyle = '#cfc6ba'; rr(ctx, x - 70, y - 14, 140, 16, 4); ctx.fill();
+    ctx.fillStyle = woodGrad(x, y - 22, 140); rr(ctx, x - 64, y - 26, 128, 14, 4); ctx.fill();
+    ctx.fillStyle = '#b8b0a4'; rr(ctx, x - 14, y - 2, 28, 7, 2); ctx.fill();
+    // red pillars with a green band under the eaves (단청)
+    ctx.fillStyle = '#b5533c';
+    for (const px of [-54, -18, 18, 54]) rr(ctx, x + px - 3.5, y - 92, 7, 68, 3), ctx.fill();
+    ctx.fillStyle = '#5fa58a'; rr(ctx, x - 62, y - 98, 124, 7, 2); ctx.fill();
+    ctx.fillStyle = '#e2bd55'; for (let i = -56; i <= 56; i += 14) { ctx.beginPath(); ctx.arc(x + i, y - 94.5, 1.6, 0, 7); ctx.fill(); }
+    // a tiled roof with upturned corners
+    ctx.fillStyle = clayGrad(x, y - 118, 90, '#7f8e9c', '#5d6b7a', '#46525e');
+    ctx.beginPath();
+    ctx.moveTo(x - 92, y - 104);
+    ctx.quadraticCurveTo(x - 70, y - 96, x - 46, y - 98);
+    ctx.lineTo(x + 46, y - 98);
+    ctx.quadraticCurveTo(x + 70, y - 96, x + 92, y - 104);
+    ctx.quadraticCurveTo(x + 72, y - 112, x + 46, y - 132);
+    ctx.lineTo(x - 46, y - 132);
+    ctx.quadraticCurveTo(x - 72, y - 112, x - 92, y - 104);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.lineWidth = 1.2;
+    for (let i = -40; i <= 40; i += 10) { ctx.beginPath(); ctx.moveTo(x + i, y - 130); ctx.lineTo(x + i * 1.4, y - 100); ctx.stroke(); }
+    ctx.fillStyle = '#3e4852'; rr(ctx, x - 52, y - 137, 104, 7, 3.5); ctx.fill();
+  }
+  function fundBlocked(x, y) {
+    if (Math.abs(x - FUNDBOX.x) < 14 && y > FUNDBOX.y - 12 && y < FUNDBOX.y + 6) return true;
+    if (built('jeong') && x > JEONG.x - 70 && x < JEONG.x + 70 && y > JEONG.y - 30 && y < JEONG.y + 2) return true;
+    if (built('play') && x > PLAY.x + 30 && x < PLAY.x + 124 && y > PLAY.y - 16 && y < PLAY.y + 6) return true;
+    return false;
+  }
+  // somewhere a neighbor might wander to: the mat, or the new places once they exist
+  function wanderSpot() {
+    const r = Math.random();
+    if (r < 0.4) return { x: mat.x + rand(10, mat.w - 10), y: mat.y + rand(20, mat.h + 10) };
+    if (r < 0.55 && built('play')) return { x: PLAY.x + rand(-80, 20), y: PLAY.y + rand(8, 30) };
+    if (r < 0.65 && built('jeong')) return { x: JEONG.x + rand(-50, 50), y: JEONG.spot.y + rand(0, 16) };
+    return { x: rand(120, 1280), y: rand(160, 920) };
+  }
+
   // ---------- 명절 in the village: 강강술래 under the moon, kites on 설날 ----------
   const RING = { x: 775, y: 530, r: 120 };
   function ringSpot(n) {
@@ -6151,7 +6392,7 @@
   function openShop() { openSheet('shopSheet'); renderShop(); talkTo(npcs[4]); }
   let ctxT = 0, ctxKey = '', ctxRun = null;
   function nearbyAction() {
-    if (!G.started || modal || player.fishing || player.goal || sleepFade > 0) return null;
+    if (!G.started || modal || player.fishing || player.goal || player.swingT > 0 || sleepFade > 0) return null;
     if (scene === 'city') return cityAction();
     if (scene === 'park') return parkAction();
     if (scene === 'market') return marketAction();
@@ -6166,6 +6407,9 @@
     for (const b of bugs) if (b.flee <= 0 && b.a > 0.6) opts.push([{ x: b.x, y: b.y + 6 }, [`${BUGS[b.k].ko} 잡기`, `Catch ${BUGS[b.k].en.toLowerCase()}`, b.k], () => swingNet(b)]);
     opts.push([shop.spot, ['가게 들어가기', 'Enter shop', 'coin'], openShop]);
     opts.push([STALL.spot, ['내 가게 열기', 'Open my stall', 'coin'], openStall]);
+    opts.push([FUNDBOX.spot, ['마을 모금함', 'Donation box', 'fund:' + (fundProject() || PROJECTS[PROJECTS.length - 1]).k], openFund]);
+    if (built('play')) opts.push([SWING, ['그네 타기', 'Ride the swing', 'fund:play'], rideSwing]);
+    if (built('jeong')) opts.push([JEONG.spot, ['정자에서 쉬기', 'Rest a while', 'fund:jeong'], restJeong]);
     opts.push([VBUS.spot, ['버스 타기', 'Take the bus', 'bus'], () => openRide('bus:city')]);
     opts.push([house.door, ['집에 들어가기', 'Go inside', 'house'], enterRoom]);
     opts.push([pier.tip, ['낚시하기', 'Go fishing', 'crucian'], () => startFishing(pier.bob)]);
@@ -6271,6 +6515,12 @@
     } else p.moving = false;
     if (p.holdT > 0) { p.holdT -= dt; if (p.holdT <= 0) p.hold = null; }
     if (p.bow > 0) p.bow -= dt;
+    if (p.swingT > 0) {
+      // on the swing: back and forth until it slows, or until you walk off
+      p.swingT -= dt;
+      if (keys.size || p.goal || scene !== 'village') p.swingT = 0;
+      else { p.x = SWING.x; p.y = SWING.y + Math.sin((4.2 - p.swingT) * 3.4) * 10 * Math.min(1, p.swingT); if (p.swingT <= 0) p.y = SWING.y + 14; }
+    }
     if (scene === 'room' && p.y > FH + 6) exitRoom();
     ctxT -= dt; if (ctxT <= 0) { ctxT = 0.15; syncCtxChip(); }
 
@@ -6312,8 +6562,7 @@
         n.moving = false; n.wait -= dt;
         if (n.wait <= 0) {
           for (let i = 0; i < 12; i++) {
-            const nearMat = Math.random() < 0.5;
-            const t = nearMat ? { x: mat.x + rand(10, mat.w - 10), y: mat.y + rand(20, mat.h + 10) } : { x: rand(120, 1280), y: rand(160, 920) };
+            const t = wanderSpot();
             if (!blocked(t.x, t.y) && Math.hypot(t.x - n.x, t.y - n.y) < 500) { n.target = t; break; }
           }
           if (!n.target) n.wait = 1;
@@ -6710,6 +6959,12 @@
       else if (kind === 'coin') drawCoin();
       else if (kind === 'seed') drawSeedBag();
       else if (kind === 'pouch') drawPouch();
+      else if (kind.startsWith('fund:')) {
+        const k = kind.slice(5);
+        if (k === 'flowers') { ctx.fillStyle = '#7fb069'; ctx.beginPath(); ctx.ellipse(-4, 10, 6, 2.4, -0.4, 0, 7); ctx.ellipse(6, 10, 6, 2.4, 0.4, 0, 7); ctx.fill(); drawBloom(-7, 2, '#f2a7b8', 1.1); drawBloom(7, -3, '#f3dc8a', 1.1); drawBloom(3, 8, '#c9b3ec', 0.9); }
+        else if (k === 'play') { ctx.scale(0.13, 0.13); drawPlayground(0, 40); }
+        else if (k === 'jeong') { ctx.scale(0.15, 0.15); drawJeongja(0, 70); }
+      }
       else if (kind === 'moon') { ctx.fillStyle = clayGrad(0, 0, 12, '#fffbea', '#f8e7a8', '#e9c96f'); ctx.beginPath(); ctx.arc(0, 0, 12, 0, 7); ctx.fill(); ctx.fillStyle = 'rgba(205,170,90,0.35)'; ctx.beginPath(); ctx.ellipse(-2, 2, 3, 2.4, 0, 0, 7); ctx.ellipse(4, -3, 2, 1.6, 0, 0, 7); ctx.fill(); }
     } finally { ctx = main; }
     return (iconCache[key] = c.toDataURL());
@@ -7269,6 +7524,7 @@
     drawPier();
     plots.forEach(drawPlot);
     drawMatProps();
+    if (built('flowers')) drawFlowerPath();
     if (player.goal && player.goal.plain) { ctx.strokeStyle = 'rgba(255,250,241,0.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(player.goal.x, player.goal.y, 10, 4, 0, 0, 7); ctx.stroke(); }
 
     const list = [];
@@ -7277,6 +7533,9 @@
     list.push([house.y + house.h, drawHouse]);
     list.push([shop.y + shop.h, drawShop]);
     list.push([STALL.y + STALL.h, drawStallCart]);
+    list.push([FUNDBOX.y + 2, () => drawFundBox()]);
+    if (built('play')) list.push([PLAY.y - 30, () => drawPlayground()]);
+    if (built('jeong')) list.push([JEONG.y, () => drawJeongja()]);
     list.push([pier.y + 4, drawPierSign]);
     list.push([VBUS.y - 2, () => drawCityBusStop(VBUS, '동글마을 정류장', '동글시내', '#7fb069')]);
     if (season() === 3) list.push([600, () => drawSnowman(600, 600)]);
